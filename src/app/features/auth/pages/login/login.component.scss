@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.custom-label > label {
+  left: 0 !important;
+  transform-origin: left !important;
+  padding-left: 0 !important;
+  //margin-bottom: 10px;
+}
+
+.custom-label.p-float-label label.p-float-label-active {
+  margin-bottom: 6px !important;
+  transform: translateY(-1.6rem) scale(.85) !important;
+}
