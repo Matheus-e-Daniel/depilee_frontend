@@ -1,0 +1,14 @@
+.layout-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 64px); // considerando header com 64px
+}
+
+.content {
+  flex: 1;
+  transition: margin-left 0.3s ease;
+
+  &.expanded {
+    margin-left: 80px; // quando sidebar fechada
+  }
+}
