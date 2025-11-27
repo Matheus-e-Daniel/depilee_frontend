@@ -4,5 +4,19 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  message: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  };
+}
+
+export interface ValidateResponse {
+  authenticated: boolean;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
 }

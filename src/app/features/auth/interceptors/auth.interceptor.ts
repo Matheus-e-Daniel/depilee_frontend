@@ -1,37 +1,25 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { TokenService } from '../services/token.service';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenService = inject(TokenService);
   const router = inject(Router);
 
-  const token = tokenService.getToken();
-
-  const authReq = token
-    ? req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-    : req;
+  // Clona a requisição para adicionar withCredentials em todas as chamadas API
+  const authReq = req.clone({
+    withCredentials: true // 👈 Garante que cookies são enviados em TODAS as requisições
+  });
 
   return next(authReq).pipe(
-    (source) =>
-      new Observable((observer) => {
-        return source.subscribe({
-          next: (event) => observer.next(event),
-          error: (err) => {
-            if (err.status === 401) {
-              tokenService.clearToken();
-              router.navigate(['/auth/login']);
-            }
-            observer.error(err);
-          },
-          complete: () => observer.complete(),
-        });
-      })
+    catchError((error) => {
+      if (error.status === 401) {
+        // Token/cookie expirado ou inválido
+        localStorage.removeItem('depilee_auth_state');
+        router.navigate(['/auth/login']);
+      }
+      return throwError(() => error);
+    })
   );
 };

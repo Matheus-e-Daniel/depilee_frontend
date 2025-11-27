@@ -1,15 +1,51 @@
-:host {
-  display: block;
+/* styles.scss ou tailwind.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.p-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  .p-card-body {
+    padding: 1.5rem;
+  }
+
+  .p-card-content {
+    padding: 0;
+  }
 }
 
-.custom-label > label {
-  left: 0 !important;
-  transform-origin: left !important;
-  padding-left: 0 !important;
-  //margin-bottom: 10px;
+.p-button {
+  border-radius: 8px;
+  font-weight: 500;
 }
 
-.custom-label.p-float-label label.p-float-label-active {
-  margin-bottom: 6px !important;
-  transform: translateY(-1.6rem) scale(.85) !important;
+.p-calendar {
+  .p-inputtext {
+    border-radius: 8px;
+  }
+}
+
+.p-listbox {
+  border: none !important;
+
+  .p-listbox-list {
+    padding: 0;
+  }
+
+  .p-listbox-item {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e5e7eb;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &:hover {
+      background-color: #f8fafc;
+      border-color: #3b82f6;
+    }
+  }
 }

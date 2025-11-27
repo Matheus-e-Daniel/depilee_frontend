@@ -1,33 +1,48 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { tap, delay } from 'rxjs/operators';
-import { TokenService } from './token.service';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-
   private apiUrl = 'http://localhost:5000/api/auth';
 
-  constructor(private http: HttpClient, private tokenService: TokenService) {}
+  constructor(private http: HttpClient) {}
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post<{ token: string }>(`${this.apiUrl}/login`, { email, password }).pipe(
-      tap((res) => {
-        if (res?.token) this.tokenService.saveToken(res.token);
+    return this.http.post(
+      `${this.apiUrl}/login`,
+      { email, password },
+      { withCredentials: true } // 👈 Cookies são enviados/recibidos automaticamente
+    );
+  }
+
+  logout(): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/logout`,
+      {},
+      { withCredentials: true }
+    ).pipe(
+      tap(() => {
+        // Limpa o estado local após logout
+        localStorage.removeItem('depilee_auth_state');
       })
     );
   }
 
-  logout() {
-    this.tokenService.clearToken();
+  validate(): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/validate`,
+      { withCredentials: true }
+    );
   }
 
-  /*-
-  getProfile() {
-    return this.http.get(`${this.apiUrl}/profile`);
+  getProfile(): Observable<any> {
+    return this.http.get(
+      `${this.apiUrl}/profile`,
+      { withCredentials: true }
+    );
   }
-  */
 }
