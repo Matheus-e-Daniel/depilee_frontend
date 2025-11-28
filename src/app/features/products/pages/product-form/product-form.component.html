@@ -1,0 +1,283 @@
+<div class="p-4 md:p-6 animate-fadeIn min-h-screen bg-gray-50">
+  <p-toast></p-toast>
+
+  <!-- 👇 BOTÃO DE TESTE TEMPORÁRIO - REMOVA DEPOIS -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <p-button
+      label="TESTE: Preencher Automaticamente"
+      icon="pi pi-magic"
+      severity="help"
+      (onClick)="fillFormTest()"
+      styleClass="bg-green-600 hover:bg-green-700 border-0 shadow-lg text-sm">
+    </p-button>
+  </div>
+
+  <!-- Cabeçalho -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg flex items-center justify-center">
+          <i class="pi pi-box text-lg text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">{{ title }}</h1>
+          <p class="text-gray-600 text-sm" *ngIf="mode === 'create'">Adicione um novo produto ao seu catálogo</p>
+          <p class="text-gray-600 text-sm" *ngIf="mode === 'edit'">Atualize as informações do produto</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="h-full">
+    <p-card class="shadow-lg border-0 rounded-xl h-full">
+      <div class="p-6 h-full">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex justify-center items-center py-12 h-full">
+          <div class="flex flex-col items-center gap-4">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <span class="text-gray-600 font-medium">Carregando produto...</span>
+          </div>
+        </div>
+
+        <!-- Formulário CORRIGIDO para match com backend -->
+        <form *ngIf="!loading" [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-6 h-full">
+
+          <!-- Seção: Informações Básicas -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <div class="w-2 h-5 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+              <h2 class="text-lg font-semibold text-gray-800">Informações Básicas</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- Nome -->
+              <div class="field-group">
+                <label for="name" class="field-label">
+                  <i class="pi pi-tag mr-2 text-indigo-500"></i>
+                  Nome do Produto *
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  pInputText
+                  formControlName="name"
+                  class="field-input"
+                  placeholder="Digite o nome do produto" />
+                <div class="field-error" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+                  <i class="pi pi-exclamation-circle mr-1"></i>
+                  <span *ngIf="productForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+                  <span *ngIf="productForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+                  <span *ngIf="productForm.get('name')?.errors?.['maxlength']">Máximo 100 caracteres</span>
+                </div>
+              </div>
+
+              <!-- Categoria ID -->
+              <div class="field-group">
+                <label for="categoryId" class="field-label">
+                  <i class="pi pi-folder mr-2 text-indigo-500"></i>
+                  Categoria
+                </label>
+                <p-dropdown
+                  id="categoryId"
+                  [options]="categories"
+                  formControlName="categoryId"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Selecione uma categoria"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="field-group">
+              <label for="description" class="field-label">
+                <i class="pi pi-file-edit mr-2 text-amber-500"></i>
+                Descrição
+                <span class="text-gray-400 text-sm font-normal ml-1">(opcional)</span>
+              </label>
+              <textarea
+                id="description"
+                pInputTextarea
+                formControlName="description"
+                rows="3"
+                class="field-input resize-none"
+                placeholder="Descreva detalhes importantes sobre o produto..."></textarea>
+              <div class="flex justify-between mt-2">
+                <div class="text-gray-500 text-sm ml-auto">
+                  {{ productForm.get('description')?.value?.length || 0 }}/500
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Valores -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <div class="w-2 h-5 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full"></div>
+              <h2 class="text-lg font-semibold text-gray-800">Valores</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <!-- Custo -->
+              <div class="field-group">
+                <label for="cost" class="field-label">
+                  <i class="pi pi-money-bill mr-2 text-green-500"></i>
+                  Custo (R$) *
+                </label>
+                <p-inputNumber
+                  id="cost"
+                  formControlName="cost"
+                  mode="currency"
+                  currency="BRL"
+                  locale="pt-BR"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  styleClass="w-full">
+                </p-inputNumber>
+                <div class="field-error" *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched">
+                  <i class="pi pi-exclamation-circle mr-1"></i>
+                  <span *ngIf="productForm.get('cost')?.errors?.['required']">Custo é obrigatório</span>
+                  <span *ngIf="productForm.get('cost')?.errors?.['min']">Custo deve ser maior ou igual a zero</span>
+                </div>
+              </div>
+
+              <!-- Preço de Venda -->
+              <div class="field-group">
+                <label for="salePrice" class="field-label">
+                  <i class="pi pi-dollar mr-2 text-blue-500"></i>
+                  Preço de Venda (R$) *
+                </label>
+                <p-inputNumber
+                  id="salePrice"
+                  formControlName="salePrice"
+                  mode="currency"
+                  currency="BRL"
+                  locale="pt-BR"
+                  [min]="0"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  styleClass="w-full">
+                </p-inputNumber>
+                <div class="field-error" *ngIf="productForm.get('salePrice')?.invalid && productForm.get('salePrice')?.touched">
+                  <i class="pi pi-exclamation-circle mr-1"></i>
+                  <span *ngIf="productForm.get('salePrice')?.errors?.['required']">Preço de venda é obrigatório</span>
+                  <span *ngIf="productForm.get('salePrice')?.errors?.['min']">Preço deve ser maior ou igual a zero</span>
+                </div>
+              </div>
+
+              <!-- Margem de Lucro (Calculado) -->
+              <div class="field-group">
+                <label class="field-label">
+                  <i class="pi pi-percentage mr-2 text-purple-500"></i>
+                  Margem de Lucro
+                </label>
+                <div class="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-200 text-center">
+                  <p class="text-2xl font-bold text-purple-700" [class.text-green-600]="profitMargin > 0" [class.text-red-600]="profitMargin < 0">
+                    {{ profitMargin.toFixed(2) }}%
+                  </p>
+                  <p class="text-xs text-purple-600 mt-1">
+                    {{ profitMargin > 0 ? 'Lucro' : 'Prejuízo' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção: Estoque e Classificação -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <div class="w-2 h-5 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full"></div>
+              <h2 class="text-lg font-semibold text-gray-800">Estoque e Classificação</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <!-- Estoque -->
+              <div class="field-group">
+                <label for="stock" class="field-label">
+                  <i class="pi pi-box mr-2 text-amber-500"></i>
+                  Estoque *
+                </label>
+                <p-inputNumber
+                  id="stock"
+                  formControlName="stock"
+                  [min]="0"
+                  [showButtons]="true"
+                  styleClass="w-full">
+                </p-inputNumber>
+                <div class="field-error" *ngIf="productForm.get('stock')?.invalid && productForm.get('stock')?.touched">
+                  <i class="pi pi-exclamation-circle mr-1"></i>
+                  <span *ngIf="productForm.get('stock')?.errors?.['required']">Estoque é obrigatório</span>
+                  <span *ngIf="productForm.get('stock')?.errors?.['min']">Estoque deve ser maior ou igual a zero</span>
+                </div>
+              </div>
+
+              <!-- Marca ID -->
+              <div class="field-group">
+                <label for="brandId" class="field-label">
+                  <i class="pi pi-tags mr-2 text-blue-500"></i>
+                  Marca
+                </label>
+                <p-dropdown
+                  id="brandId"
+                  [options]="brands"
+                  formControlName="brandId"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Selecione uma marca"
+                  styleClass="w-full">
+                </p-dropdown>
+              </div>
+
+              <!-- Status -->
+              <div class="field-group">
+                <label for="status" class="field-label">
+                  <i class="pi pi-circle-fill mr-2" [ngClass]="{
+                    'text-green-500': productForm.get('status')?.value === 'active',
+                    'text-gray-400': productForm.get('status')?.value === 'inactive'
+                  }"></i>
+                  Status do Produto *
+                </label>
+                <p-dropdown
+                  id="status"
+                  [options]="statusOptions"
+                  formControlName="status"
+                  optionLabel="label"
+                  optionValue="value"
+                  styleClass="w-full">
+                </p-dropdown>
+                <div class="text-gray-500 text-sm mt-2">
+                  <i class="pi pi-info-circle mr-1"></i>
+                  Produtos inativos não aparecem para venda
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões -->
+          <div class="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t border-gray-100">
+            <p-button
+              label="Cancelar"
+              icon="pi pi-times"
+              severity="secondary"
+              (onClick)="onCancel()"
+              [disabled]="submitting"
+              styleClass="px-6 py-2 w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200"
+              [outlined]="true">
+            </p-button>
+
+            <p-button
+              [label]="submitButtonText"
+              [icon]="mode === 'create' ? 'pi pi-plus' : 'pi pi-check'"
+              type="submit"
+              [loading]="submitting"
+              [disabled]="!isFormValid"
+              styleClass="px-6 py-2 w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+            </p-button>
+          </div>
+        </form>
+      </div>
+    </p-card>
+  </div>
+</div>

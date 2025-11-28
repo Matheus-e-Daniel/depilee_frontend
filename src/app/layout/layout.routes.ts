@@ -16,6 +16,13 @@ export const LAYOUT_ROUTES: Routes = [
           ),
       },
       {
+        path: 'products',
+        loadChildren: () =>
+          import('../features/products/products.routes').then(
+            (m) => m.PRODUCTS_ROUTES
+          ),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

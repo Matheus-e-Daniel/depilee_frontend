@@ -1,0 +1,172 @@
+<div class="p-6">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Cabeçalho -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Produtos</h1>
+      <p class="text-gray-600">Gerencie seu catálogo de produtos</p>
+    </div>
+    <p-button
+      label="Novo Produto"
+      icon="pi pi-plus"
+      (onClick)="onAddProduct()"
+      styleClass="bg-indigo-600 hover:bg-indigo-700 border-0 whitespace-nowrap">
+    </p-button>
+  </div>
+
+  <!-- Card da Tabela -->
+  <p-card>
+    <!-- Barra de Ferramentas CORRIGIDA -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <!-- SUBSTITUIR p-iconfield por input simples -->
+      <div class="p-inputgroup w-full sm:w-auto">
+        <span class="p-inputgroup-addon">
+          <i class="pi pi-search"></i>
+        </span>
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar produtos..."
+          [(ngModel)]="searchTerm"
+          class="w-full" />
+      </div>
+
+      <div class="flex gap-2">
+        <p-button
+          icon="pi pi-refresh"
+          severity="secondary"
+          [rounded]="true"
+          [outlined]="true"
+          (onClick)="loadProducts()"
+          [loading]="loading"
+          pTooltip="Recarregar"
+          tooltipPosition="top">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <p-table
+      [value]="filteredProducts"
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20, 50]"
+      [totalRecords]="filteredProducts.length"
+      [tableStyle]="{'min-width': '75rem'}"
+      styleClass="p-datatable-sm">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name" style="width: 20%">Nome <p-sortIcon field="name" /></th>
+          <th pSortableColumn="category" style="width: 15%">Categoria <p-sortIcon field="category" /></th>
+          <th pSortableColumn="price" style="width: 15%">Preço <p-sortIcon field="price" /></th>
+          <th pSortableColumn="stock" style="width: 15%">Estoque <p-sortIcon field="stock" /></th>
+          <th pSortableColumn="status" style="width: 10%">Status <p-sortIcon field="status" /></th>
+          <th style="width: 25%">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td>
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-800">{{ product.name }}</span>
+              <span class="text-sm text-gray-500 line-clamp-1">{{ product.description }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded whitespace-nowrap">
+              {{ getCategoryLabel(product.category) }}
+            </span>
+          </td>
+          <td>
+            <span class="font-semibold text-green-600 whitespace-nowrap">
+              {{ formatCurrency(product.price) }}
+            </span>
+          </td>
+          <td>
+            <div class="flex flex-col gap-1">
+              <span class="font-semibold">{{ product.stock }} unidades</span>
+              <p-tag
+                [value]="getStockLabel(product.stock)"
+                [severity]="getStockSeverity(product.stock)"
+                styleClass="text-xs">
+              </p-tag>
+            </div>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(product.status)"
+              [severity]="getStatusSeverity(product.status)">
+            </p-tag>
+          </td>
+          <td>
+            <div class="flex gap-2 flex-wrap">
+              <p-button
+                icon="pi pi-pencil"
+                severity="info"
+                size="small"
+                [rounded]="true"
+                [text]="true"
+                (onClick)="onEditProduct(product)"
+                pTooltip="Editar"
+                tooltipPosition="top">
+              </p-button>
+
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                size="small"
+                [rounded]="true"
+                [text]="true"
+                (onClick)="onDeleteProduct(product)"
+                pTooltip="Excluir"
+                tooltipPosition="top">
+              </p-button>
+
+              <p-button
+                label="Detalhes"
+                severity="secondary"
+                size="small"
+                [outlined]="true"
+                (onClick)="onEditProduct(product)"
+                styleClass="text-xs">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-8 text-gray-500">
+            <div class="flex flex-col items-center gap-2">
+              <i class="pi pi-inbox text-4xl text-gray-300"></i>
+              <span class="text-lg">Nenhum produto encontrado</span>
+              <p-button
+                label="Cadastrar Primeiro Produto"
+                icon="pi pi-plus"
+                (onClick)="onAddProduct()"
+                styleClass="mt-2">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="loadingbody">
+        <tr>
+          <td colspan="6" class="text-center py-4">
+            <div class="flex justify-center items-center gap-2">
+              <i class="pi pi-spin pi-spinner text-xl"></i>
+              <span>Carregando produtos...</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

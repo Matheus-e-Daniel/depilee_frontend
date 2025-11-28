@@ -1,0 +1,233 @@
+:host {
+  display: block;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  min-height: 100vh;
+}
+
+// Classes utilitárias para o formulário
+.field-group {
+  @apply space-y-2;
+}
+
+.field-label {
+  @apply block text-sm font-semibold text-gray-700 mb-1 flex items-center;
+}
+
+.field-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-800 placeholder-gray-400 transition-all duration-200 text-sm;
+
+  &:focus {
+    @apply border-indigo-500 ring-2 ring-indigo-500/20 outline-none shadow-sm;
+  }
+
+  &:hover:not(:focus) {
+    @apply border-gray-400;
+  }
+}
+
+.field-input-error {
+  @apply border-red-500 ring-2 ring-red-500/20;
+
+  &:focus {
+    @apply border-red-500 ring-2 ring-red-500/20;
+  }
+}
+
+.field-error {
+  @apply flex items-center text-red-600 text-xs font-medium mt-1;
+}
+
+// Melhorias nos componentes do PrimeNG
+::ng-deep {
+  // Card principal
+  .p-card {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+    .p-card-body {
+      padding: 0;
+    }
+
+    .p-card-content {
+      padding: 0;
+    }
+  }
+
+  // Inputs
+  .p-inputtext,
+  .p-inputnumber-input,
+  .p-dropdown {
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.875rem;
+
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+      border-color: #4f46e5 !important;
+    }
+  }
+
+  // Dropdown
+  .p-dropdown {
+    .p-dropdown-label {
+      padding: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    &.p-dropdown-open {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+  }
+
+  // Textarea
+  .p-inputtextarea {
+    resize: vertical;
+    min-height: 80px;
+    font-size: 0.875rem;
+
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+      border-color: #4f46e5 !important;
+    }
+  }
+
+  // Botões
+  .p-button {
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+
+    &:not(.p-button-loading) {
+      &:hover {
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    // Botão primário
+    &.bg-gradient-to-r {
+      border: none;
+      background-size: 200% auto;
+
+      &:hover:not(.p-disabled) {
+        background-position: right center;
+      }
+    }
+
+    // Botão secundário
+    &.p-button-outlined {
+      border-width: 2px;
+
+      &:hover {
+        background-color: #f9fafb;
+        border-color: #6b7280;
+      }
+    }
+  }
+
+  // InputNumber
+  .p-inputnumber {
+    width: 100%;
+
+    .p-inputnumber-input {
+      width: 100%;
+      padding: 0.75rem;
+    }
+
+    &.p-inputnumber-buttons-horizontal {
+      .p-inputnumber-input {
+        text-align: left;
+      }
+
+      .p-inputnumber-button {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        color: #6b7280;
+
+        &:hover {
+          background: #f1f5f9;
+          color: #374151;
+        }
+
+        &:first-child {
+          border-right: none;
+          border-radius: 0.5rem 0 0 0.5rem;
+        }
+
+        &:last-child {
+          border-left: none;
+          border-radius: 0 0.5rem 0.5rem 0;
+        }
+      }
+    }
+  }
+}
+
+// Animações
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+:host ::ng-deep {
+  .p-card {
+    animation: fadeIn 0.5s ease-out;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .field-group {
+    margin-bottom: 1rem;
+  }
+
+  :host {
+    background: #ffffff;
+  }
+
+  ::ng-deep .p-card {
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+// Estados de loading
+.loading-spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #4f46e5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Garantir que o conteúdo ocupe a altura total
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
