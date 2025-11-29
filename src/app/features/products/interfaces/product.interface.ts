@@ -10,6 +10,8 @@ export interface Product {
   registrationDate: string;
   lastUpdate?: string;
   status: 'active' | 'inactive';
+  createdByUser?: string;  // 👈 Adicionado
+  updatedByUser?: string;  // 👈 Adicionado
 }
 
 export interface ProductFormData {
@@ -20,7 +22,8 @@ export interface ProductFormData {
   salePrice: number;
   brandId?: number;
   categoryId?: number;
-  status: 'active' | 'inactive';
+  createdByUser: string;  // 👈 Obrigatório para a API
+  updatedByUser: string;  // 👈 Obrigatório para a API
 }
 
 export interface ProductCategory {

@@ -104,8 +104,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       const mockUser = {
         id: 'dev-bypass-123',
-        email: 'bypass@depilee.com',
-        name: 'Dev Bypass User',
+        email: 'admin@system.local',
+        name: 'P@$$w0rd!',
         role: 'admin',
         permissions: ['read', 'write', 'admin', 'bypass']
       };

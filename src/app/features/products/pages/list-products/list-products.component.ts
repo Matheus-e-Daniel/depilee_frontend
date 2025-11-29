@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // 👈 ADICIONAR FormsModule
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -8,7 +8,6 @@ import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
-// REMOVER IconFieldModule e InputIconModule (não existem na versão atual)
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
@@ -22,13 +21,12 @@ import { getCategoryName, formatCurrency } from '../../utils/product.utils';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule, // 👈 ADICIONAR FormsModule para ngModel
+    FormsModule,
     ButtonModule,
     TableModule,
     CardModule,
     TagModule,
     InputTextModule,
-    // REMOVER IconFieldModule e InputIconModule
     ConfirmDialogModule,
     ToastModule,
     TooltipModule
@@ -39,8 +37,27 @@ import { getCategoryName, formatCurrency } from '../../utils/product.utils';
 })
 export class ListProductsComponent implements OnInit, OnDestroy {
   products: Product[] = [];
+  filteredProducts: Product[] = []; // 👈 PROPRIEDADE ADICIONADA
   loading = true;
   searchTerm = '';
+
+  // Dados para os dropdowns
+  categories = [
+    { id: 1, name: 'Medicamento' },
+    { id: 2, name: 'Equipamento' },
+    { id: 3, name: 'Consumível' },
+    { id: 4, name: 'Material Hospitalar' },
+    { id: 5, name: 'Outros' }
+  ];
+
+  brands = [
+    { id: 1, name: 'Johnson & Johnson' },
+    { id: 2, name: 'Pfizer' },
+    { id: 3, name: 'Roche' },
+    { id: 4, name: 'Novartis' },
+    { id: 5, name: 'Merck' },
+    { id: 6, name: 'Sem Marca' }
+  ];
 
   constructor(
     private productsService: ProductsService,
@@ -60,14 +77,24 @@ export class ListProductsComponent implements OnInit, OnDestroy {
     this.productsService.getProducts().subscribe({
       next: (products) => {
         this.products = products;
+        this.filteredProducts = products; // 👈 INICIALIZA filteredProducts
         this.loading = false;
       },
       error: (error) => {
         console.error('Erro ao carregar produtos:', error);
+
+        let errorDetail = 'Erro ao carregar produtos';
+        if (error.message.includes('conexão')) {
+          errorDetail = 'Erro de conexão. Verifique sua internet.';
+        } else if (error.message.includes('404')) {
+          errorDetail = 'Endpoint não encontrado. Verifique a URL da API.';
+        }
+
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao carregar produtos'
+          detail: errorDetail,
+          life: 5000
         });
         this.loading = false;
       }
@@ -101,10 +128,19 @@ export class ListProductsComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Erro ao excluir produto:', error);
+
+            let errorDetail = 'Erro ao excluir produto';
+            if (error.message.includes('404')) {
+              errorDetail = 'Produto não encontrado.';
+            } else if (error.message.includes('500')) {
+              errorDetail = 'Erro no servidor. Tente novamente.';
+            }
+
             this.messageService.add({
               severity: 'error',
               summary: 'Erro',
-              detail: 'Erro ao excluir produto'
+              detail: errorDetail,
+              life: 5000
             });
           }
         });
@@ -112,20 +148,90 @@ export class ListProductsComponent implements OnInit, OnDestroy {
     });
   }
 
-  getCategoryLabel(categoryValue: string): string {
-    return getCategoryName(categoryValue as unknown as number);
+  // 👇 MÉTODO PARA FILTRAR PRODUTOS - CORRIGIDO
+  filterProducts() {
+    if (!this.searchTerm) {
+      this.filteredProducts = this.products;
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase();
+    this.filteredProducts = this.products.filter(product => {
+      // Verifica nome
+      if (product.name.toLowerCase().includes(term)) {
+        return true;
+      }
+
+      // Verifica descrição (se existir)
+      if (product.description && product.description.toLowerCase().includes(term)) {
+        return true;
+      }
+
+      // Verifica categoria
+      const categoryName = this.getCategoryName(product.categoryId);
+      if (categoryName.toLowerCase().includes(term)) {
+        return true;
+      }
+
+      // Verifica marca
+      const brandName = this.getBrandName(product.brandId);
+      if (brandName.toLowerCase().includes(term)) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  // 👇 GETTER PARA BUSCA EM TEMPO REAL (Alternativa ao método acima)
+  get filteredProductsRealTime(): Product[] {
+    if (!this.searchTerm) return this.products;
+
+    const term = this.searchTerm.toLowerCase();
+    return this.products.filter(product => {
+      // Verifica nome
+      if (product.name.toLowerCase().includes(term)) return true;
+
+      // Verifica descrição (com verificação de null/undefined)
+      if (product.description && product.description.toLowerCase().includes(term)) return true;
+
+      // Verifica categoria
+      const categoryName = this.getCategoryName(product.categoryId);
+      if (categoryName.toLowerCase().includes(term)) return true;
+
+      // Verifica marca
+      const brandName = this.getBrandName(product.brandId);
+      if (brandName.toLowerCase().includes(term)) return true;
+
+      return false;
+    });
+  }
+
+  // Métodos auxiliares para obter nomes
+  getCategoryName(categoryId: number | undefined): string {
+    if (!categoryId) return 'Sem categoria';
+    const category = this.categories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Desconhecida';
+  }
+
+  getBrandName(brandId: number | undefined): string {
+    if (!brandId) return 'Sem marca';
+    const brand = this.brands.find(b => b.id === brandId);
+    return brand ? brand.name : 'Desconhecida';
   }
 
   formatCurrency(value: number): string {
     return formatCurrency(value);
   }
 
-  // CORREÇÃO: Usar 'warning' em vez de 'warn'
-  getStockSeverity(stock: number): any {
-    if (stock === 0) return 'danger';
-    if (stock < 10) return 'warning'; // 👈 MUDAR para 'warning'
-    return 'success';
-  }
+  getStockSeverity(
+  stock: number
+): "success" | "warning" | "danger" {
+  if (stock === 0) return "danger";
+  if (stock < 10) return "warning";
+  return "success";
+}
+
 
   getStockLabel(stock: number): string {
     if (stock === 0) return 'Esgotado';
@@ -133,24 +239,19 @@ export class ListProductsComponent implements OnInit, OnDestroy {
     return 'Disponível';
   }
 
-  // CORREÇÃO: Tipo correto
-  getStatusSeverity(status: string): any {
-    return status === 'active' ? 'success' : 'danger';
-  }
+  getStatusSeverity(
+  status: string
+): "success" | "danger" {
+  return status === "active" ? "success" : "danger";
+}
+
 
   getStatusLabel(status: string): string {
     return status === 'active' ? 'Ativo' : 'Inativo';
   }
 
-  // Filtro local para busca
-  /*get filteredProducts(): Product[] {
-    if (!this.searchTerm) return this.products;
-
-    const term = this.searchTerm.toLowerCase();
-    return this.products.filter(product =>
-      product.name.toLowerCase().includes(term) ||
-      product.description.toLowerCase().includes(term) ||
-      this.getCategoryLabel(product.categoryId).toLowerCase().includes(term)
-    );
-  }*/
+  // Método chamado quando o search term muda
+  onSearchChange() {
+    this.filteredProducts = this.filteredProductsRealTime;
+  }
 }

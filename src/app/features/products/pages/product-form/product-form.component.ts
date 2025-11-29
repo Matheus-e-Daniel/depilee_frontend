@@ -43,8 +43,6 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   categories = PRODUCT_CATEGORIES;
   brands = PRODUCT_BRANDS;
   statusOptions = PRODUCT_STATUS;
-
-  // Para calcular margem de lucro em tempo real
   profitMargin = 0;
 
   constructor(
@@ -73,13 +71,10 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       this.loadProduct();
     } else {
       this.mode = 'create';
-      console.log('📝 Modo: Criação de novo produto');
     }
   }
 
   createForm(): FormGroup {
-    console.log('🔄 Criando FormGroup...');
-
     return this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       description: [''],
@@ -88,11 +83,11 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       salePrice: [0, [Validators.required, Validators.min(0)]],
       brandId: [null],
       categoryId: [null],
-      status: ['active', Validators.required]
+      createdByUser: ['admin', Validators.required], // 👈 Campo obrigatório para a API
+      updatedByUser: ['admin', Validators.required]  // 👈 Campo obrigatório para a API
     });
   }
 
-  // 👇 Ouvir mudanças para calcular margem de lucro
   setupFormListeners() {
     this.productForm.get('cost')?.valueChanges.subscribe(() => this.calculateProfit());
     this.productForm.get('salePrice')?.valueChanges.subscribe(() => this.calculateProfit());
@@ -119,7 +114,8 @@ export class ProductFormComponent implements OnInit, OnDestroy {
           salePrice: product.salePrice,
           brandId: product.brandId,
           categoryId: product.categoryId,
-          status: product.status
+          updatedByUser: 'admin' // 👈 Atualiza para edição
+          // createdByUser não é alterado em edição
         });
         this.loading = false;
       },
@@ -139,28 +135,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   onSubmit() {
     console.log('🟡 BOTÃO CLICADO - Iniciando onSubmit...');
 
-    // 👇 DEBUG: Verificar estado do formulário
-    console.log('📋 ESTADO DO FORMULÁRIO:');
-    console.log('- Válido:', this.productForm.valid);
-    console.log('- Sujo:', this.productForm.dirty);
-    console.log('- Touched:', this.productForm.touched);
-
-    // 👇 DEBUG: Verificar cada campo individualmente
-    console.log('🔍 VALIDAÇÃO DOS CAMPOS:');
-    Object.keys(this.productForm.controls).forEach(key => {
-      const control = this.productForm.get(key);
-      console.log(`- ${key}:`, {
-        value: control?.value,
-        valid: control?.valid,
-        errors: control?.errors,
-        touched: control?.touched
-      });
-    });
-
     if (this.productForm.invalid) {
-      console.log('❌ FORMULÁRIO INVÁLIDO - Marcando campos como touched...');
+      console.log('❌ FORMULÁRIO INVÁLIDO');
       this.markFormGroupTouched();
-
       this.messageService.add({
         severity: 'warn',
         summary: 'Formulário inválido',
@@ -173,30 +150,25 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     this.submitting = true;
     const formData: ProductFormData = this.productForm.value;
 
-    // 👇 LOGS DETALHADOS
-    console.log('🎯 DADOS DO FORMULÁRIO QUE SERÃO ENVIADOS:');
+    // 👇 LOGS DETALHADOS mostrando o formato exato que será enviado
+    console.log('🎯 DADOS QUE SERÃO ENVIADOS PARA API:');
     console.log('=========================================');
-    console.log(`🔧 Modo: ${this.mode.toUpperCase()}`);
-    console.log(`🆔 ID: ${this.mode === 'edit' ? this.productId : 'NOVO'}`);
-    console.log('-----------------------------------------');
-    console.log(`📛 Nome: ${formData.name}`);
-    console.log(`📝 Descrição: ${formData.description || '(Não informada)'}`);
-    console.log(`📦 Estoque: ${formData.stock} unidades`);
-    console.log(`💰 Custo: R$ ${formData.cost}`);
-    console.log(`🏷️ Preço de Venda: R$ ${formData.salePrice}`);
-    console.log(`📊 Margem de Lucro: ${this.profitMargin.toFixed(2)}%`);
-    console.log(`🏭 Marca ID: ${formData.brandId || 'Não informada'}`);
-    console.log(`📁 Categoria ID: ${formData.categoryId || 'Não informada'}`);
-    console.log(`📈 Status: ${formData.status}`);
-    console.log('-----------------------------------------');
-    console.log('📋 Dados completos (JSON):', JSON.stringify(formData, null, 2));
+    console.log('📤 FORMATO EXATO (JSON):', JSON.stringify({
+      createdByUser: formData.createdByUser,
+      updatedByUser: formData.updatedByUser,
+      name: formData.name,
+      description: formData.description,
+      stock: formData.stock,
+      cost: formData.cost,
+      salePrice: formData.salePrice,
+      brandId: formData.brandId || 0,
+      categoryId: formData.categoryId || 0
+    }, null, 2));
     console.log('=========================================\n');
 
     if (this.mode === 'create') {
-      console.log('🚀 INICIANDO CRIAÇÃO DE PRODUTO...');
       this.createProduct(formData);
     } else {
-      console.log('✏️ INICIANDO EDIÇÃO DE PRODUTO...');
       this.updateProduct(formData);
     }
   }
@@ -205,28 +177,18 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     this.productsService.createProduct(formData).subscribe({
       next: (product) => {
         console.log('✅ PRODUTO CRIADO COM SUCESSO:', product);
-
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
           detail: 'Produto criado com sucesso!'
         });
-
         setTimeout(() => {
           this.router.navigate(['/products']);
         }, 1500);
       },
       error: (error) => {
         console.error('❌ Erro ao criar produto:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Erro ao criar produto'
-        });
-        this.submitting = false;
-      },
-      complete: () => {
-        console.log('✅ createProduct completado');
+        this.handleApiError(error, 'criar');
         this.submitting = false;
       }
     });
@@ -238,35 +200,45 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     this.productsService.updateProduct(this.productId, formData).subscribe({
       next: (product) => {
         console.log('✅ PRODUTO ATUALIZADO COM SUCESSO:', product);
-
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
           detail: 'Produto atualizado com sucesso!'
         });
-
         setTimeout(() => {
           this.router.navigate(['/products']);
         }, 1500);
       },
       error: (error) => {
         console.error('❌ Erro ao atualizar produto:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Erro ao atualizar produto'
-        });
-        this.submitting = false;
-      },
-      complete: () => {
-        console.log('✅ updateProduct completado');
+        this.handleApiError(error, 'atualizar');
         this.submitting = false;
       }
     });
   }
 
+  private handleApiError(error: any, operation: string) {
+    let errorDetail = `Erro ao ${operation} produto`;
+
+    if (error.message.includes('CORS')) {
+      errorDetail = 'Erro de CORS. A API não permite requisições do localhost.';
+    } else if (error.message.includes('400')) {
+      errorDetail = 'Dados inválidos enviados para a API.';
+    } else if (error.message.includes('404')) {
+      errorDetail = 'Endpoint não encontrado. Verifique a URL da API.';
+    } else if (error.message.includes('500')) {
+      errorDetail = 'Erro interno do servidor.';
+    }
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: errorDetail,
+      life: 5000
+    });
+  }
+
   onCancel() {
-    console.log('🚪 Cancelando e voltando para lista...');
     this.router.navigate(['/products']);
   }
 
@@ -277,7 +249,6 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Getters para facilitar o template
   get title(): string {
     return this.mode === 'create' ? 'Novo Produto' : `Editando Produto #${this.productId}`;
   }
@@ -290,7 +261,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     return this.productForm.valid && !this.submitting;
   }
 
-  // 👇 MÉTODO DE TESTE TEMPORÁRIO - REMOVA DEPOIS
+  // 👇 MÉTODO DE TESTE ATUALIZADO
   fillFormTest() {
     console.log('🧪 Preenchendo formulário automaticamente...');
 
@@ -300,9 +271,10 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       stock: 100,
       cost: 5.50,
       salePrice: 12.90,
-      brandId: 2, // Pfizer
-      categoryId: 1, // Medicamento
-      status: 'active'
+      brandId: 2,
+      categoryId: 1,
+      createdByUser: 'admin',
+      updatedByUser: 'admin'
     });
 
     console.log('✅ Formulário preenchido com dados de teste');
