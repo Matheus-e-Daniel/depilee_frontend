@@ -6,42 +6,100 @@
         <i class="pi pi-lock text-4xl text-indigo-600 mb-3"></i>
         <h1 class="text-2xl font-bold text-gray-800">Acessar Depilee</h1>
         <p class="text-gray-600 mt-2">Entre em sua conta para continuar</p>
+
+        <!-- DEBUG VISUAL -->
+        <div class="mt-4 p-3 bg-gray-100 rounded-lg text-left">
+          <p class="text-xs font-mono text-gray-700">
+            <strong>DEBUG:</strong><br>
+            Form válido: {{loginForm.valid}}<br>
+            Email válido: {{email?.valid}}<br>
+            Senha válida: {{password?.valid}}<br>
+            Loading: {{loading}}
+          </p>
+        </div>
       </div>
     </ng-template>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-      <!-- Campos do formulário permanecem iguais -->
+      <!-- Campo Email com validação visual -->
       <div class="field">
         <span class="p-float-label custom-label">
           <label for="email" class="font-medium">
             <i class="pi pi-envelope mr-2"></i>Email
           </label>
-          <input id="email" type="email" pInputText formControlName="email" class="w-full p-3" [ngClass]="{'p-invalid': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}" />
+          <input
+            id="email"
+            type="email"
+            pInputText
+            formControlName="email"
+            class="w-full p-3"
+            [ngClass]="{
+              'p-invalid': email?.invalid && email?.touched,
+              'p-valid': email?.valid
+            }"
+          />
         </span>
+        <div class="text-red-600 text-sm mt-1" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">Email é obrigatório</span>
+          <span *ngIf="email?.errors?.['email']">Email inválido</span>
+        </div>
+        <div class="text-green-600 text-sm mt-1" *ngIf="email?.valid">
+          ✅ Email válido
+        </div>
       </div>
 
+      <!-- Campo Senha com validação visual -->
       <div class="field">
         <span class="p-float-label custom-label">
-          <p-password id="password" formControlName="password" [feedback]="false" [toggleMask]="true"
-            styleClass="w-full" inputStyleClass="w-full p-3"
-            [ngClass]="{'p-invalid': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}"></p-password>
-          <div class="text-red-600 text-sm mt-1" *ngIf="loginForm.get('password')?.dirty">
-            <span *ngIf="loginForm.get('password')?.errors?.['minlength']">
-              A senha deve ter no mínimo 8 caracteres.
-            </span>
-            <span *ngIf="!loginForm.get('password')?.errors?.['minlength']
-          && loginForm.get('password')?.errors?.['pattern']">
-              A senha deve conter pelo menos um caractere especial.
-            </span>
-          </div>
+          <p-password
+            id="password"
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full p-3"
+            [ngClass]="{
+              'p-invalid': password?.invalid && password?.touched,
+              'p-valid': password?.valid
+            }">
+          </p-password>
           <label for="password" class="font-medium">
             <i class="pi pi-key mr-2"></i>Senha
           </label>
         </span>
+        <div class="text-red-600 text-sm mt-1" *ngIf="password?.invalid && password?.touched">
+          <span *ngIf="password?.errors?.['required']">Senha é obrigatória</span>
+          <span *ngIf="password?.errors?.['minlength']">
+            A senha deve ter no mínimo 8 caracteres.
+          </span>
+          <span *ngIf="!password?.errors?.['minlength'] && password?.errors?.['pattern']">
+            A senha deve conter pelo menos um caractere especial.
+          </span>
+        </div>
+        <div class="text-green-600 text-sm mt-1" *ngIf="password?.valid">
+          ✅ Senha válida
+        </div>
       </div>
 
-      <p-button label="Entrar" [disabled]="loginForm.invalid || loading" [loading]="loading"
-        styleClass="w-full p-3 text-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-0 shadow-lg transition-all duration-300"></p-button>
+      <!-- Botão Entrar com debug -->
+      <p-button
+        label="Entrar"
+        type="submit"
+        [disabled]="loginForm.invalid || loading"
+        [loading]="loading"
+        styleClass="w-full p-3 text-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border-0 shadow-lg transition-all duration-300">
+      </p-button>
+
+      <!-- DEBUG DO BOTÃO -->
+      <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-blue-800 text-sm font-mono">
+          <strong>BOTÃO DEBUG:</strong><br>
+          Disabled: {{loginForm.invalid || loading}}<br>
+          Form Invalid: {{loginForm.invalid}}<br>
+          Loading: {{loading}}<br>
+          Tipo: submit
+        </p>
+      </div>
 
       <!-- 🔓 BOTÃO DE BYPASS PARA DESENVOLVIMENTO -->
       <div *ngIf="developmentMode" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
