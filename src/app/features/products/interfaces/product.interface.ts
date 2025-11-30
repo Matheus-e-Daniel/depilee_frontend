@@ -9,9 +9,9 @@ export interface Product {
   categoryId?: number;
   registrationDate: string;
   lastUpdate?: string;
-  status: 'active' | 'inactive';
-  createdByUser?: string;  // 👈 Adicionado
-  updatedByUser?: string;  // 👈 Adicionado
+  status: 'active' | 'inactive'; // 👈 CAMPO OBRIGATÓRIO ADICIONADO
+  createdByUser?: string;
+  updatedByUser?: string;
 }
 
 export interface ProductFormData {
@@ -22,8 +22,9 @@ export interface ProductFormData {
   salePrice: number;
   brandId?: number;
   categoryId?: number;
-  createdByUser: string;  // 👈 Obrigatório para a API
-  updatedByUser: string;  // 👈 Obrigatório para a API
+  status: 'active' | 'inactive'; // 👈 CAMPO OBRIGATÓRIO ADICIONADO
+  createdByUser: string;
+  updatedByUser: string;
 }
 
 export interface ProductCategory {

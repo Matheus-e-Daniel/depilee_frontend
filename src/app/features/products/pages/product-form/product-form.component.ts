@@ -42,7 +42,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
 
   categories = PRODUCT_CATEGORIES;
   brands = PRODUCT_BRANDS;
-  statusOptions = PRODUCT_STATUS;
+  statusOptions = PRODUCT_STATUS; // 👈 Opções de status
   profitMargin = 0;
 
   constructor(
@@ -58,23 +58,31 @@ export class ProductFormComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('🔄 ProductFormComponent inicializado');
+    console.log('📊 Formulário inicial:', this.productForm.value);
     this.determineMode();
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    console.log('🧹 ProductFormComponent destruído');
+  }
 
   determineMode() {
     const id = this.route.snapshot.params['id'];
+    console.log('🔍 Determinando modo. Parâmetro ID:', id);
+
     if (id) {
       this.mode = 'edit';
       this.productId = +id;
+      console.log(`📝 Modo: EDITAR - Produto ID: ${this.productId}`);
       this.loadProduct();
     } else {
       this.mode = 'create';
+      console.log('📝 Modo: CRIAR - Novo produto');
     }
   }
 
   createForm(): FormGroup {
+    console.log('📋 Criando formulário...');
     return this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       description: [''],
@@ -83,8 +91,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       salePrice: [0, [Validators.required, Validators.min(0)]],
       brandId: [null],
       categoryId: [null],
-      createdByUser: ['admin', Validators.required], // 👈 Campo obrigatório para a API
-      updatedByUser: ['admin', Validators.required]  // 👈 Campo obrigatório para a API
+      status: ['active', Validators.required], // 👈 CAMPO OBRIGATÓRIO ADICIONADO
+      createdByUser: ['admin', Validators.required],
+      updatedByUser: ['admin', Validators.required]
     });
   }
 
@@ -97,34 +106,40 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     const cost = this.productForm.get('cost')?.value || 0;
     const salePrice = this.productForm.get('salePrice')?.value || 0;
     this.profitMargin = calculateProfitMargin(cost, salePrice);
+    console.log('💰 Margem de lucro calculada:', this.profitMargin + '%');
   }
 
   loadProduct() {
     if (!this.productId) return;
 
+    console.log(`📦 Carregando produto ID: ${this.productId}...`);
     this.loading = true;
+
     this.productsService.getProductById(this.productId).subscribe({
       next: (product) => {
-        console.log('📦 Produto carregado:', product);
+        console.log('✅ Produto carregado com sucesso:', product);
+
         this.productForm.patchValue({
           name: product.name,
-          description: product.description,
+          description: product.description || '',
           stock: product.stock,
           cost: product.cost,
           salePrice: product.salePrice,
           brandId: product.brandId,
           categoryId: product.categoryId,
-          updatedByUser: 'admin' // 👈 Atualiza para edição
-          // createdByUser não é alterado em edição
+          status: product.status, // 👈 CAMPO OBRIGATÓRIO ADICIONADO
+          updatedByUser: 'admin'
         });
+
         this.loading = false;
+        console.log('📊 Formulário após carregar produto:', this.productForm.value);
       },
       error: (error) => {
         console.error('❌ Erro ao carregar produto:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Erro ao carregar produto'
+          detail: 'Erro ao carregar produto: ' + error.message
         });
         this.loading = false;
         this.router.navigate(['/products']);
@@ -134,9 +149,18 @@ export class ProductFormComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     console.log('🟡 BOTÃO CLICADO - Iniciando onSubmit...');
+    console.log('📝 Estado atual do formulário:', this.productForm.value);
+    console.log('✅ Formulário válido?', this.productForm.valid);
 
     if (this.productForm.invalid) {
-      console.log('❌ FORMULÁRIO INVÁLIDO');
+      console.log('❌ FORMULÁRIO INVÁLIDO - Erros detalhados:');
+      Object.keys(this.productForm.controls).forEach(key => {
+        const control = this.productForm.get(key);
+        if (control?.invalid) {
+          console.log(`  - ${key}:`, control.errors);
+        }
+      });
+
       this.markFormGroupTouched();
       this.messageService.add({
         severity: 'warn',
@@ -148,21 +172,23 @@ export class ProductFormComponent implements OnInit, OnDestroy {
 
     console.log('✅ FORMULÁRIO VÁLIDO - Processando envio...');
     this.submitting = true;
+
     const formData: ProductFormData = this.productForm.value;
 
-    // 👇 LOGS DETALHADOS mostrando o formato exato que será enviado
-    console.log('🎯 DADOS QUE SERÃO ENVIADOS PARA API:');
+    // 👇 LOG DETALHADO do payload completo
+    console.log('🎯 DADOS QUE SERÃO ENVIADOS PARA API (COMPLETO):');
     console.log('=========================================');
-    console.log('📤 FORMATO EXATO (JSON):', JSON.stringify({
+    console.log('📤 FORMATO COMPLETO (JSON):', JSON.stringify({
       createdByUser: formData.createdByUser,
       updatedByUser: formData.updatedByUser,
       name: formData.name,
-      description: formData.description,
-      stock: formData.stock,
-      cost: formData.cost,
-      salePrice: formData.salePrice,
+      description: formData.description || '',
+      stock: Number(formData.stock),
+      cost: Number(formData.cost),
+      salePrice: Number(formData.salePrice),
       brandId: formData.brandId || 0,
-      categoryId: formData.categoryId || 0
+      categoryId: formData.categoryId || 0,
+      status: formData.status // 👈 CAMPO OBRIGATÓRIO ADICIONADO
     }, null, 2));
     console.log('=========================================\n');
 
@@ -174,6 +200,8 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   createProduct(formData: ProductFormData) {
+    console.log('🚀 Criando novo produto...');
+
     this.productsService.createProduct(formData).subscribe({
       next: (product) => {
         console.log('✅ PRODUTO CRIADO COM SUCESSO:', product);
@@ -182,7 +210,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
           summary: 'Sucesso',
           detail: 'Produto criado com sucesso!'
         });
+
         setTimeout(() => {
+          console.log('🔄 Redirecionando para lista de produtos...');
           this.router.navigate(['/products']);
         }, 1500);
       },
@@ -197,6 +227,8 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   updateProduct(formData: ProductFormData) {
     if (!this.productId) return;
 
+    console.log(`✏️ Atualizando produto ID: ${this.productId}...`);
+
     this.productsService.updateProduct(this.productId, formData).subscribe({
       next: (product) => {
         console.log('✅ PRODUTO ATUALIZADO COM SUCESSO:', product);
@@ -205,7 +237,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
           summary: 'Sucesso',
           detail: 'Produto atualizado com sucesso!'
         });
+
         setTimeout(() => {
+          console.log('🔄 Redirecionando para lista de produtos...');
           this.router.navigate(['/products']);
         }, 1500);
       },
@@ -218,16 +252,20 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   private handleApiError(error: any, operation: string) {
-    let errorDetail = `Erro ao ${operation} produto`;
+    console.error(`💥 Erro na operação ${operation}:`, error);
+
+    let errorDetail = `Erro ao ${operation} produto: ${error.message}`;
 
     if (error.message.includes('CORS')) {
-      errorDetail = 'Erro de CORS. A API não permite requisições do localhost.';
+      errorDetail = 'Erro de CORS. Verifique se a API permite requisições do frontend.';
     } else if (error.message.includes('400')) {
-      errorDetail = 'Dados inválidos enviados para a API.';
+      errorDetail = 'Dados inválidos enviados para a API. Verifique os campos obrigatórios.';
+    } else if (error.message.includes('401')) {
+      errorDetail = 'Não autorizado. Faça login novamente.';
     } else if (error.message.includes('404')) {
       errorDetail = 'Endpoint não encontrado. Verifique a URL da API.';
     } else if (error.message.includes('500')) {
-      errorDetail = 'Erro interno do servidor.';
+      errorDetail = 'Erro interno do servidor. Tente novamente.';
     }
 
     this.messageService.add({
@@ -239,6 +277,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   onCancel() {
+    console.log('🚫 Cancelando operação...');
     this.router.navigate(['/products']);
   }
 
@@ -273,11 +312,12 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       salePrice: 12.90,
       brandId: 2,
       categoryId: 1,
+      status: 'active', // 👈 CAMPO OBRIGATÓRIO ADICIONADO
       createdByUser: 'admin',
       updatedByUser: 'admin'
     });
 
-    console.log('✅ Formulário preenchido com dados de teste');
+    console.log('✅ Formulário preenchido com dados de teste:', this.productForm.value);
     this.messageService.add({
       severity: 'success',
       summary: 'Teste',

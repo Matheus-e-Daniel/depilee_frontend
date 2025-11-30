@@ -18,9 +18,10 @@ export const PRODUCT_BRANDS: ProductBrand[] = [
   { id: 6, name: 'Sem Marca' }
 ];
 
+// 👇 GARANTIR que PRODUCT_STATUS existe
 export const PRODUCT_STATUS = [
-  { label: 'Ativo', value: 'active' },
-  { label: 'Inativo', value: 'inactive' }
+  { label: 'Ativo', value: '1' },
+  { label: 'Inativo', value: '0' }
 ];
 
 export function getCategoryName(categoryId: number): string {
@@ -40,7 +41,6 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
-// Calcular margem de lucro
 export function calculateProfitMargin(cost: number, salePrice: number): number {
   if (cost === 0) return 0;
   return ((salePrice - cost) / cost) * 100;

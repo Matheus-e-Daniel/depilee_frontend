@@ -229,29 +229,6 @@
                   styleClass="w-full">
                 </p-dropdown>
               </div>
-
-              <!-- Status -->
-              <div class="field-group">
-                <label for="status" class="field-label">
-                  <i class="pi pi-circle-fill mr-2" [ngClass]="{
-                    'text-green-500': productForm.get('status')?.value === 'active',
-                    'text-gray-400': productForm.get('status')?.value === 'inactive'
-                  }"></i>
-                  Status do Produto *
-                </label>
-                <p-dropdown
-                  id="status"
-                  [options]="statusOptions"
-                  formControlName="status"
-                  optionLabel="label"
-                  optionValue="value"
-                  styleClass="w-full">
-                </p-dropdown>
-                <div class="text-gray-500 text-sm mt-2">
-                  <i class="pi pi-info-circle mr-1"></i>
-                  Produtos inativos não aparecem para venda
-                </div>
-              </div>
             </div>
           </div>
 
