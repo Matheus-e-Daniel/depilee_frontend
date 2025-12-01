@@ -1,0 +1,96 @@
+<!-- src/app/features/services/pages/service-list/service-list.component.html -->
+<div class="service-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Serviços</h1>
+      <p>Gerencie seu catálogo de serviços</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Novo Serviço"
+      class="p-button-primary"
+      (click)="newService()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="services()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} serviços">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Preço</th>
+          <th>Categoria</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-service>
+        <tr>
+          <td data-label="Nome">{{ service.name }}</td>
+          <td data-label="Descrição">{{ service.description || '-' }}</td>
+          <td data-label="Preço">{{ service.price | currency:'BRL' }}</td>
+          <td data-label="Categoria">{{ service.categoryName || service.categoryId }}</td>
+          <td data-label="Status">
+            <p-tag
+              [value]="service.active ? 'Ativo' : 'Inativo'"
+              [severity]="service.active ? 'success' : 'danger'">
+            </p-tag>
+          </td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                (click)="editService(service.id)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteService(service.id, service.name)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum serviço encontrado</h3>
+              <p>Comece adicionando seu primeiro serviço</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Novo Serviço"
+                class="p-button-outlined mt-3"
+                (click)="newService()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

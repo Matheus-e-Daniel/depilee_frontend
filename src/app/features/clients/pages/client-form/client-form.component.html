@@ -1,0 +1,270 @@
+<!-- src/app/features/clients/pages/client-form/client-form.component.html -->
+<div class="client-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Cliente' : 'Novo Cliente' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="client-form">
+        <div class="form-grid">
+          <!-- Dados Pessoais -->
+          <div class="section-title col-12">
+            <h3>Dados Pessoais</h3>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="name" class="block font-medium mb-2">Nome Completo *</label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              class="w-full"
+              placeholder="Digite o nome completo" />
+
+            <small
+              *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="clientForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="clientForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+            </small>
+          </div>
+
+          <div class="field col-4 md:col-3">
+            <label for="gender" class="block font-medium mb-2">Gênero *</label>
+            <p-dropdown
+              id="gender"
+              formControlName="gender"
+              [options]="genderOptions"
+              placeholder="Selecione"
+              class="w-full">
+            </p-dropdown>
+            <small
+              *ngIf="clientForm.get('gender')?.invalid && clientForm.get('gender')?.touched"
+              class="p-error block mt-1">
+              Gênero é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-4 md:col-3">
+            <label for="birth" class="block font-medium mb-2">Data de Nascimento *</label>
+            <p-calendar
+              id="birth"
+              formControlName="birth"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              [maxDate]="maxDate"
+              placeholder="dd/mm/aaaa"
+              class="w-full">
+            </p-calendar>
+            <small
+              *ngIf="clientForm.get('birth')?.invalid && clientForm.get('birth')?.touched"
+              class="p-error block mt-1">
+              Data de nascimento é obrigatória
+            </small>
+          </div>
+
+          <div class="field col-4 md:col-4">
+            <label for="cpf" class="block font-medium mb-2">CPF *</label>
+            <p-inputMask
+              id="cpf"
+              formControlName="cpf"
+              mask="999.999.999-99"
+              placeholder="000.000.000-00"
+              class="w-full">
+            </p-inputMask>
+            <small
+              *ngIf="clientForm.get('cpf')?.invalid && clientForm.get('cpf')?.touched"
+              class="p-error block mt-1">
+              CPF no formato 000.000.000-00
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-4">
+            <label for="phone" class="block font-medium mb-2">Telefone *</label>
+            <p-inputMask
+              id="phone"
+              formControlName="phone"
+              mask="(99) 99999-9999"
+              placeholder="(00) 00000-0000"
+              class="w-full">
+            </p-inputMask>
+            <small
+              *ngIf="clientForm.get('phone')?.invalid && clientForm.get('phone')?.touched"
+              class="p-error block mt-1">
+              Telefone é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-4">
+            <label for="email" class="block font-medium mb-2">Email *</label>
+            <input
+              id="email"
+              type="email"
+              pInputText
+              formControlName="email"
+              class="w-full"
+              placeholder="email@exemplo.com" />
+
+            <small
+              *ngIf="clientForm.get('email')?.invalid && clientForm.get('email')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="clientForm.get('email')?.errors?.['required']">Email é obrigatório</span>
+              <span *ngIf="clientForm.get('email')?.errors?.['email']">Email inválido</span>
+            </small>
+          </div>
+
+          <!-- Endereço -->
+          <div class="section-title col-12 mt-4">
+            <h3>Endereço</h3>
+          </div>
+
+          <div class="field col-12 md:col-3">
+            <label for="cep" class="block font-medium mb-2">CEP *</label>
+            <p-inputMask
+              id="cep"
+              formControlName="cep"
+              mask="99999-999"
+              placeholder="00000-000"
+              (onComplete)="searchCep()"
+              class="w-full">
+            </p-inputMask>
+            <small
+              *ngIf="clientForm.get('cep')?.invalid && clientForm.get('cep')?.touched"
+              class="p-error block mt-1">
+              CEP no formato 00000-000
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-6">
+            <label for="city" class="block font-medium mb-2">Cidade *</label>
+            <input
+              id="city"
+              type="text"
+              pInputText
+              formControlName="city"
+              class="w-full"
+              placeholder="Nome da cidade" />
+
+            <small
+              *ngIf="clientForm.get('city')?.invalid && clientForm.get('city')?.touched"
+              class="p-error block mt-1">
+              Cidade é obrigatória
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-6">
+            <label for="state" class="block font-medium mb-2">Estado *</label>
+            <p-dropdown
+              id="state"
+              formControlName="state"
+              [options]="states"
+              placeholder="UF"
+              class="w-full">
+            </p-dropdown>
+            <small
+              *ngIf="clientForm.get('state')?.invalid && clientForm.get('state')?.touched"
+              class="p-error block mt-1">
+              Estado é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="street" class="block font-medium mb-2">Rua *</label>
+            <input
+              id="street"
+              type="text"
+              pInputText
+              formControlName="street"
+              class="w-full"
+              placeholder="Nome da rua" />
+
+            <small
+              *ngIf="clientForm.get('street')?.invalid && clientForm.get('street')?.touched"
+              class="p-error block mt-1">
+              Rua é obrigatória
+            </small>
+          </div>
+
+          <div class="field col-4 md:col-4">
+            <label for="number" class="block font-medium mb-2">Número *</label>
+            <input
+              id="number"
+              type="text"
+              pInputText
+              formControlName="number"
+              class="w-full"
+              placeholder="Nº" />
+
+            <small
+              *ngIf="clientForm.get('number')?.invalid && clientForm.get('number')?.touched"
+              class="p-error block mt-1">
+              Número é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-6">
+            <label for="neighborhood" class="block font-medium mb-2">Bairro *</label>
+            <input
+              id="neighborhood"
+              type="text"
+              pInputText
+              formControlName="neighborhood"
+              class="w-full"
+              placeholder="Nome do bairro" />
+
+            <small
+              *ngIf="clientForm.get('neighborhood')?.invalid && clientForm.get('neighborhood')?.touched"
+              class="p-error block mt-1">
+              Bairro é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-6 md:col-6">
+            <label for="complement" class="block font-medium mb-2">Complemento</label>
+            <input
+              id="complement"
+              type="text"
+              pInputText
+              formControlName="complement"
+              class="w-full"
+              placeholder="Apto, Bloco, etc." />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-danger"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="clientForm.invalid || loading()">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>

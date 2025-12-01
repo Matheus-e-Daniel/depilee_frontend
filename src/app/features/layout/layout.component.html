@@ -1,0 +1,10 @@
+<!-- src/app/features/layout/layout.component.html -->
+<div class="layout-container">
+  <app-header (toggleSidebar)="toggleSidebar()"></app-header>
+
+  <app-sidebar [isCollapsed]="sidebarCollapsed()"></app-sidebar>
+
+  <main class="content" [class.collapsed]="sidebarCollapsed()">
+    <router-outlet></router-outlet>
+  </main>
+</div>

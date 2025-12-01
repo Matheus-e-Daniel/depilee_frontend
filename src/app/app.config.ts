@@ -1,17 +1,19 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MessageService } from 'primeng/api';
 
 import { routes } from './app.routes';
-import { authInterceptor } from './features/auth/interceptors/auth.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor]) // 👈 Interceptor global
+      withInterceptors([authInterceptor])
     ),
-    provideAnimations(),
+    importProvidersFrom([BrowserAnimationsModule]),
+    MessageService
   ]
 };

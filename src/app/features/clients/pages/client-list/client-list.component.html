@@ -1,0 +1,103 @@
+<!-- src/app/features/clients/pages/client-list/client-list.component.html -->
+<div class="client-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Clientes</h1>
+      <p>Gerencie seu cadastro de clientes</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Novo Cliente"
+      class="p-button-primary"
+      (click)="newClient()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="clients()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Telefone</th>
+          <th>Email</th>
+          <th>Cidade/UF</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-client>
+        <tr>
+          <td data-label="Nome">{{ client.name }}</td>
+          <td data-label="CPF">{{ formatCPF(client.cpf) }}</td>
+          <td data-label="Telefone">{{ formatPhone(client.phone) }}</td>
+          <td data-label="Email">{{ client.email }}</td>
+          <td data-label="Cidade/UF">{{ client.city }}/{{ client.state }}</td>
+          <td data-label="Status">
+            <p-tag
+              [value]="client.active ? 'Ativo' : 'Inativo'"
+              [severity]="client.active ? 'success' : 'danger'"
+              class="mr-1">
+            </p-tag>
+            <p-tag
+              [value]="getGenderLabel(client.gender)"
+              severity="info">
+            </p-tag>
+          </td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                (click)="editClient(client.id)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteClient(client.id, client.name)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-users" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum cliente encontrado</h3>
+              <p>Comece adicionando seu primeiro cliente</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Novo Cliente"
+                class="p-button-outlined mt-3"
+                (click)="newClient()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

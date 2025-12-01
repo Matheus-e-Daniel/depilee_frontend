@@ -1,0 +1,105 @@
+// src/app/features/layout/sidebar/sidebar.component.scss
+.sidebar {
+  background: #f5f5f7;
+  border-right: 1px solid #ddd;
+  height: calc(100vh - 60px);
+  transition: width 0.3s ease;
+  width: 250px;
+  overflow-y: auto;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  z-index: 99;
+
+  &.collapsed {
+    width: 70px;
+
+    .sidebar-logo span {
+      display: none;
+    }
+
+    .menu-items a span {
+      display: none;
+    }
+
+    .menu-items a {
+      justify-content: center;
+      padding: 15px;
+    }
+  }
+
+  .sidebar-logo {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+
+    i {
+      font-size: 2rem;
+      color: #1976d2;
+    }
+
+    span {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+
+  .menu-items {
+    padding: 15px 0;
+
+    a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      margin: 0 10px 5px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #555;
+      font-weight: 500;
+      transition: all 0.2s;
+      gap: 12px;
+
+      i {
+        font-size: 1.2rem;
+        min-width: 24px;
+        text-align: center;
+      }
+
+      span {
+        flex: 1;
+      }
+
+      &:hover {
+        background: #e0e0e0;
+        color: #1976d2;
+      }
+
+      &.active {
+        background: #1976d2;
+        color: white;
+
+        i {
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0;
+
+    &.collapsed {
+      width: 0;
+    }
+
+    &:not(.collapsed) {
+      width: 250px;
+    }
+  }
+}

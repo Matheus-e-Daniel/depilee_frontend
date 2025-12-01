@@ -1,0 +1,33 @@
+<!-- src/app/features/layout/header/header.component.html -->
+<header class="header">
+  <button
+    pButton
+    pRipple
+    icon="pi pi-bars"
+    class="menu-button"
+    (click)="onMenuClick()">
+  </button>
+
+  <div class="header-content">
+    <h1>Sistema Clínico</h1>
+
+    <div class="user-area">
+      <div
+        class="user-info"
+        (click)="toggleUserMenu($event)"
+        aria-haspopup="true"
+        aria-controls="user-menu">
+        <i class="pi pi-user"></i>
+        <span>Usuário</span>
+        <i class="pi pi-chevron-down ml-2" style="font-size: 0.8rem"></i>
+      </div>
+    </div>
+  </div>
+</header>
+
+<p-menu
+  #menu
+  id="user-menu"
+  [model]="menuItems"
+  [popup]="true">
+</p-menu>

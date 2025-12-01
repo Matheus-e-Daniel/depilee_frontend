@@ -1,0 +1,173 @@
+<!-- src/app/features/products/pages/product-form/product-form.component.html -->
+<div class="product-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Produto' : 'Novo Produto' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form">
+        <div class="form-grid">
+          <div class="field col-12">
+            <label for="name" class="block font-medium mb-2">Nome *</label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              class="w-full"
+              placeholder="Digite o nome do produto" />
+
+            <small
+              *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="productForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+            </small>
+          </div>
+
+          <div class="field col-12">
+            <label for="description" class="block font-medium mb-2">Descrição</label>
+            <textarea
+              id="description"
+              pInputTextarea
+              formControlName="description"
+              rows="3"
+              class="w-full"
+              placeholder="Descreva o produto (opcional)"></textarea>
+          </div>
+
+          <div class="field col-6">
+            <label for="cost" class="block font-medium mb-2">Custo *</label>
+            <p-inputNumber
+              id="cost"
+              formControlName="cost"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              class="w-full"
+              [min]="0.01"
+              [minFractionDigits]="2">
+            </p-inputNumber>
+
+            <small
+              *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('cost')?.errors?.['required']">Custo é obrigatório</span>
+              <span *ngIf="productForm.get('cost')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="salePrice" class="block font-medium mb-2">Preço de Venda *</label>
+            <p-inputNumber
+              id="salePrice"
+              formControlName="salePrice"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              class="w-full"
+              [min]="0.01"
+              [minFractionDigits]="2">
+            </p-inputNumber>
+
+            <small
+              *ngIf="productForm.get('salePrice')?.invalid && productForm.get('salePrice')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('salePrice')?.errors?.['required']">Preço de venda é obrigatório</span>
+              <span *ngIf="productForm.get('salePrice')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="stock" class="block font-medium mb-2">Estoque *</label>
+            <p-inputNumber
+              id="stock"
+              formControlName="stock"
+              class="w-full"
+              [min]="0"
+              [showButtons]="true">
+            </p-inputNumber>
+
+            <small
+              *ngIf="productForm.get('stock')?.invalid && productForm.get('stock')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('stock')?.errors?.['required']">Estoque é obrigatório</span>
+              <span *ngIf="productForm.get('stock')?.errors?.['min']">Valor mínimo: 0</span>
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="brandId" class="block font-medium mb-2">Marca *</label>
+            <p-dropdown
+              id="brandId"
+              formControlName="brandId"
+              [options]="brands"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione uma marca"
+              class="w-full">
+            </p-dropdown>
+
+            <small
+              *ngIf="productForm.get('brandId')?.invalid && productForm.get('brandId')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('brandId')?.errors?.['required']">Marca é obrigatória</span>
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="categoryId" class="block font-medium mb-2">Categoria *</label>
+            <p-dropdown
+              id="categoryId"
+              formControlName="categoryId"
+              [options]="categories"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione uma categoria"
+              class="w-full">
+            </p-dropdown>
+
+            <small
+              *ngIf="productForm.get('categoryId')?.invalid && productForm.get('categoryId')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('categoryId')?.errors?.['required']">Categoria é obrigatória</span>
+            </small>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-danger"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="productForm.invalid || loading()">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>

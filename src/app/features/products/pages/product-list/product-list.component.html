@@ -1,0 +1,102 @@
+<!-- src/app/features/products/pages/product-list/product-list.component.html -->
+<div class="product-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Produtos</h1>
+      <p>Gerencie seu catálogo de produtos</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Novo Produto"
+      class="p-button-primary"
+      (click)="newProduct()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="products()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} produtos">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Custo</th>
+          <th>Preço Venda</th>
+          <th>Estoque</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td data-label="Nome">{{ product.name }}</td>
+          <td data-label="Categoria">{{ product.categoryId || 'Sem categoria' }}</td>
+          <td data-label="Custo">{{ product.cost | currency:'BRL' }}</td>
+          <td data-label="Preço Venda">{{ product.salePrice | currency:'BRL' }}</td>
+          <td data-label="Estoque">
+            <span [class]="product.stock === 0 ? 'text-red-500 font-semibold' : ''">
+              {{ product.stock }}
+            </span>
+          </td>
+          <td data-label="Status">
+            <p-tag
+              [value]="product.stock > 0 ? 'Disponível' : 'Esgotado'"
+              [severity]="product.stock > 0 ? 'success' : 'danger'">
+            </p-tag>
+          </td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                (click)="editProduct(product.id)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteProduct(product.id, product.name)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-box" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum produto encontrado</h3>
+              <p>Comece adicionando seu primeiro produto</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Novo Produto"
+                class="p-button-outlined mt-3"
+                (click)="newProduct()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
