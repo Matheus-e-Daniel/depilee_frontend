@@ -5,6 +5,8 @@
   <app-sidebar [isCollapsed]="sidebarCollapsed()"></app-sidebar>
 
   <main class="content" [class.collapsed]="sidebarCollapsed()">
-    <router-outlet></router-outlet>
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </div>

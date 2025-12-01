@@ -16,12 +16,12 @@ export class SidebarComponent {
   // Menu items - ajuste conforme suas rotas reais
   menuItems = [
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
-    { label: 'Pacientes', icon: 'pi pi-users', route: '/clients' },
-    { label: 'Empresas', icon: 'pi pi-building', route: '/empresas' },
-    { label: 'Funcionários', icon: 'pi pi-id-card', route: '/funcionarios' },
+    { label: 'Clientes', icon: 'pi pi-users', route: '/clients' },
+    //{ label: 'Empresas', icon: 'pi pi-building', route: '/empresas' },
+    //{ label: 'Funcionários', icon: 'pi pi-id-card', route: '/funcionarios' },
     { label: 'Produtos', icon: 'pi pi-box', route: '/products' },
     { label: 'Serviços', icon: 'pi pi-briefcase', route: '/services' },
-    { label: 'Triagem', icon: 'pi pi-heart', route: '/triagem' },
-    { label: 'Gerar Senhas', icon: 'pi pi-ticket', route: '/senhas' }
+    //{ label: 'Triagem', icon: 'pi pi-heart', route: '/triagem' },
+    //{ label: 'Gerar Senhas', icon: 'pi pi-ticket', route: '/senhas' }
   ];
 }

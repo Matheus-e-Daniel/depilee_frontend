@@ -1,4 +1,3 @@
-// src/app/features/layout/header/header.component.scss
 .header {
   background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   color: #fff;
@@ -8,8 +7,10 @@
   gap: 15px;
   height: 60px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
 
   .menu-button {
@@ -48,85 +49,245 @@
       letter-spacing: 0.5px;
     }
 
-    .user-area {
-      position: relative;
-    }
-
-    .user-info {
+    .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 16px;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
+      gap: 15px;
 
+      .notification-wrapper {
+        position: relative;
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
+        .notification-button {
+          color: white !important;
+          background: transparent !important;
+          border: none !important;
+          width: 40px !important;
+          height: 40px !important;
+          border-radius: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          position: relative !important;
+          transition: all 0.2s !important;
+          padding: 0 !important;
+          min-width: auto !important;
 
-      &:active {
-        transform: translateY(0);
-      }
+          &:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: none !important;
+          }
 
-      i {
-        font-size: 1.2rem;
+          &:active {
+            transform: translateY(0) !important;
+          }
 
-        &.pi-user {
-          background: rgba(255, 255, 255, 0.2);
-          padding: 6px;
-          border-radius: 50%;
+          i {
+            font-size: 1.4rem;
+          }
+
+          .notification-badge-custom {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            border: 2px solid #1565c0;
+            z-index: 10;
+            padding: 0 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          }
         }
       }
 
-      span {
-        font-weight: 500;
-        font-size: 0.95rem;
+      .user-wrapper {
+        .user-button {
+          color: white !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          padding: 0.5rem 1rem !important;
+          border-radius: 25px !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          transition: all 0.2s !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          &:active {
+            transform: translateY(0) !important;
+          }
+
+          .p-button-label {
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
+
+          i {
+            &.pi-user {
+              font-size: 1.2rem;
+            }
+
+            &.pi-chevron-down {
+              font-size: 0.8rem;
+              margin-left: 4px;
+            }
+          }
+        }
       }
     }
   }
 }
 
-// Estilos do menu dropdown
-::ng-deep .p-menu {
-  margin-top: 5px !important;
-  min-width: 200px;
-  border-radius: 10px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
+::ng-deep {
+  .p-menu {
+    margin-top: 5px !important;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    animation: fadeIn 0.2s ease;
 
-  .p-menuitem-link {
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    margin: 2px 0.5rem;
-    transition: all 0.2s;
+    &#notification-menu {
+      .p-menu-content {
+        padding: 0;
+      }
 
-    &:hover {
-      background: #f5f5f5;
+      .notification-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        background: #f8f9fa;
+
+        h3 {
+          margin: 0 0 0.25rem 0;
+          color: #2c3e50;
+          font-size: 1.1rem;
+        }
+
+        small {
+          color: #7f8c8d;
+          font-size: 0.85rem;
+        }
+      }
+
+      .notification-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.2s;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+
+        &:hover {
+          background: #f5f5f5;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .notification-icon {
+          color: #1976d2;
+          margin-right: 0.75rem;
+          font-size: 1.1rem;
+        }
+
+        .notification-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+
+          .notification-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+          }
+
+          .notification-time {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            background: #f1f1f1;
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+            align-self: flex-start;
+          }
+        }
+      }
     }
 
-    .p-menuitem-text {
-      color: #333;
-      font-weight: 500;
-    }
+    &#user-menu {
+      .p-menuitem {
+        margin: 2px 0.5rem;
 
-    .p-menuitem-icon {
-      color: #666;
-      margin-right: 0.75rem;
+        .p-menuitem-link {
+          padding: 0.75rem 1rem;
+          border-radius: 6px;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #f5f5f5;
+          }
+
+          .p-menuitem-text {
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+          }
+
+          .p-menuitem-icon {
+            color: #666;
+            margin-right: 0.75rem;
+            font-size: 0.9rem;
+          }
+        }
+
+        &.p-menuitem-active > .p-menuitem-link {
+          background: #e3f2fd;
+
+          .p-menuitem-text {
+            color: #1976d2;
+          }
+
+          .p-menuitem-icon {
+            color: #1976d2;
+          }
+        }
+      }
+
+      .p-menu-separator {
+        margin: 0.5rem 0.75rem;
+        border-top: 1px solid #e0e0e0;
+      }
     }
   }
 
-  .p-menu-separator {
-    margin: 0.5rem 0.75rem;
-    border-top: 1px solid #e0e0e0;
+  .p-badge {
+    display: none !important;
   }
 }
 
-// Responsividade
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 0 15px;
@@ -136,15 +297,44 @@
         font-size: 1.2rem;
       }
 
-      .user-info {
-        padding: 6px 12px;
+      .header-actions {
+        gap: 10px;
 
-        span {
-          display: none;
+        .notification-wrapper {
+          .notification-button {
+            width: 36px !important;
+            height: 36px !important;
+
+            i {
+              font-size: 1.3rem;
+            }
+
+            .notification-badge-custom {
+              top: -1px;
+              right: -1px;
+              min-width: 16px;
+              height: 16px;
+              font-size: 0.6rem;
+            }
+          }
         }
 
-        .pi-chevron-down {
-          display: none;
+        .user-wrapper {
+          .user-button {
+            padding: 0.5rem !important;
+
+            .p-button-label {
+              display: none;
+            }
+
+            i.pi-chevron-down {
+              display: none;
+            }
+
+            i.pi-user {
+              margin-right: 0;
+            }
+          }
         }
       }
     }

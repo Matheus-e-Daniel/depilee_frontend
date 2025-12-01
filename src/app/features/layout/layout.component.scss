@@ -9,10 +9,11 @@
   flex: 1;
   padding: 20px;
   background: #fafafa;
-  //margin-top: 40px;
-  margin-left: 250px;
+  margin-top: 60px; // Mantém a margem do header
+  margin-left: 250px; // Mantém a margem da sidebar
   transition: margin-left 0.3s ease;
   min-height: calc(100vh - 60px);
+  overflow-y: auto; // Permite rolagem apenas no conteúdo
 
   &.collapsed {
     margin-left: 70px;
