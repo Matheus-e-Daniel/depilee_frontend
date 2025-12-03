@@ -1,8 +1,8 @@
-// src/app/core/services/auth.service.ts
+// src/app/core/services/auth.service.ts (SIMPLIFICADO)
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
@@ -21,39 +21,41 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
+  // Variável SIMPLES para controlar estado local
+  private isAuthenticated = false;
+
   login(credentials: LoginRequest): Observable<LoginResponse> {
+    console.log('🔄 Enviando login:', credentials.email);
+
     return this.http.post<LoginResponse>(
       'http://localhost:5093/v1/identity/login',
       credentials,
       { withCredentials: true }
-    ).pipe(
-      tap(response => {
-        if (response.success) {
-          console.log('Login bem-sucedido');
-        }
-      })
     );
   }
 
-  // src/app/core/services/auth.service.ts (atualização do método logout)
-logout(): void {
-  this.http.post('http://localhost:5093/v1/identity/logout', {}, {
-    withCredentials: true
-  }).subscribe({
-    next: () => {
-      // Limpar qualquer estado local se necessário
-      this.router.navigate(['/login']);
-    },
-    error: () => {
-      // Mesmo em caso de erro, redireciona para login
-      this.router.navigate(['/login']);
-    }
-  });
-}
-
-  isAuthenticated(): Observable<boolean> {
-    return this.http.get<boolean>('http://localhost:5093/v1/identity/check-auth', {
+  logout(): void {
+    this.http.post('http://localhost:5093/v1/identity/logout', {}, {
       withCredentials: true
+    }).subscribe({
+      next: () => {
+        this.isAuthenticated = false;
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.isAuthenticated = false;
+        this.router.navigate(['/login']);
+      }
     });
+  }
+
+  // Método SIMPLES - sempre retorna true se houve login bem-sucedido
+  isAuthenticatedUser(): boolean {
+    return this.isAuthenticated;
+  }
+
+  // Método para setar estado após login bem-sucedido
+  setAuthenticated(value: boolean): void {
+    this.isAuthenticated = value;
   }
 }

@@ -42,29 +42,44 @@ export class LoginComponent {
   isLoading = signal(false);
   errorMessage = signal('');
 
-  onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading.set(true);
-      this.errorMessage.set('');
+ // No onSubmit() do login.component.ts (corrigido)
+// src/app/features/auth/login/login.component.ts (CORRIGIDO)
+onSubmit(): void {
+  if (this.loginForm.valid) {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
-      const credentials = this.loginForm.value as { email: string; password: string };
+    const credentials = this.loginForm.value as { email: string; password: string };
 
-      this.authService.login(credentials).subscribe({
-        next: (response) => {
-          this.isLoading.set(false);
-          if (!response.success) {
-            this.errorMessage.set('Credenciais inválidas');
-          }
-        },
-        error: () => {
-          this.isLoading.set(false);
-          this.errorMessage.set('Erro ao fazer login. Tente novamente.');
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        this.isLoading.set(false);
+        console.log('✅ Login bem-sucedido:', response);
+
+        // ATUALIZA O ESTADO PARA TRUE
+        this.authService.setAuthenticated(true);
+
+        // REDIRECIONA DIRETAMENTE para dashboard
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        this.authService.setAuthenticated(false);
+
+        if (error.status === 0) {
+          this.errorMessage.set('Servidor indisponível');
+        } else if (error.status === 401) {
+          this.errorMessage.set('Email ou senha incorretos');
+        } else {
+          this.errorMessage.set('Erro ao fazer login');
         }
-      });
-    } else {
-      this.markFormGroupTouched();
-    }
+        console.error('Login error:', error);
+      }
+    });
+  } else {
+    this.markFormGroupTouched();
   }
+}
 
   private markFormGroupTouched(): void {
     Object.keys(this.loginForm.controls).forEach(key => {
