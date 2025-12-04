@@ -119,42 +119,47 @@ export class ProductFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.productForm.invalid) {
-      this.markFormGroupTouched();
-      return;
-    }
-
-    this.loading.set(true);
-    const formData: ProductFormData = this.productForm.value;
-
-    const operation = this.isEditMode()
-      ? this.productService.update(this.productId()!, formData)
-      : this.productService.create(formData);
-
-    operation.subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
-            ? 'Produto atualizado com sucesso!'
-            : 'Produto criado com sucesso!'
-        });
-
-        setTimeout(() => {
-          this.router.navigate(['/products']);
-        }, 1000);
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar produto'
-        });
-        this.loading.set(false);
-      }
-    });
+  if (this.productForm.invalid) {
+    this.markFormGroupTouched();
+    return;
   }
+
+  this.loading.set(true);
+  const formData: ProductFormData = this.productForm.value;
+
+  const payload = this.isEditMode()
+    ? { id: this.productId(), ...formData }
+    : formData;
+
+  const operation = this.isEditMode()
+    ? this.productService.update(payload)
+    : this.productService.create(payload);
+
+  operation.subscribe({
+    next: () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: this.isEditMode()
+          ? 'Produto atualizado com sucesso!'
+          : 'Produto criado com sucesso!'
+      });
+
+      setTimeout(() => {
+        this.router.navigate(['/products']);
+      }, 1000);
+    },
+    error: () => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Falha ao salvar produto'
+      });
+      this.loading.set(false);
+    }
+  });
+}
+
 
   onCancel(): void {
     this.router.navigate(['/products']);

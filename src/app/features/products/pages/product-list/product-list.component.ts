@@ -38,25 +38,30 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    console.log(this.products());
   }
 
   loadProducts(): void {
-    this.loading.set(true);
-    this.productService.getAll().subscribe({
-      next: (products) => {
-        this.products.set(products);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar produtos'
-        });
-        this.loading.set(false);
-      }
-    });
-  }
+  this.loading.set(true);
+
+  this.productService.getAll().subscribe({
+    next: (response) => {
+      this.products.set(response.data); // <--- aqui está a correção
+      this.loading.set(false);
+
+      console.log('Produtos carregados:', response.data);
+    },
+    error: () => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Falha ao carregar produtos'
+      });
+      this.loading.set(false);
+    }
+  });
+}
+
 
   editProduct(id: string): void {
     this.router.navigate(['/products/edit', id]);
