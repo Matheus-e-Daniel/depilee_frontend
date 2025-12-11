@@ -1,0 +1,64 @@
+<!-- src/app/features/brands/pages/brand-form/brand-form.component.html -->
+<div class="brand-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Marca' : 'Nova Marca' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="brandForm" (ngSubmit)="onSubmit()" class="brand-form">
+        <div class="form-grid">
+          <div class="field col-12">
+            <label for="name" class="block font-medium mb-2">Nome da Marca *</label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              class="w-full"
+              placeholder="Digite o nome da marca" />
+
+            <small
+              *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="brandForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="brandForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
+            </small>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-text"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="brandForm.invalid || loading()">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>

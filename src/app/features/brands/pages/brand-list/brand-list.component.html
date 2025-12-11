@@ -1,0 +1,83 @@
+<!-- src/app/features/brands/pages/brand-list/brand-list.component.html -->
+<div class="brand-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Marcas</h1>
+      <p>Gerencie seu cadastro de marcas</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Nova Marca"
+      class="p-button-primary"
+      (click)="newBrand()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="brands()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} marcas">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-brand>
+        <tr>
+          <td data-label="Nome">{{ brand.name }}</td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                (click)="editBrand(brand.id)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteBrand(brand.id, brand.name)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="2" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-tag" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhuma marca encontrada</h3>
+              <p>Comece adicionando sua primeira marca</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Nova Marca"
+                class="p-button-outlined mt-3"
+                (click)="newBrand()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

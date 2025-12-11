@@ -21,6 +21,7 @@ export class SidebarComponent {
     //{ label: 'Funcionários', icon: 'pi pi-id-card', route: '/funcionarios' },
     { label: 'Produtos', icon: 'pi pi-box', route: '/products' },
     { label: 'Serviços', icon: 'pi pi-briefcase', route: '/services' },
+    { label: 'Marcas', icon: 'pi pi-tag', route: '/brands' },
     { label: 'Ordens de Serviço', icon: 'pi pi-file', route: '/service-order-items' },
     //{ label: 'Triagem', icon: 'pi pi-heart', route: '/triagem' },
     //{ label: 'Gerar Senhas', icon: 'pi pi-ticket', route: '/senhas' }
