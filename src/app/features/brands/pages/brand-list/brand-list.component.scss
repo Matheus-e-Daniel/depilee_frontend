@@ -1,0 +1,430 @@
+// src/app/features/brands/pages/brand-list/brand-list.component.scss
+.brand-list-container {
+  padding: 2rem;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 0 0 3px 3px;
+    }
+
+    .title-section {
+      h1 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        background: linear-gradient(90deg, #1e293b 0%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      p {
+        margin: 0.5rem 0 0 0;
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 400;
+      }
+    }
+
+    ::ng-deep .p-button {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: 12px;
+      padding: 0.875rem 2rem;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+
+        &::before {
+          left: 100%;
+        }
+      }
+
+      .pi {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    ::ng-deep .p-datatable {
+      border-radius: 16px;
+      overflow: hidden;
+
+      .p-datatable-thead {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+
+        tr {
+          th {
+            background: transparent;
+            border: none;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+
+            &:first-child {
+              border-top-left-radius: 16px;
+            }
+
+            &:last-child {
+              border-top-right-radius: 16px;
+            }
+          }
+        }
+      }
+
+      .p-datatable-tbody {
+        tr {
+          background: white;
+          border-bottom: 1px solid #f1f5f9;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #f8fafc;
+            transform: scale(1.002);
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          td {
+            border: none;
+            padding: 1.25rem 1.5rem;
+            color: #334155;
+            font-size: 0.95rem;
+
+            &:first-child {
+              font-weight: 600;
+              color: #1e293b;
+            }
+
+            .action-buttons {
+              display: flex;
+              gap: 0.5rem;
+              opacity: 0;
+              transition: opacity 0.2s ease;
+            }
+          }
+
+          &:hover .action-buttons {
+            opacity: 1;
+          }
+
+          &.p-highlight {
+            background: #f1f5f9;
+          }
+        }
+      }
+
+      .p-paginator {
+        background: #f8fafc;
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+        border-radius: 0 0 16px 16px;
+
+        .p-paginator-pages {
+          .p-paginator-page {
+            min-width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 8px;
+            margin: 0 0.2rem;
+            transition: all 0.2s ease;
+
+            &.p-highlight {
+              background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+              color: white;
+              box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+            }
+
+            &:not(.p-highlight):hover {
+              background: #e2e8f0;
+              color: #334155;
+            }
+          }
+        }
+
+        .p-paginator-first,
+        .p-paginator-prev,
+        .p-paginator-next,
+        .p-paginator-last {
+          min-width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #e2e8f0;
+            color: #334155;
+          }
+        }
+      }
+    }
+
+    // Estilização dos botões de ação
+    ::ng-deep .action-buttons {
+      .p-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &.p-button-primary {
+          background: rgba(59, 130, 246, 0.1);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          color: #3b82f6;
+
+          &:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          }
+        }
+
+        &.p-button-danger {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+
+          &:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          }
+        }
+
+        .pi {
+          font-size: 1rem;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+
+    .pi {
+      font-size: 4rem;
+      background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+    }
+
+    h3 {
+      margin: 1rem 0 0.5rem 0;
+      color: #334155;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: #64748b;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+
+    ::ng-deep .p-button {
+      background: transparent;
+      border: 2px solid #cbd5e1;
+      color: #64748b;
+      border-radius: 12px;
+      padding: 0.875rem 2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
+        transform: translateY(-1px);
+      }
+
+      .pi {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
+
+// Animação de entrada
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.brand-list-container {
+  animation: slideIn 0.4s ease-out;
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .brand-list-container {
+    padding: 1.25rem;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+
+      .title-section {
+        width: 100%;
+
+        h1 {
+          font-size: 1.75rem;
+        }
+      }
+
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .card {
+      ::ng-deep .p-datatable {
+        .p-datatable-thead {
+          display: none;
+        }
+
+        .p-datatable-tbody {
+          tr {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+            td {
+              padding: 0.75rem 0;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 1px solid #f1f5f9;
+
+              &:last-child {
+                border-bottom: none;
+                padding-top: 1rem;
+              }
+
+              &::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #64748b;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-right: 1rem;
+              }
+
+              .action-buttons {
+                opacity: 1;
+                justify-content: center;
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-list-container {
+    padding: 1rem;
+
+    .header {
+      .title-section {
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .empty-state {
+      padding: 3rem 1rem;
+
+      .pi {
+        font-size: 3rem;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+      }
+    }
+  }
+}
