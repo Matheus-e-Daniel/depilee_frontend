@@ -159,11 +159,12 @@ export class CalendarEventsComponent implements OnInit {
 
     events.forEach(event => {
       if (event.startDate) {
-        const eventDate = new Date(event.startDate);
+        // Parse da data mantendo o fuso horário local (sem conversão UTC)
+        const eventDate = this.parseLocalDate(event.startDate);
         console.log('Evento:', event.subject, 'Data do evento:', eventDate.toDateString());
 
         const day = days.find(d =>
-          d.date.toDateString() === eventDate.toDateString()
+          this.isSameDay(d.date, eventDate)
         );
 
         if (day) {
@@ -207,9 +208,13 @@ export class CalendarEventsComponent implements OnInit {
 
   private combineDateAndTime(date: Date, time: string): string {
     const [hour, minute] = time.split(':').map(Number);
-    const combined = new Date(date);
-    combined.setHours(hour, minute || 0, 0, 0);
-    return combined.toISOString();
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hourStr = hour.toString().padStart(2, '0');
+    const minuteStr = (minute || 0).toString().padStart(2, '0');
+    // Retorna no formato ISO sem conversão de timezone
+    return `${year}-${month}-${day}T${hourStr}:${minuteStr}:00`;
   }
 
   saveEvent(): void {
@@ -318,7 +323,7 @@ export class CalendarEventsComponent implements OnInit {
   getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {
     return day.events.filter(event => {
       if (!event.startDate) return false;
-      const startDate = new Date(event.startDate);
+      const startDate = this.parseLocalDate(event.startDate);
       const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
       return eventHour === time;
     });
@@ -364,13 +369,13 @@ export class CalendarEventsComponent implements OnInit {
 
   getEventStartTime(event: CalendarEvent): string {
     if (!event.startDate) return '';
-    const date = new Date(event.startDate);
+    const date = this.parseLocalDate(event.startDate);
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
 
   getEventEndTime(event: CalendarEvent): string {
     if (!event.endDate) return '';
-    const date = new Date(event.endDate);
+    const date = this.parseLocalDate(event.endDate);
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
 
@@ -398,5 +403,38 @@ export class CalendarEventsComponent implements OnInit {
     const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 30);
     const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 30);
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+
+  /**
+   * Parse data ISO string mantendo o fuso horário local (Brasília)
+   * Evita conversão automática de UTC
+   */
+  private parseLocalDate(dateString: string): Date {
+    // Se a string já contém informação de timezone, remove
+    const cleanDate = dateString.replace('Z', '').split('+')[0].split('-').slice(0, 3).join('-') +
+                      'T' + dateString.split('T')[1]?.split('+')[0].split('Z')[0];
+
+    // Parse manual para evitar conversão de timezone
+    const parts = cleanDate.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+    if (parts) {
+      return new Date(
+        parseInt(parts[1]), // year
+        parseInt(parts[2]) - 1, // month (0-indexed)
+        parseInt(parts[3]), // day
+        parseInt(parts[4]), // hour
+        parseInt(parts[5]), // minute
+        parseInt(parts[6])  // second
+      );
+    }
+    return new Date(dateString);
+  }
+
+  /**
+   * Verifica se duas datas são do mesmo dia
+   */
+  private isSameDay(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
   }
 }
