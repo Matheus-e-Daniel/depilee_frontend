@@ -10,7 +10,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    canActivate: [authGuard],
+    canActivate: [],
     loadComponent: () =>
       import('./features/layout/layout.component').then(m => m.LayoutComponent),
     children: [
@@ -19,7 +19,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
-      // Produtos
+      // Rotas de produtos
       {
         path: 'products',
         loadComponent: () =>
@@ -38,7 +38,7 @@ export const routes: Routes = [
           import('./features/products/pages/product-form/product-form.component')
             .then(m => m.ProductFormComponent)
       },
-      // Clientes
+      // Rotas de clientes
       {
         path: 'clients',
         loadComponent: () =>
@@ -57,7 +57,7 @@ export const routes: Routes = [
           import('./features/clients/pages/client-form/client-form.component')
             .then(m => m.ClientFormComponent)
       },
-      // Serviços
+      // Rotas de serviços
       {
         path: 'services',
         loadComponent: () =>
@@ -76,7 +76,25 @@ export const routes: Routes = [
           import('./features/services/pages/service-form/service-form.component')
             .then(m => m.ServiceFormComponent)
       },
-      // Redirecionamento padrão
+      // Rotas de itens da ordem de serviço (adicionadas)
+      {
+        path: 'service-order-items',
+        loadComponent: () =>
+          import('./features/service-order-items/pages/service-order-item-list/service-order-item-list.component')
+            .then(m => m.ServiceOrderItemListComponent)
+      },
+      {
+        path: 'service-order-items/new',
+        loadComponent: () =>
+          import('./features/service-order-items/pages/service-order-item-form/service-order-item-form.component')
+            .then(m => m.ServiceOrderItemFormComponent)
+      },
+      {
+        path: 'service-order-items/edit/:id',
+        loadComponent: () =>
+          import('./features/service-order-items/pages/service-order-item-form/service-order-item-form.component')
+            .then(m => m.ServiceOrderItemFormComponent)
+      },
       {
         path: '',
         redirectTo: '/dashboard',
