@@ -1,0 +1,33 @@
+// src/app/features/categories/services/category.service.ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { PagedResponse, Category, CategoryFormData } from '../models/category.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CategoryService {
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:5093/v1/categories';
+
+  getAll(): Observable<PagedResponse<Category>> {
+    return this.http.get<PagedResponse<Category>>(this.apiUrl);
+  }
+
+  getById(id: string): Observable<Category> {
+    return this.http.get<Category>(`${this.apiUrl}/${id}`);
+  }
+
+  create(category: CategoryFormData): Observable<Category> {
+    return this.http.post<Category>(this.apiUrl, category);
+  }
+
+  update(category: any): Observable<Category> {
+    return this.http.put<Category>(this.apiUrl, category);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+}

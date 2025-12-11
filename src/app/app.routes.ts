@@ -114,6 +114,25 @@ export const routes: Routes = [
           import('./features/brands/pages/brand-form/brand-form.component')
             .then(m => m.BrandFormComponent)
       },
+      // Rotas de categorias
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/categories/pages/category-list/category-list.component')
+            .then(m => m.CategoryListComponent)
+      },
+      {
+        path: 'categories/new',
+        loadComponent: () =>
+          import('./features/categories/pages/category-form/category-form.component')
+            .then(m => m.CategoryFormComponent)
+      },
+      {
+        path: 'categories/:id/edit',
+        loadComponent: () =>
+          import('./features/categories/pages/category-form/category-form.component')
+            .then(m => m.CategoryFormComponent)
+      },
       {
         path: '',
         redirectTo: '/dashboard',

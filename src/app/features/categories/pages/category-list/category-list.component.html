@@ -1,0 +1,85 @@
+<!-- src/app/features/categories/pages/category-list/category-list.component.html -->
+<div class="category-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Categorias</h1>
+      <p>Gerencie seu cadastro de categorias</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Nova Categoria"
+      class="p-button-primary"
+      (click)="newCategory()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="categories()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} categorias">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-category>
+        <tr>
+          <td data-label="Nome">{{ category.name }}</td>
+          <td data-label="Descrição">{{ category.description || '-' }}</td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                (click)="editCategory(category.id)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
+                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                (click)="deleteCategory(category.id, category.name)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-list" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhuma categoria encontrada</h3>
+              <p>Comece adicionando sua primeira categoria</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Nova Categoria"
+                class="p-button-outlined mt-3"
+                (click)="newCategory()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

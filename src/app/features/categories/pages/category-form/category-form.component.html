@@ -1,0 +1,75 @@
+<!-- src/app/features/categories/pages/category-form/category-form.component.html -->
+<div class="category-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Categoria' : 'Nova Categoria' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="category-form">
+        <div class="form-grid">
+          <div class="field col-12">
+            <label for="name" class="block font-medium mb-2">Nome da Categoria *</label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              class="w-full"
+              placeholder="Digite o nome da categoria" />
+
+            <small
+              *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="categoryForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
+            </small>
+          </div>
+
+          <div class="field col-12">
+            <label for="description" class="block font-medium mb-2">Descrição</label>
+            <textarea
+              id="description"
+              pInputTextarea
+              formControlName="description"
+              rows="3"
+              class="w-full"
+              placeholder="Descreva a categoria (opcional)"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-text"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="categoryForm.invalid || loading()">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>
