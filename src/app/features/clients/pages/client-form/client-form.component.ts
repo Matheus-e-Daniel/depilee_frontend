@@ -14,6 +14,8 @@ import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ClientService } from '../../services/client.service';
 import { ClientFormData } from '../../models/client.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-client-form',
@@ -29,7 +31,8 @@ import { ClientFormData } from '../../models/client.model';
     ButtonModule,
     CardModule,
     ToastModule,
-    CheckboxModule
+    CheckboxModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './client-form.component.html',
@@ -41,6 +44,7 @@ export class ClientFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   clientForm!: FormGroup;
   loading = signal(false);
@@ -170,17 +174,15 @@ export class ClientFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
+        this.successModalService.show(
+          this.isEditMode()
             ? 'Cliente atualizado com sucesso!'
             : 'Cliente criado com sucesso!'
-        });
+        );
 
         setTimeout(() => {
           this.router.navigate(['/clients']);
-        }, 1000);
+        }, 2500);
       },
       error: () => {
         this.messageService.add({

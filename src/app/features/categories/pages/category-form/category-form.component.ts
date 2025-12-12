@@ -12,6 +12,8 @@ import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CategoryService } from '../../services/category.service';
 import { CategoryFormData } from '../../models/category.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-category-form',
@@ -24,7 +26,8 @@ import { CategoryFormData } from '../../models/category.model';
     ButtonModule,
     CardModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './category-form.component.html',
@@ -36,6 +39,7 @@ export class CategoryFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   categoryForm!: FormGroup;
   loading = signal(false);
@@ -104,17 +108,15 @@ export class CategoryFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
+        this.successModalService.show(
+          this.isEditMode()
             ? 'Categoria atualizada com sucesso!'
             : 'Categoria criada com sucesso!'
-        });
+        );
 
         setTimeout(() => {
           this.router.navigate(['/categories']);
-        }, 1000);
+        }, 2500);
       },
       error: () => {
         this.messageService.add({

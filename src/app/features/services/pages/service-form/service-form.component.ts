@@ -14,6 +14,8 @@ import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ServiceService } from '../../services/service.service';
 import { ServiceFormData, ServiceCategory } from '../../models/service.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-service-form',
@@ -28,7 +30,8 @@ import { ServiceFormData, ServiceCategory } from '../../models/service.model';
     ButtonModule,
     CardModule,
     ToastModule,
-    CheckboxModule
+    CheckboxModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './service-form.component.html',
@@ -40,6 +43,7 @@ export class ServiceFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   serviceForm!: FormGroup;
   loading = signal(false);
@@ -131,17 +135,15 @@ export class ServiceFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
+        this.successModalService.show(
+          this.isEditMode()
             ? 'Serviço atualizado com sucesso!'
             : 'Serviço criado com sucesso!'
-        });
+        );
 
         setTimeout(() => {
           this.router.navigate(['/services']);
-        }, 1000);
+        }, 2500);
       },
       error: () => {
         this.messageService.add({

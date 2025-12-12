@@ -12,6 +12,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ServiceOrderItemService } from '../../services/service-order-item.service';
 import { ServiceOrderItemFormData, ServiceOrder, ProductOption, ServiceOption } from '../../models/service-order-item.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-service-order-item-form',
@@ -24,7 +26,8 @@ import { ServiceOrderItemFormData, ServiceOrder, ProductOption, ServiceOption } 
     DropdownModule,
     ButtonModule,
     CardModule,
-    ToastModule
+    ToastModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './service-order-item-form.component.html',
@@ -36,6 +39,7 @@ export class ServiceOrderItemFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   itemForm!: FormGroup;
   loading = signal(false);
@@ -209,17 +213,15 @@ export class ServiceOrderItemFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
+        this.successModalService.show(
+          this.isEditMode()
             ? 'Item atualizado com sucesso!'
             : 'Item criado com sucesso!'
-        });
+        );
 
         setTimeout(() => {
           this.router.navigate(['/service-order-items']);
-        }, 1000);
+        }, 2500);
       },
       error: () => {
         this.messageService.add({

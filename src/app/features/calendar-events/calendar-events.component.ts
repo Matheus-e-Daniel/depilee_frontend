@@ -323,7 +323,7 @@ export class CalendarEventsComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Evento excluído'
+          detail: 'Evento excluído com sucesso!'
         });
         this.loadEvents();
       },
@@ -448,7 +448,7 @@ export class CalendarEventsComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Evento atualizado'
+          detail: 'Evento movido com sucesso!'
         });
         this.loadEvents();
       },

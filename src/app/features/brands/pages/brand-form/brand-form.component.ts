@@ -11,6 +11,8 @@ import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { BrandService } from '../../services/brand.service';
 import { BrandFormData } from '../../models/brand.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-brand-form',
@@ -22,7 +24,8 @@ import { BrandFormData } from '../../models/brand.model';
     ButtonModule,
     CardModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './brand-form.component.html',
@@ -34,6 +37,7 @@ export class BrandFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   brandForm!: FormGroup;
   loading = signal(false);
@@ -100,17 +104,15 @@ export class BrandFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.isEditMode()
+        this.successModalService.show(
+          this.isEditMode()
             ? 'Marca atualizada com sucesso!'
             : 'Marca criada com sucesso!'
-        });
+        );
 
         setTimeout(() => {
           this.router.navigate(['/brands']);
-        }, 1000);
+        }, 2500);
       },
       error: () => {
         this.messageService.add({

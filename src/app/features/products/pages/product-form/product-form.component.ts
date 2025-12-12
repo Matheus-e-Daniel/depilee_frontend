@@ -14,6 +14,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ProductService } from '../../services/product.service';
 import { ProductFormData } from '../../models/product.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-product-form',
@@ -28,7 +30,8 @@ import { ProductFormData } from '../../models/product.model';
     CardModule,
     ToastModule,
     DropdownModule,
-    CheckboxModule
+    CheckboxModule,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './product-form.component.html',
@@ -40,6 +43,7 @@ export class ProductFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
   productForm!: FormGroup;
   loading = signal(false);
@@ -137,17 +141,15 @@ export class ProductFormComponent implements OnInit {
 
   operation.subscribe({
     next: () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: this.isEditMode()
+      this.successModalService.show(
+        this.isEditMode()
           ? 'Produto atualizado com sucesso!'
           : 'Produto criado com sucesso!'
-      });
+      );
 
       setTimeout(() => {
         this.router.navigate(['/products']);
-      }, 1000);
+      }, 2500);
     },
     error: () => {
       this.messageService.add({
