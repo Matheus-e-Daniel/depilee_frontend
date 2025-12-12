@@ -220,6 +220,7 @@ export class ServiceOrderItemFormComponent implements OnInit {
         );
 
         setTimeout(() => {
+          this.successModalService.hide();
           this.router.navigate(['/service-order-items']);
         }, 2500);
       },

@@ -115,6 +115,7 @@ export class CategoryFormComponent implements OnInit {
         );
 
         setTimeout(() => {
+          this.successModalService.hide();
           this.router.navigate(['/categories']);
         }, 2500);
       },

@@ -142,6 +142,7 @@ export class ServiceFormComponent implements OnInit {
         );
 
         setTimeout(() => {
+          this.successModalService.hide();
           this.router.navigate(['/services']);
         }, 2500);
       },

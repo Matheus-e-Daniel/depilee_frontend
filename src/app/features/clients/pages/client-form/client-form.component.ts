@@ -181,6 +181,7 @@ export class ClientFormComponent implements OnInit {
         );
 
         setTimeout(() => {
+          this.successModalService.hide();
           this.router.navigate(['/clients']);
         }, 2500);
       },

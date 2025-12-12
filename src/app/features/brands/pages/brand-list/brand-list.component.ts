@@ -7,9 +7,12 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { BrandService } from '../../services/brand.service';
 import { Brand } from '../../models/brand.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-brand-list',
@@ -20,21 +23,27 @@ import { Brand } from '../../models/brand.model';
     ButtonModule,
     TableModule,
     ToastModule,
-    ConfirmDialogModule,
-    TooltipModule
+    TooltipModule,
+    ConfirmationModalComponent,
+    SuccessModalComponent
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService],
   templateUrl: './brand-list.component.html',
   styleUrls: ['./brand-list.component.scss']
 })
 export class BrandListComponent implements OnInit {
   private brandService = inject(BrandService);
-  private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  successModalService = inject(SuccessModalService);
 
   brands = signal<Brand[]>([]);
   loading = signal(true);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
+  brandToDelete: { id: string; name: string } | null = null;
 
   ngOnInit(): void {
     this.loadBrands();
@@ -64,32 +73,40 @@ export class BrandListComponent implements OnInit {
   }
 
   deleteBrand(id: string, name: string): void {
-    this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir "${name}"?`,
-      header: 'Confirmar Exclusão',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sim',
-      rejectLabel: 'Não',
-      accept: () => {
-        this.brandService.delete(id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Marca excluída'
-            });
-            this.loadBrands();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao excluir marca'
-            });
-          }
+    this.brandToDelete = { id, name };
+    this.showConfirmation.set(true);
+  }
+
+  confirmDelete(): void {
+    if (!this.brandToDelete) return;
+
+    this.confirmationLoading.set(true);
+    this.brandService.delete(this.brandToDelete.id).subscribe({
+      next: () => {
+        this.confirmationLoading.set(false);
+        this.showConfirmation.set(false);
+        this.successModalService.show('Marca excluída com sucesso!');
+        this.loadBrands();
+        this.brandToDelete = null;
+      },
+      error: () => {
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir marca'
         });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.showConfirmation.set(false);
+    this.brandToDelete = null;
+  }
+
+  getDeleteMessage(): string {
+    return `Tem certeza que deseja excluir "${this.brandToDelete?.name || ''}"? Esta ação não pode ser desfeita.`;
   }
 
   newBrand(): void {

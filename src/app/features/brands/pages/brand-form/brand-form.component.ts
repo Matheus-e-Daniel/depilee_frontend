@@ -13,6 +13,7 @@ import { BrandService } from '../../services/brand.service';
 import { BrandFormData } from '../../models/brand.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-brand-form',
@@ -25,7 +26,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     CardModule,
     ToastModule,
     TooltipModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './brand-form.component.html',
@@ -43,6 +45,10 @@ export class BrandFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   brandId = signal<string | null>(null);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.initForm();
@@ -91,7 +97,11 @@ export class BrandFormComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
     const formData: BrandFormData = this.brandForm.value;
 
     const payload = this.isEditMode()
@@ -104,6 +114,8 @@ export class BrandFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        this.confirmationLoading.set(false);
+        this.showConfirmation.set(false);
         this.successModalService.show(
           this.isEditMode()
             ? 'Marca atualizada com sucesso!'
@@ -111,18 +123,23 @@ export class BrandFormComponent implements OnInit {
         );
 
         setTimeout(() => {
+          this.successModalService.hide();
           this.router.navigate(['/brands']);
         }, 2500);
       },
       error: () => {
+        this.confirmationLoading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
           detail: 'Falha ao salvar marca'
         });
-        this.loading.set(false);
       }
     });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
   }
 
   onCancel(): void {

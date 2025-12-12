@@ -148,6 +148,7 @@ export class ProductFormComponent implements OnInit {
       );
 
       setTimeout(() => {
+        this.successModalService.hide();
         this.router.navigate(['/products']);
       }, 2500);
     },
