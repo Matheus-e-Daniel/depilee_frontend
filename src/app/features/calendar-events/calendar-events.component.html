@@ -12,13 +12,6 @@
     </div>
 
     <div class="header-right">
-      <button
-        pButton
-        label="🔍 Testar GET"
-        class="p-button-warning p-button-sm"
-        (click)="testGetEvents()"
-        style="margin-right: 1rem;">
-      </button>
       <p-calendar
         [(ngModel)]="selectedDate"
         (onSelect)="onDateSelect($event)"
@@ -64,11 +57,12 @@
               [ngStyle]="getEventStyle(event)"
               draggable="true"
               (dragstart)="onDragStart(event)"
-              (click)="$event.stopPropagation()">
+              (click)="openEditEventDialog(event, $event)">
 
               <div class="event-content">
                 <div class="event-title">{{ event.subject }}</div>
                 <div class="event-time">{{ getEventStartTime(event) }} - {{ getEventEndTime(event) }}</div>
+                <div class="event-description" *ngIf="event.description">{{ truncateDescription(event.description) }}</div>
               </div>
 
               <button
@@ -88,7 +82,7 @@
 <p-dialog
   [(visible)]="showEventDialog"
   [style]="{width: '450px'}"
-  header="Novo Evento"
+  [header]="getDialogTitle()"
   [modal]="true"
   [closable]="true"
   [draggable]="false"

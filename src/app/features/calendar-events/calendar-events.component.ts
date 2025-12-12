@@ -57,6 +57,8 @@ export class CalendarEventsComponent implements OnInit {
 
   // Dialog de novo evento
   showEventDialog = signal(false);
+  isEditingEvent = signal(false);
+  editingEventId: string | null = null;
   newEvent = {
     subject: '',
     description: '',
@@ -74,6 +76,7 @@ export class CalendarEventsComponent implements OnInit {
 
   // Drag and drop
   draggedEvent: CalendarEvent | null = null;
+  dragOverEvent: CalendarEvent | null = null;
 
   // Loading
   loading = signal(false);
@@ -181,6 +184,8 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   openEventDialog(date: Date, time: string): void {
+    this.isEditingEvent.set(false);
+    this.editingEventId = null;
     this.eventDate = new Date(date);
     this.eventStartTime = time;
     this.eventEndTime = this.calculateEndTime(time);
@@ -197,6 +202,31 @@ export class CalendarEventsComponent implements OnInit {
       allDay: false,
       categoryColor: '#3b82f6'
     };
+    this.showEventDialog.set(true);
+  }
+
+  openEditEventDialog(event: CalendarEvent, $event: Event): void {
+    $event.stopPropagation();
+    this.isEditingEvent.set(true);
+    this.editingEventId = event.id;
+
+    const startDate = this.parseLocalDate(event.startDate || new Date().toISOString());
+    const endDate = this.parseLocalDate(event.endDate || new Date().toISOString());
+
+    this.eventDate = startDate;
+    this.eventStartTime = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+    this.eventEndTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+
+    this.newEvent = {
+      subject: event.subject,
+      description: event.description || '',
+      type: event.type,
+      startDate: event.startDate || '',
+      endDate: event.endDate || '',
+      allDay: event.allDay,
+      categoryColor: event.categoryColor || '#3b82f6'
+    };
+
     this.showEventDialog.set(true);
   }
 
@@ -232,26 +262,57 @@ export class CalendarEventsComponent implements OnInit {
     this.newEvent.endDate = this.combineDateAndTime(this.eventDate, this.eventEndTime);
 
     this.loading.set(true);
-    this.calendarEventService.create(this.newEvent).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Evento criado com sucesso!'
-        });
-        this.showEventDialog.set(false);
-        this.loadEvents();
-      },
-      error: (error) => {
-        console.error('Erro ao criar evento:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao criar evento'
-        });
-        this.loading.set(false);
-      }
-    });
+
+    if (this.isEditingEvent() && this.editingEventId) {
+      // Atualizar evento existente
+      const updatedEvent: CalendarEvent = {
+        id: this.editingEventId,
+        ...this.newEvent
+      };
+
+      this.calendarEventService.update(updatedEvent).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Evento atualizado com sucesso!'
+          });
+          this.showEventDialog.set(false);
+          this.loadEvents();
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar evento:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao atualizar evento'
+          });
+          this.loading.set(false);
+        }
+      });
+    } else {
+      // Criar novo evento
+      this.calendarEventService.create(this.newEvent).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Evento criado com sucesso!'
+          });
+          this.showEventDialog.set(false);
+          this.loadEvents();
+        },
+        error: (error) => {
+          console.error('Erro ao criar evento:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao criar evento'
+          });
+          this.loading.set(false);
+        }
+      });
+    }
   }
 
   deleteEvent(event: CalendarEvent, $event: Event): void {
@@ -285,10 +346,93 @@ export class CalendarEventsComponent implements OnInit {
     $event.preventDefault();
   }
 
+  onEventDragOver(event: CalendarEvent, $event: DragEvent): void {
+    $event.preventDefault();
+    $event.stopPropagation();
+    this.dragOverEvent = event;
+  }
+
+  onEventDrop(targetEvent: CalendarEvent, $event: DragEvent): void {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    if (!this.draggedEvent || this.draggedEvent.id === targetEvent.id) {
+      this.dragOverEvent = null;
+      return;
+    }
+
+    // Verificar se estão no mesmo horário
+    const draggedStartDate = this.parseLocalDate(this.draggedEvent.startDate || '');
+    const targetStartDate = this.parseLocalDate(targetEvent.startDate || '');
+
+    if (!this.isSameDay(draggedStartDate, targetStartDate) ||
+        draggedStartDate.getHours() !== targetStartDate.getHours()) {
+      // Se não estão no mesmo horário, não faz nada
+      this.dragOverEvent = null;
+      this.draggedEvent = null;
+      return;
+    }
+
+    // Trocar apenas a ordem de exibição (displayOrder)
+    const tempOrder = this.draggedEvent.displayOrder || 0;
+
+    const updatedDraggedEvent: CalendarEvent = {
+      ...this.draggedEvent,
+      displayOrder: targetEvent.displayOrder || 0
+    };
+
+    const updatedTargetEvent: CalendarEvent = {
+      ...targetEvent,
+      displayOrder: tempOrder
+    };
+
+    // Atualizar ambos os eventos
+    this.loading.set(true);
+    this.calendarEventService.update(updatedDraggedEvent).subscribe({
+      next: () => {
+        this.calendarEventService.update(updatedTargetEvent).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Eventos reordenados'
+            });
+            this.loadEvents();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Falha ao reordenar eventos'
+            });
+            this.loading.set(false);
+          }
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao reordenar eventos'
+        });
+        this.loading.set(false);
+      }
+    });
+
+    this.draggedEvent = null;
+    this.dragOverEvent = null;
+  }
+
   onDrop($event: DragEvent, date: Date, time: string): void {
     $event.preventDefault();
 
     if (!this.draggedEvent) return;
+
+    // Se foi dropado sobre outro evento, não fazer nada (já foi tratado em onEventDrop)
+    if (this.dragOverEvent) {
+      this.dragOverEvent = null;
+      return;
+    }
 
     const startDateTime = this.combineDateAndTime(date, time);
     const endDateTime = this.combineDateAndTime(date, this.calculateEndTime(time));
@@ -321,12 +465,14 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {
-    return day.events.filter(event => {
-      if (!event.startDate) return false;
-      const startDate = this.parseLocalDate(event.startDate);
-      const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
-      return eventHour === time;
-    });
+    return day.events
+      .filter(event => {
+        if (!event.startDate) return false;
+        const startDate = this.parseLocalDate(event.startDate);
+        const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
+        return eventHour === time;
+      })
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   previousWeek(): void {
@@ -379,21 +525,12 @@ export class CalendarEventsComponent implements OnInit {
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
 
-  // Método de teste para debug
-  testGetEvents(): void {
-    console.log('===== TESTE DE GET EVENTOS =====');
-    this.calendarEventService.getAll().subscribe({
-      next: (events) => {
-        console.log('✅ Sucesso! Eventos retornados:', events);
-        console.log('Quantidade de eventos:', events.length);
-        console.log('Detalhes dos eventos:', JSON.stringify(events, null, 2));
-      },
-      error: (error) => {
-        console.error('❌ Erro ao buscar eventos:', error);
-        console.error('Status:', error.status);
-        console.error('Mensagem:', error.message);
-      }
-    });
+  /**
+   * Trunca a descrição para exibir no máximo 50 caracteres
+   */
+  truncateDescription(description: string): string {
+    if (!description) return '';
+    return description.length > 30 ? description.substring(0, 30) + '...' : description;
   }
 
   private darkenColor(color: string): string {
@@ -436,5 +573,9 @@ export class CalendarEventsComponent implements OnInit {
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
+  }
+
+  getDialogTitle(): string {
+    return this.isEditingEvent() ? 'Editar Evento' : 'Novo Evento';
   }
 }
