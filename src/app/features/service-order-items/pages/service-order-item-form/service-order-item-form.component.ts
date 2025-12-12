@@ -15,6 +15,7 @@ import { ServiceOrderItemFormData, ServiceOrder, ProductOption, ServiceOption } 
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 @Component({
   selector: 'app-service-order-item-form',
@@ -24,6 +25,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     ReactiveFormsModule,
     InputTextModule,
     InputNumberModule,
+    InputTextareaModule,
     DropdownModule,
     ButtonModule,
     CardModule,
@@ -46,7 +48,7 @@ export class ServiceOrderItemFormComponent implements OnInit {
   itemForm!: FormGroup;
   loading = signal(false);
   isEditMode = signal(false);
-  itemId = signal<string | null>(null);
+  itemId = signal<number | null>(null);
   serviceOrders = signal<ServiceOrder[]>([]);
   products = signal<ProductOption[]>([]);
   services = signal<ServiceOption[]>([]);
@@ -73,26 +75,20 @@ export class ServiceOrderItemFormComponent implements OnInit {
       serviceId: [''],
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
-    });
-
-
+    }, { validators: this.productOrServiceRequired });
   }
 
-  private productOrServiceRequired(form: FormGroup) {
-    const productId = form.get('productId')?.value;
-    const serviceId = form.get('serviceId')?.value;
-
-    if (!productId && !serviceId) {
-      return { productOrServiceRequired: true };
-    }
-    return null;
+  private productOrServiceRequired(group: FormGroup) {
+    const productId = group.get('productId')?.value;
+    const serviceId = group.get('serviceId')?.value;
+    return productId || serviceId ? null : { productOrServiceRequired: true };
   }
 
   private loadServiceOrders(): void {
     this.serviceOrdersLoading.set(true);
     this.serviceOrderItemService.getServiceOrders().subscribe({
-      next: (orders) => {
-        this.serviceOrders.set(orders);
+      next: (response) => {
+        this.serviceOrders.set(response.data);
         this.serviceOrdersLoading.set(false);
       },
       error: () => {
@@ -109,8 +105,8 @@ export class ServiceOrderItemFormComponent implements OnInit {
   private loadProducts(): void {
     this.productsLoading.set(true);
     this.serviceOrderItemService.getProducts().subscribe({
-      next: (products) => {
-        this.products.set(products);
+      next: (response) => {
+        this.products.set(response.data);
         this.productsLoading.set(false);
       },
       error: () => {
@@ -127,8 +123,8 @@ export class ServiceOrderItemFormComponent implements OnInit {
   private loadServices(): void {
     this.servicesLoading.set(true);
     this.serviceOrderItemService.getServices().subscribe({
-      next: (services) => {
-        this.services.set(services);
+      next: (response) => {
+        this.services.set(response.data);
         this.servicesLoading.set(false);
       },
       error: () => {
@@ -142,24 +138,44 @@ export class ServiceOrderItemFormComponent implements OnInit {
     });
   }
 
+  onProductChange(productId: number): void {
+    if (productId) {
+      this.itemForm.patchValue({ serviceId: null });
+      const product = this.products().find(p => p.id === productId);
+      if (product) {
+        this.itemForm.patchValue({ unitPrice: product.salePrice });
+      }
+    }
+  }
+
+  onServiceChange(serviceId: number): void {
+    if (serviceId) {
+      this.itemForm.patchValue({ productId: null });
+      const service = this.services().find(s => s.id === serviceId);
+      if (service) {
+        this.itemForm.patchValue({ unitPrice: service.price });
+      }
+    }
+  }
+
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
 
     if (id) {
       this.isEditMode.set(true);
-      this.itemId.set(id);
-      this.loadItem(id);
+      this.itemId.set(Number(id));
+      this.loadItem(Number(id));
     }
   }
 
-  private loadItem(id: string): void {
+  private loadItem(id: number): void {
     this.loading.set(true);
     this.serviceOrderItemService.getById(id).subscribe({
       next: (item) => {
         this.itemForm.patchValue({
           serviceOrderId: item.serviceOrderId,
-          productId: item.productId,
-          serviceId: item.serviceId,
+          productId: item.productId || null,
+          serviceId: item.serviceId || null,
           quantity: item.quantity,
           unitPrice: item.unitPrice
         });
@@ -176,30 +192,6 @@ export class ServiceOrderItemFormComponent implements OnInit {
     });
   }
 
-  onProductChange(productId: string): void {
-    if (productId) {
-      // Se selecionou produto, limpa serviço
-      this.itemForm.patchValue({ serviceId: '' });
-      // Atualiza preço unitário se produto tiver preço definido
-      const product = this.products().find(p => p.id === productId);
-      if (product?.price) {
-        this.itemForm.patchValue({ unitPrice: product.price });
-      }
-    }
-  }
-
-  onServiceChange(serviceId: string): void {
-    if (serviceId) {
-      // Se selecionou serviço, limpa produto
-      this.itemForm.patchValue({ productId: '' });
-      // Atualiza preço unitário se serviço tiver preço definido
-      const service = this.services().find(s => s.id === serviceId);
-      if (service?.price) {
-        this.itemForm.patchValue({ unitPrice: service.price });
-      }
-    }
-  }
-
   onSubmit(): void {
     if (this.itemForm.invalid) {
       this.markFormGroupTouched();
@@ -213,12 +205,12 @@ export class ServiceOrderItemFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formData: ServiceOrderItemFormData = this.itemForm.value;
 
-    // Remove campos vazios
-    if (!formData.productId) delete formData.productId;
-    if (!formData.serviceId) delete formData.serviceId;
+    const payload = this.isEditMode()
+      ? { id: this.itemId()!, ...formData }
+      : formData;
 
     const operation = this.isEditMode()
-      ? this.serviceOrderItemService.update(this.itemId()!, formData)
+      ? this.serviceOrderItemService.update(payload)
       : this.serviceOrderItemService.create(formData);
 
     operation.subscribe({
@@ -242,7 +234,7 @@ export class ServiceOrderItemFormComponent implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Falha ao salvar item'
+          detail: 'Falha ao salvar ordem de serviço'
         });
       }
     });

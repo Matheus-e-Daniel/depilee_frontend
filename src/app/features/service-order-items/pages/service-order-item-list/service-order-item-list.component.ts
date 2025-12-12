@@ -6,10 +6,12 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { ServiceOrderItemService } from '../../services/service-order-item.service';
 import { ServiceOrderItem } from '../../models/service-order-item.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-service-order-item-list',
@@ -21,20 +23,24 @@ import { ServiceOrderItem } from '../../models/service-order-item.model';
     TableModule,
     TagModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmationModalComponent,
+    SuccessModalComponent
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService],
   templateUrl: './service-order-item-list.component.html',
   styleUrls: ['./service-order-item-list.component.scss']
 })
 export class ServiceOrderItemListComponent implements OnInit {
   private serviceOrderItemService = inject(ServiceOrderItemService);
-  private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  successModalService = inject(SuccessModalService);
 
   items = signal<ServiceOrderItem[]>([]);
   loading = signal(true);
+  showDeleteConfirmation = signal(false);
+  deleteLoading = signal(false);
+  itemToDelete: { id: number; name: string } | null = null;
 
   ngOnInit(): void {
     this.loadItems();
@@ -43,52 +49,56 @@ export class ServiceOrderItemListComponent implements OnInit {
   loadItems(): void {
     this.loading.set(true);
     this.serviceOrderItemService.getAll().subscribe({
-      next: (items) => {
-        this.items.set(items);
+      next: (response) => {
+        this.items.set(response.data);
         this.loading.set(false);
       },
       error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Falha ao carregar itens'
+          detail: 'Falha ao carregar ordens de serviço'
         });
         this.loading.set(false);
       }
     });
   }
 
-  editItem(id: string): void {
+  editItem(id: number): void {
     this.router.navigate(['/service-order-items/edit', id]);
   }
 
-  deleteItem(id: string, itemName: string): void {
-    this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir "${itemName}"?`,
-      header: 'Confirmar Exclusão',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sim',
-      rejectLabel: 'Não',
-      accept: () => {
-        this.serviceOrderItemService.delete(id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Item excluído'
-            });
-            this.loadItems();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao excluir item'
-            });
-          }
+  deleteItem(id: number, itemName: string): void {
+    this.itemToDelete = { id, name: itemName };
+    this.showDeleteConfirmation.set(true);
+  }
+
+  confirmDelete(): void {
+    if (!this.itemToDelete) return;
+
+    this.deleteLoading.set(true);
+    this.serviceOrderItemService.delete(this.itemToDelete.id).subscribe({
+      next: () => {
+        this.deleteLoading.set(false);
+        this.showDeleteConfirmation.set(false);
+        this.successModalService.show('Item excluído com sucesso!');
+        this.loadItems();
+        this.itemToDelete = null;
+      },
+      error: () => {
+        this.deleteLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir item'
         });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirmation.set(false);
+    this.itemToDelete = null;
   }
 
   newItem(): void {
@@ -103,5 +113,11 @@ export class ServiceOrderItemListComponent implements OnInit {
     if (item.productId) return 'Produto';
     if (item.serviceId) return 'Serviço';
     return 'N/A';
+  }
+
+  getDeleteMessage(): string {
+    return this.itemToDelete
+      ? `Tem certeza que deseja excluir "${this.itemToDelete.name}"?`
+      : '';
   }
 }

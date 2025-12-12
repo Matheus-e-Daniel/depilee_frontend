@@ -95,6 +95,25 @@ export const routes: Routes = [
           import('./features/service-order-items/pages/service-order-item-form/service-order-item-form.component')
             .then(m => m.ServiceOrderItemFormComponent)
       },
+      // Rotas de ordens de serviço
+      {
+        path: 'service-orders',
+        loadComponent: () =>
+          import('./features/service-orders/pages/service-order-list/service-order-list.component')
+            .then(m => m.ServiceOrderListComponent)
+      },
+      {
+        path: 'service-orders/new',
+        loadComponent: () =>
+          import('./features/service-orders/pages/service-order-form/service-order-form.component')
+            .then(m => m.ServiceOrderFormComponent)
+      },
+      {
+        path: 'service-orders/edit/:id',
+        loadComponent: () =>
+          import('./features/service-orders/pages/service-order-form/service-order-form.component')
+            .then(m => m.ServiceOrderFormComponent)
+      },
       // Rotas de marcas
       {
         path: 'brands',

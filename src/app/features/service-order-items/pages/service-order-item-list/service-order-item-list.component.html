@@ -8,7 +8,7 @@
     <button
       pButton
       icon="pi pi-plus"
-      label="Novo Item de OS"
+      label="Novo Item"
       class="p-button-primary"
       (click)="newItem()">
     </button>
@@ -38,7 +38,7 @@
 
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td>{{ item.serviceOrderId }}</td>
+          <td>{{ item.serviceOrderNumber || item.serviceOrderId }}</td>
           <td>
             <p-tag
               [value]="getItemType(item)"
@@ -48,7 +48,7 @@
           <td>{{ getItemName(item) }}</td>
           <td>{{ item.quantity }}</td>
           <td>{{ item.unitPrice | currency:'BRL' }}</td>
-          <td>{{ item.totalPrice | currency:'BRL' }}</td>
+          <td>{{ (item.quantity * item.unitPrice) | currency:'BRL' }}</td>
           <td>
             <div class="action-buttons">
               <button
@@ -74,15 +74,15 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center py-5">
+          <td colspan="7" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
-              <h3>Nenhum serviço encontrado</h3>
-              <p>Comece adicionando seu primeiro serviço</p>
+              <h3>Nenhum item encontrado</h3>
+              <p>Comece adicionando seu primeiro item</p>
               <button
                 pButton
                 icon="pi pi-plus"
-                label="Nova Ordem de Serviço"
+                label="Novo Item"
                 class="p-button-outlined mt-3"
                 (click)="newItem()">
               </button>
@@ -95,4 +95,13 @@
 </div>
 
 <p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showDeleteConfirmation()"
+  [type]="'delete'"
+  [message]="getDeleteMessage()"
+  [loading]="deleteLoading()"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-modal>

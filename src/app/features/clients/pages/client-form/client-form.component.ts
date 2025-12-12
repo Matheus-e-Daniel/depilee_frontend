@@ -59,9 +59,9 @@ export class ClientFormComponent implements OnInit {
   confirmationLoading = signal(false);
 
   genderOptions = [
-    { label: 'Masculino', value: 'M' },
-    { label: 'Feminino', value: 'F' },
-    { label: 'Outro', value: 'O' }
+    { label: 'Masculino', value: 1 },
+    { label: 'Feminino', value: 2 },
+    { label: 'Outro', value: 3 }
   ];
 
   states = [
@@ -140,14 +140,13 @@ export class ClientFormComponent implements OnInit {
           phone: client.phone,
           email: client.email,
           birth: new Date(client.birth),
-          cep: client.cep,
-          state: client.state,
-          city: client.city,
-          neighborhood: client.neighborhood,
-          street: client.street,
-          number: client.number,
-          complement: client.complement,
-          active: client.active
+          cep: client.address.cep,
+          state: client.address.state,
+          city: client.address.city,
+          neighborhood: client.address.neighborhood,
+          street: client.address.street,
+          number: client.address.number,
+          complement: client.address.complement
         });
         this.loading.set(false);
       },
@@ -173,13 +172,32 @@ export class ClientFormComponent implements OnInit {
 
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
+
+    const formValue = this.clientForm.value;
     const formData: ClientFormData = {
-      ...this.clientForm.value,
-      birth: this.formatDate(this.clientForm.get('birth')?.value)
+      name: formValue.name,
+      gender: formValue.gender,
+      cpf: formValue.cpf.replace(/\D/g, ''), // Remove formatação
+      phone: formValue.phone,
+      email: formValue.email,
+      birth: this.formatDateToISO(formValue.birth),
+      address: {
+        cep: formValue.cep,
+        state: formValue.state,
+        city: formValue.city,
+        neighborhood: formValue.neighborhood,
+        street: formValue.street,
+        number: formValue.number,
+        complement: formValue.complement || undefined
+      }
     };
 
+    const payload = this.isEditMode()
+      ? { id: parseInt(this.clientId()!), ...formData }
+      : formData;
+
     const operation = this.isEditMode()
-      ? this.clientService.update(this.clientId()!, formData)
+      ? this.clientService.update(payload)
       : this.clientService.create(formData);
 
     operation.subscribe({
@@ -217,8 +235,9 @@ export class ClientFormComponent implements OnInit {
     this.router.navigate(['/clients']);
   }
 
-  private formatDate(date: Date): string {
-    return date.toISOString().split('T')[0];
+  private formatDateToISO(date: Date): string {
+    // Retorna no formato "1990-05-15T00:00:00"
+    return date.toISOString().split('.')[0];
   }
 
   private markFormGroupTouched(): void {

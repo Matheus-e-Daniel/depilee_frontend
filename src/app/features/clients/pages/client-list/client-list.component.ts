@@ -50,8 +50,8 @@ export class ClientListComponent implements OnInit {
   loadClients(): void {
     this.loading.set(true);
     this.clientService.getAll().subscribe({
-      next: (clients) => {
-        this.clients.set(clients);
+      next: (response) => {
+        this.clients.set(response.data);
         this.loading.set(false);
       },
       error: () => {
@@ -113,9 +113,13 @@ export class ClientListComponent implements OnInit {
     this.router.navigate(['/clients/new']);
   }
 
-  getGenderLabel(gender: 'M' | 'F' | 'O'): string {
-    const labels = { 'M': 'Masculino', 'F': 'Feminino', 'O': 'Outro' };
-    return labels[gender];
+  getGenderLabel(gender: number): string {
+    const labels: { [key: number]: string } = {
+      1: 'Masculino',
+      2: 'Feminino',
+      3: 'Outro'
+    };
+    return labels[gender] || 'Não informado';
   }
 
   formatPhone(phone: string): string {

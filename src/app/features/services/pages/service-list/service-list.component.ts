@@ -50,8 +50,8 @@ export class ServiceListComponent implements OnInit {
   loadServices(): void {
     this.loading.set(true);
     this.serviceService.getAll().subscribe({
-      next: (services) => {
-        this.services.set(services);
+      next: (response) => {
+        this.services.set(response.data);
         this.loading.set(false);
       },
       error: () => {

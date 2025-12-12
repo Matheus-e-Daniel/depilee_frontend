@@ -55,7 +55,7 @@
               currency="BRL"
               locale="pt-BR"
               class="w-full"
-              [min]="0.01"
+              [showButtons]="false"
               [minFractionDigits]="2">
             </p-inputNumber>
 
@@ -76,7 +76,7 @@
               currency="BRL"
               locale="pt-BR"
               class="w-full"
-              [min]="0.01"
+              [showButtons]="false"
               [minFractionDigits]="2">
             </p-inputNumber>
 
@@ -90,13 +90,14 @@
 
           <div class="field col-6">
             <label for="stock" class="block font-medium mb-2">Estoque *</label>
-            <p-inputNumber
+            <input
               id="stock"
+              type="number"
+              pInputText
               formControlName="stock"
               class="w-full"
-              [min]="0"
-              [showButtons]="true">
-            </p-inputNumber>
+              placeholder="Ex: 10"
+              min="0" />
 
             <small
               *ngIf="productForm.get('stock')?.invalid && productForm.get('stock')?.touched"
@@ -111,11 +112,15 @@
             <p-dropdown
               id="brandId"
               formControlName="brandId"
-              [options]="brands"
+              [options]="brands()"
               optionLabel="name"
               optionValue="id"
               placeholder="Selecione uma marca"
+              [loading]="brandsLoading()"
               class="w-full">
+              <ng-template pTemplate="empty">
+                <div class="p-2">Nenhuma marca encontrada</div>
+              </ng-template>
             </p-dropdown>
 
             <small
@@ -130,11 +135,15 @@
             <p-dropdown
               id="categoryId"
               formControlName="categoryId"
-              [options]="categories"
+              [options]="categories()"
               optionLabel="name"
               optionValue="id"
               placeholder="Selecione uma categoria"
+              [loading]="categoriesLoading()"
               class="w-full">
+              <ng-template pTemplate="empty">
+                <div class="p-2">Nenhuma categoria encontrada</div>
+              </ng-template>
             </p-dropdown>
 
             <small

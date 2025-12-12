@@ -17,6 +17,10 @@ import { ProductFormData } from '../../models/product.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { BrandService } from '../../../brands/services/brand.service';
+import { CategoryService } from '../../../categories/services/category.service';
+import { Brand } from '../../../brands/models/brand.model';
+import { Category } from '../../../categories/models/category.model';
 
 @Component({
   selector: 'app-product-form',
@@ -42,6 +46,8 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
 export class ProductFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
+  private brandService = inject(BrandService);
+  private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -56,27 +62,16 @@ export class ProductFormComponent implements OnInit {
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
-  // Lista de marcas (pode vir de um serviço depois)
-  brands = [
-    { id: 1, name: 'Nike' },
-    { id: 2, name: 'Adidas' },
-    { id: 3, name: 'Apple' },
-    { id: 4, name: 'Samsung' },
-    { id: 5, name: 'Sony' }
-  ];
-
-  // Lista de categorias atualizada para usar id
-  categories = [
-    { id: 1, name: 'Eletrônicos' },
-    { id: 2, name: 'Vestuário' },
-    { id: 3, name: 'Alimentação' },
-    { id: 4, name: 'Livros' },
-    { id: 5, name: 'Esportes' },
-    { id: 6, name: 'Casa e Jardim' }
-  ];
+  // Data from API
+  brands = signal<Brand[]>([]);
+  categories = signal<Category[]>([]);
+  brandsLoading = signal(true);
+  categoriesLoading = signal(true);
 
   ngOnInit(): void {
     this.initForm();
+    this.loadBrands();
+    this.loadCategories();
     this.checkEditMode();
   }
 
@@ -84,11 +79,47 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      cost: [0, [Validators.required, Validators.min(0.01)]],
-      salePrice: [0, [Validators.required, Validators.min(0.01)]],
+      cost: ['', [Validators.required, Validators.min(0.01)]],
+      salePrice: ['', [Validators.required, Validators.min(0.01)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       brandId: ['', Validators.required],
       categoryId: ['', Validators.required]
+    });
+  }
+
+  private loadBrands(): void {
+    this.brandsLoading.set(true);
+    this.brandService.getAll().subscribe({
+      next: (response) => {
+        this.brands.set(response.data);
+        this.brandsLoading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar marcas'
+        });
+        this.brandsLoading.set(false);
+      }
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.categoryService.getAll().subscribe({
+      next: (response) => {
+        this.categories.set(response.data);
+        this.categoriesLoading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar categorias'
+        });
+        this.categoriesLoading.set(false);
+      }
     });
   }
 

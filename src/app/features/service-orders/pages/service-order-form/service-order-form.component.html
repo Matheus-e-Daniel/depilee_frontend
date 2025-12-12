@@ -1,0 +1,188 @@
+<!-- src/app/features/service-orders/pages/service-order-form/service-order-form.component.html -->
+<div class="service-order-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="service-order-form">
+        <div class="form-grid">
+          <!-- Linha 1: Número da Ordem e Cliente -->
+          <div class="field col-12 md:col-6">
+            <label for="orderNumber" class="block font-medium mb-2">Número da Ordem *</label>
+            <input
+              id="orderNumber"
+              type="text"
+              pInputText
+              formControlName="orderNumber"
+              class="w-full"
+              placeholder="Ex: OS-2025-001" />
+
+            <small
+              *ngIf="orderForm.get('orderNumber')?.invalid && orderForm.get('orderNumber')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="orderForm.get('orderNumber')?.errors?.['required']">Número da ordem é obrigatório</span>
+              <span *ngIf="orderForm.get('orderNumber')?.errors?.['minlength']">Mínimo 3 caracteres</span>
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="clientId" class="block font-medium mb-2">Cliente *</label>
+            <p-dropdown
+              id="clientId"
+              formControlName="clientId"
+              [options]="clients()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione o cliente"
+              [loading]="clientsLoading()"
+              class="w-full">
+              <ng-template pTemplate="empty">
+                <div class="p-2">Nenhum cliente encontrado</div>
+              </ng-template>
+            </p-dropdown>
+
+            <small
+              *ngIf="orderForm.get('clientId')?.invalid && orderForm.get('clientId')?.touched"
+              class="p-error block mt-1">
+              Cliente é obrigatório
+            </small>
+          </div>
+
+          <!-- Linha 2: Desconto e Total -->
+          <div class="field col-12 md:col-6">
+            <label for="discount" class="block font-medium mb-2">Desconto</label>
+            <p-inputNumber
+              id="discount"
+              formControlName="discount"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              class="w-full"
+              [showButtons]="false"
+              [minFractionDigits]="2">
+            </p-inputNumber>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="total" class="block font-medium mb-2">Total *</label>
+            <p-inputNumber
+              id="total"
+              formControlName="total"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              class="w-full"
+              [showButtons]="false"
+              [minFractionDigits]="2">
+            </p-inputNumber>
+
+            <small
+              *ngIf="orderForm.get('total')?.invalid && orderForm.get('total')?.touched"
+              class="p-error block mt-1">
+              <span *ngIf="orderForm.get('total')?.errors?.['required']">Total é obrigatório</span>
+              <span *ngIf="orderForm.get('total')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+            </small>
+          </div>
+
+          <!-- Linha 3: Status e Caixa -->
+          <div class="field col-12 md:col-6">
+            <label for="orderStatus" class="block font-medium mb-2">Status *</label>
+            <p-dropdown
+              id="orderStatus"
+              formControlName="orderStatus"
+              [options]="orderStatusOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione o status"
+              class="w-full">
+            </p-dropdown>
+
+            <small
+              *ngIf="orderForm.get('orderStatus')?.invalid && orderForm.get('orderStatus')?.touched"
+              class="p-error block mt-1">
+              Status é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="cashRegisterId" class="block font-medium mb-2">Caixa *</label>
+            <p-dropdown
+              id="cashRegisterId"
+              formControlName="cashRegisterId"
+              [options]="cashRegisters()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione o caixa"
+              [loading]="cashRegistersLoading()"
+              class="w-full">
+              <ng-template pTemplate="empty">
+                <div class="p-2">Nenhum caixa encontrado</div>
+              </ng-template>
+            </p-dropdown>
+
+            <small
+              *ngIf="orderForm.get('cashRegisterId')?.invalid && orderForm.get('cashRegisterId')?.touched"
+              class="p-error block mt-1">
+              Caixa é obrigatório
+            </small>
+          </div>
+
+          <!-- Linha 4: Observações (linha inteira) -->
+          <div class="field col-12">
+            <label for="notes" class="block font-medium mb-2">Observações</label>
+            <textarea
+              id="notes"
+              pInputTextarea
+              formControlName="notes"
+              rows="3"
+              class="w-full"
+              placeholder="Observações sobre a ordem (opcional)"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-text"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="orderForm.invalid || loading()">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  [type]="isEditMode() ? 'update' : 'create'"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmSubmit()"
+  (cancel)="cancelSubmit()">
+</app-confirmation-modal>

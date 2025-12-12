@@ -1,56 +1,55 @@
-<!-- src/app/features/clients/pages/client-list/client-list.component.html -->
-<div class="client-list-container w-full">
+<!-- src/app/features/service-orders/pages/service-order-list/service-order-list.component.html -->
+<div class="service-order-list-container w-full">
   <div class="header">
     <div class="title-section">
-      <h1>Clientes</h1>
-      <p>Gerencie seu cadastro de clientes</p>
+      <h1>Ordens de Serviço</h1>
+      <p>Gerencie as ordens de serviço</p>
     </div>
     <button
       pButton
       icon="pi pi-plus"
-      label="Novo Cliente"
+      label="Nova Ordem"
       class="p-button-primary"
-      (click)="newClient()">
+      (click)="newOrder()">
     </button>
   </div>
 
   <div class="card">
     <p-table
-      [value]="clients()"
+      [value]="orders()"
       [loading]="loading()"
       styleClass="p-datatable-striped"
       [paginator]="true"
       [rows]="10"
       [showCurrentPageReport]="true"
-      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes">
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ordens">
 
       <ng-template pTemplate="header">
         <tr>
-          <th>Nome</th>
-          <th>CPF</th>
-          <th>Telefone</th>
-          <th>Email</th>
-          <th>Cidade/UF</th>
+          <th>Número da Ordem</th>
+          <th>Cliente</th>
           <th>Status</th>
+          <th>Desconto</th>
+          <th>Total</th>
+          <th>Caixa</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
-      <ng-template pTemplate="body" let-client>
+      <ng-template pTemplate="body" let-order>
         <tr>
-          <td data-label="Nome">{{ client.name }}</td>
-          <td data-label="CPF">{{ formatCPF(client.cpf) }}</td>
-          <td data-label="Telefone">{{ formatPhone(client.phone) }}</td>
-          <td data-label="Email">{{ client.email }}</td>
-          <td data-label="Cidade/UF">{{ client.city }}/{{ client.state }}</td>
-          <td data-label="Status">
+          <td>{{ order.orderNumber }}</td>
+          <td>{{ order.clientName || 'N/A' }}</td>
+          <td>
             <p-tag
-              [value]="client.active ? 'Ativo' : 'Inativo'"
-              [severity]="client.active ? 'success' : 'danger'"
-              class="mr-1">
+              [value]="getStatusLabel(order.orderStatus)"
+              [severity]="getStatusSeverity(order.orderStatus)">
             </p-tag>
           </td>
-          <td data-label="Ações">
+          <td>{{ order.discount | currency:'BRL' }}</td>
+          <td>{{ order.total | currency:'BRL' }}</td>
+          <td>{{ order.cashRegisterName || 'N/A' }}</td>
+          <td>
             <div class="action-buttons">
               <button
                 pButton
@@ -58,7 +57,7 @@
                 pTooltip="Editar"
                 tooltipPosition="top"
                 class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
-                (click)="editClient(client.id)">
+                (click)="editOrder(order.id)">
               </button>
               <button
                 pButton
@@ -66,7 +65,7 @@
                 pTooltip="Excluir"
                 tooltipPosition="top"
                 class="p-button-rounded p-button-text p-button-sm p-button-danger"
-                (click)="deleteClient(client.id, client.name)">
+                (click)="deleteOrder(order.id, order.orderNumber)">
               </button>
             </div>
           </td>
@@ -77,15 +76,15 @@
         <tr>
           <td colspan="7" class="text-center py-5">
             <div class="empty-state">
-              <i class="pi pi-users" style="font-size: 3rem; color: #ccc"></i>
-              <h3>Nenhum cliente encontrado</h3>
-              <p>Comece adicionando seu primeiro cliente</p>
+              <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhuma ordem de serviço encontrada</h3>
+              <p>Comece adicionando sua primeira ordem</p>
               <button
                 pButton
                 icon="pi pi-plus"
-                label="Novo Cliente"
+                label="Nova Ordem"
                 class="p-button-outlined mt-3"
-                (click)="newClient()">
+                (click)="newOrder()">
               </button>
             </div>
           </td>
@@ -96,18 +95,13 @@
 </div>
 
 <p-toast></p-toast>
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
-  [visible]="!!clientToDelete"
+  [visible]="showDeleteConfirmation()"
   [type]="'delete'"
-  [loading]="confirmationLoading()"
   [message]="getDeleteMessage()"
+  [loading]="deleteLoading()"
   (confirm)="confirmDelete()"
   (cancel)="cancelDelete()">
 </app-confirmation-modal>
-
-<app-success-modal
-  [visible]="successModalService.visible()"
-  [message]="successModalService.message()"
-  (visibleChange)="successModalService.hide()">
-</app-success-modal>

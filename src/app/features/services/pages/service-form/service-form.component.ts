@@ -13,10 +13,12 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ServiceService } from '../../services/service.service';
-import { ServiceFormData, ServiceCategory } from '../../models/service.model';
+import { ServiceFormData } from '../../models/service.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { CategoryService } from '../../../categories/services/category.service';
+import { Category } from '../../../categories/models/category.model';
 
 @Component({
   selector: 'app-service-form',
@@ -42,6 +44,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
 export class ServiceFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private serviceService = inject(ServiceService);
+  private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -51,7 +54,7 @@ export class ServiceFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   serviceId = signal<string | null>(null);
-  categories = signal<ServiceCategory[]>([]);
+  categories = signal<Category[]>([]);
   categoriesLoading = signal(true);
 
   // Confirmation modal
@@ -76,9 +79,9 @@ export class ServiceFormComponent implements OnInit {
 
   private loadCategories(): void {
     this.categoriesLoading.set(true);
-    this.serviceService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories.set(categories);
+    this.categoryService.getAll().subscribe({
+      next: (response) => {
+        this.categories.set(response.data);
         this.categoriesLoading.set(false);
       },
       error: () => {
@@ -139,8 +142,12 @@ export class ServiceFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formData: ServiceFormData = this.serviceForm.value;
 
+    const payload = this.isEditMode()
+      ? { id: parseInt(this.serviceId()!), ...formData }
+      : formData;
+
     const operation = this.isEditMode()
-      ? this.serviceService.update(this.serviceId()!, formData)
+      ? this.serviceService.update(payload)
       : this.serviceService.create(formData);
 
     operation.subscribe({

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Service, ServiceFormData, ServiceCategory } from '../models/service.model';
+import { PagedResponse } from '../../products/product.index';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,8 @@ export class ServiceService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:5093/v1/services';
 
-  getAll(): Observable<Service[]> {
-    return this.http.get<Service[]>(this.apiUrl);
+  getAll(): Observable<PagedResponse<Service>> {
+    return this.http.get<PagedResponse<Service>>(this.apiUrl);
   }
 
   getById(id: string): Observable<Service> {
@@ -23,8 +24,8 @@ export class ServiceService {
     return this.http.post<Service>(this.apiUrl, service);
   }
 
-  update(id: string, service: ServiceFormData): Observable<Service> {
-    return this.http.put<Service>(`${this.apiUrl}/${id}`, service);
+  update(service: any): Observable<Service> {
+    return this.http.put<Service>(this.apiUrl, service);
   }
 
   delete(id: string): Observable<void> {

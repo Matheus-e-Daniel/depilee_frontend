@@ -1,39 +1,52 @@
 // src/app/features/service-order-items/models/service-order-item.model.ts
+export interface PagedResponse<T> {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  data: T[];
+}
+
 export interface ServiceOrderItem {
-  id: string;
-  serviceOrderId: string;
-  productId?: string;
-  serviceId?: string;
-  productName?: string;
-  serviceName?: string;
+  id: number;
+  serviceOrderId: number;
+  productId?: number;
+  serviceId?: number;
   quantity: number;
   unitPrice: number;
-  totalPrice: number;
-  createdAt: string;
-  updatedAt: string;
+  registrationDate?: string;
+  lastUpdate?: string;
+  status: number;
+  createdByUser?: string;
+  updatedByUser?: string;
+  // Campos de relacionamento
+  productName?: string;
+  serviceName?: string;
+  serviceOrderNumber?: string;
+  totalPrice?: number;
 }
 
 export interface ServiceOrderItemFormData {
-  serviceOrderId: string;
-  productId?: string;
-  serviceId?: string;
+  serviceOrderId: number;
+  productId?: number;
+  serviceId?: number;
   quantity: number;
   unitPrice: number;
 }
 
 export interface ServiceOrder {
-  id: string;
+  id: number;
   orderNumber: string;
 }
 
 export interface ProductOption {
-  id: string;
+  id: number;
   name: string;
-  price: number;
+  salePrice: number;
 }
 
 export interface ServiceOption {
-  id: string;
+  id: number;
   name: string;
   price: number;
 }

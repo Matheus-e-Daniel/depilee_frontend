@@ -1,19 +1,29 @@
 // src/app/features/clients/models/client.model.ts
+export interface PagedResponse<T> {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  data: T[];
+}
+
 export interface Client {
   id: string;
   name: string;
-  gender: 'M' | 'F' | 'O'; // M: Masculino, F: Feminino, O: Outro
+  gender: number; // 1: Masculino, 2: Feminino, 3: Outro
   cpf: string;
   phone: string;
   email: string;
   birth: string; // ISO date string
-  cep: string;
-  state: string;
-  city: string;
-  neighborhood: string;
-  street: string;
-  number: string;
-  complement?: string;
+  address: {
+    cep: string;
+    state: string;
+    city: string;
+    neighborhood: string;
+    street: string;
+    number: string;
+    complement?: string;
+  };
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -21,17 +31,18 @@ export interface Client {
 
 export interface ClientFormData {
   name: string;
-  gender: 'M' | 'F' | 'O';
+  gender: number; // 1: Masculino, 2: Feminino, 3: Outro
   cpf: string;
   phone: string;
   email: string;
-  birth: string;
-  cep: string;
-  state: string;
-  city: string;
-  neighborhood: string;
-  street: string;
-  number: string;
-  complement?: string;
-  active: boolean;
+  birth: string; // ISO format: "1990-05-15T00:00:00"
+  address: {
+    cep: string;
+    state: string;
+    city: string;
+    neighborhood: string;
+    street: string;
+    number: string;
+    complement?: string;
+  };
 }
