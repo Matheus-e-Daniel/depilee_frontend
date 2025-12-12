@@ -57,6 +57,8 @@ export class CalendarEventsComponent implements OnInit {
 
   // Dialog de novo evento
   showEventDialog = signal(false);
+  isEditingEvent = signal(false);
+  editingEventId: string | null = null;
   newEvent = {
     subject: '',
     description: '',
@@ -181,6 +183,8 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   openEventDialog(date: Date, time: string): void {
+    this.isEditingEvent.set(false);
+    this.editingEventId = null;
     this.eventDate = new Date(date);
     this.eventStartTime = time;
     this.eventEndTime = this.calculateEndTime(time);
@@ -197,6 +201,31 @@ export class CalendarEventsComponent implements OnInit {
       allDay: false,
       categoryColor: '#3b82f6'
     };
+    this.showEventDialog.set(true);
+  }
+
+  openEditEventDialog(event: CalendarEvent, $event: Event): void {
+    $event.stopPropagation();
+    this.isEditingEvent.set(true);
+    this.editingEventId = event.id;
+
+    const startDate = this.parseLocalDate(event.startDate || new Date().toISOString());
+    const endDate = this.parseLocalDate(event.endDate || new Date().toISOString());
+
+    this.eventDate = startDate;
+    this.eventStartTime = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+    this.eventEndTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+
+    this.newEvent = {
+      subject: event.subject,
+      description: event.description || '',
+      type: event.type,
+      startDate: event.startDate || '',
+      endDate: event.endDate || '',
+      allDay: event.allDay,
+      categoryColor: event.categoryColor || '#3b82f6'
+    };
+
     this.showEventDialog.set(true);
   }
 
@@ -232,26 +261,57 @@ export class CalendarEventsComponent implements OnInit {
     this.newEvent.endDate = this.combineDateAndTime(this.eventDate, this.eventEndTime);
 
     this.loading.set(true);
-    this.calendarEventService.create(this.newEvent).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Evento criado com sucesso!'
-        });
-        this.showEventDialog.set(false);
-        this.loadEvents();
-      },
-      error: (error) => {
-        console.error('Erro ao criar evento:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao criar evento'
-        });
-        this.loading.set(false);
-      }
-    });
+
+    if (this.isEditingEvent() && this.editingEventId) {
+      // Atualizar evento existente
+      const updatedEvent: CalendarEvent = {
+        id: this.editingEventId,
+        ...this.newEvent
+      };
+
+      this.calendarEventService.update(updatedEvent).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Evento atualizado com sucesso!'
+          });
+          this.showEventDialog.set(false);
+          this.loadEvents();
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar evento:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao atualizar evento'
+          });
+          this.loading.set(false);
+        }
+      });
+    } else {
+      // Criar novo evento
+      this.calendarEventService.create(this.newEvent).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Evento criado com sucesso!'
+          });
+          this.showEventDialog.set(false);
+          this.loadEvents();
+        },
+        error: (error) => {
+          console.error('Erro ao criar evento:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao criar evento'
+          });
+          this.loading.set(false);
+        }
+      });
+    }
   }
 
   deleteEvent(event: CalendarEvent, $event: Event): void {
@@ -379,21 +439,12 @@ export class CalendarEventsComponent implements OnInit {
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
 
-  // Método de teste para debug
-  testGetEvents(): void {
-    console.log('===== TESTE DE GET EVENTOS =====');
-    this.calendarEventService.getAll().subscribe({
-      next: (events) => {
-        console.log('✅ Sucesso! Eventos retornados:', events);
-        console.log('Quantidade de eventos:', events.length);
-        console.log('Detalhes dos eventos:', JSON.stringify(events, null, 2));
-      },
-      error: (error) => {
-        console.error('❌ Erro ao buscar eventos:', error);
-        console.error('Status:', error.status);
-        console.error('Mensagem:', error.message);
-      }
-    });
+  /**
+   * Trunca a descrição para exibir no máximo 50 caracteres
+   */
+  truncateDescription(description: string): string {
+    if (!description) return '';
+    return description.length > 30 ? description.substring(0, 30) + '...' : description;
   }
 
   private darkenColor(color: string): string {
@@ -436,5 +487,9 @@ export class CalendarEventsComponent implements OnInit {
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
+  }
+
+  getDialogTitle(): string {
+    return this.isEditingEvent() ? 'Editar Evento' : 'Novo Evento';
   }
 }
