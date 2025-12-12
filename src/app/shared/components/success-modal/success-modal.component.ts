@@ -10,20 +10,22 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   templateUrl: './success-modal.component.html',
   styleUrls: ['./success-modal.component.scss'],
   animations: [
-    trigger('modalAnimation', [
+    trigger('backdropAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0 }))
+      ])
+    ]),
+    trigger('cardAnimation', [
       transition(':enter', [
         style({ opacity: 0, transform: 'scale(0.7)' }),
         animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
       ]),
       transition(':leave', [
         animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.7)' }))
-      ])
-    ]),
-    trigger('checkAnimation', [
-      state('hidden', style({ opacity: 0, transform: 'scale(0)' })),
-      state('visible', style({ opacity: 1, transform: 'scale(1)' })),
-      transition('hidden => visible', [
-        animate('400ms 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275)')
       ])
     ])
   ]
@@ -34,8 +36,7 @@ export class SuccessModalComponent {
   @Output() visibleChange = new EventEmitter<boolean>();
 
   showLoader = signal(true);
-  showCheck = signal(false);
-  checkState = 'hidden';
+  showSuccess = signal(false);
 
   ngOnChanges(): void {
     if (this.visible) {
@@ -45,20 +46,18 @@ export class SuccessModalComponent {
 
   private showModal(): void {
     this.showLoader.set(true);
-    this.showCheck.set(false);
-    this.checkState = 'hidden';
+    this.showSuccess.set(false);
 
-    // Após 800ms, esconde o loader e mostra o check
+    // Após 1000ms, transforma o loader em check
     setTimeout(() => {
       this.showLoader.set(false);
-      this.showCheck.set(true);
-      this.checkState = 'visible';
+      this.showSuccess.set(true);
 
       // Após 1500ms, fecha o modal automaticamente
       setTimeout(() => {
         this.close();
       }, 1500);
-    }, 800);
+    }, 1000);
   }
 
   close(): void {

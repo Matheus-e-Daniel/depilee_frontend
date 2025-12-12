@@ -27,40 +27,92 @@
   position: relative;
 }
 
-// Loader Spinner
-.loader-container {
+// Icon Container
+.icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 120px;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #10b981;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.spinner-check {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  transition: transform 0.6s ease;
+
+  &.transform-to-check {
+    .spinner-svg {
+      opacity: 0;
+      transform: rotate(180deg) scale(0);
+    }
+
+    .check-svg {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+
+      .check-circle {
+        animation: fillCircle 0.4s ease-in-out forwards;
+      }
+
+      .check-mark {
+        animation: strokeCheck 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.3s forwards;
+      }
+    }
+  }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+// Spinner
+.spinner-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  transition: all 0.6s ease;
+  animation: rotate 1s linear infinite;
+}
+
+.spinner-circle {
+  stroke: #10b981;
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
 }
 
 // Check Icon
-.check-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 120px;
-}
-
-.check-icon {
-  width: 80px;
-  height: 80px;
-  display: block;
+.check-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: rotate(-180deg) scale(0);
+  transition: all 0.6s ease;
 }
 
 .check-circle {
@@ -68,7 +120,6 @@
   stroke-width: 2;
   stroke-miterlimit: 10;
   fill: none;
-  animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
 }
 
 .check-mark {
@@ -79,27 +130,17 @@
   stroke-miterlimit: 10;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
-  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
 
-@keyframes stroke {
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes scale {
-  0%, 100% {
-    transform: none;
-  }
-  50% {
-    transform: scale3d(1.1, 1.1, 1);
-  }
-}
-
-@keyframes fill {
+@keyframes fillCircle {
   100% {
     fill: rgba(16, 185, 129, 0.1);
+  }
+}
+
+@keyframes strokeCheck {
+  100% {
+    stroke-dashoffset: 0;
   }
 }
 
@@ -110,7 +151,7 @@
   font-weight: 600;
   color: #1f2937;
   text-align: center;
-  animation: fadeInUp 0.4s ease-out 0.3s both;
+  animation: fadeInUp 0.4s ease-out both;
 }
 
 @keyframes fadeInUp {
@@ -131,7 +172,7 @@
     padding: 2rem 1.5rem;
   }
 
-  .check-icon {
+  .spinner-check {
     width: 60px;
     height: 60px;
   }
