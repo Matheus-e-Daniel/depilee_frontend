@@ -76,6 +76,7 @@ export class CalendarEventsComponent implements OnInit {
 
   // Drag and drop
   draggedEvent: CalendarEvent | null = null;
+  dragOverEvent: CalendarEvent | null = null;
 
   // Loading
   loading = signal(false);
@@ -345,10 +346,93 @@ export class CalendarEventsComponent implements OnInit {
     $event.preventDefault();
   }
 
+  onEventDragOver(event: CalendarEvent, $event: DragEvent): void {
+    $event.preventDefault();
+    $event.stopPropagation();
+    this.dragOverEvent = event;
+  }
+
+  onEventDrop(targetEvent: CalendarEvent, $event: DragEvent): void {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    if (!this.draggedEvent || this.draggedEvent.id === targetEvent.id) {
+      this.dragOverEvent = null;
+      return;
+    }
+
+    // Verificar se estão no mesmo horário
+    const draggedStartDate = this.parseLocalDate(this.draggedEvent.startDate || '');
+    const targetStartDate = this.parseLocalDate(targetEvent.startDate || '');
+
+    if (!this.isSameDay(draggedStartDate, targetStartDate) ||
+        draggedStartDate.getHours() !== targetStartDate.getHours()) {
+      // Se não estão no mesmo horário, não faz nada
+      this.dragOverEvent = null;
+      this.draggedEvent = null;
+      return;
+    }
+
+    // Trocar apenas a ordem de exibição (displayOrder)
+    const tempOrder = this.draggedEvent.displayOrder || 0;
+
+    const updatedDraggedEvent: CalendarEvent = {
+      ...this.draggedEvent,
+      displayOrder: targetEvent.displayOrder || 0
+    };
+
+    const updatedTargetEvent: CalendarEvent = {
+      ...targetEvent,
+      displayOrder: tempOrder
+    };
+
+    // Atualizar ambos os eventos
+    this.loading.set(true);
+    this.calendarEventService.update(updatedDraggedEvent).subscribe({
+      next: () => {
+        this.calendarEventService.update(updatedTargetEvent).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Eventos reordenados'
+            });
+            this.loadEvents();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Falha ao reordenar eventos'
+            });
+            this.loading.set(false);
+          }
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao reordenar eventos'
+        });
+        this.loading.set(false);
+      }
+    });
+
+    this.draggedEvent = null;
+    this.dragOverEvent = null;
+  }
+
   onDrop($event: DragEvent, date: Date, time: string): void {
     $event.preventDefault();
 
     if (!this.draggedEvent) return;
+
+    // Se foi dropado sobre outro evento, não fazer nada (já foi tratado em onEventDrop)
+    if (this.dragOverEvent) {
+      this.dragOverEvent = null;
+      return;
+    }
 
     const startDateTime = this.combineDateAndTime(date, time);
     const endDateTime = this.combineDateAndTime(date, this.calculateEndTime(time));
@@ -381,12 +465,14 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {
-    return day.events.filter(event => {
-      if (!event.startDate) return false;
-      const startDate = this.parseLocalDate(event.startDate);
-      const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
-      return eventHour === time;
-    });
+    return day.events
+      .filter(event => {
+        if (!event.startDate) return false;
+        const startDate = this.parseLocalDate(event.startDate);
+        const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
+        return eventHour === time;
+      })
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   previousWeek(): void {
