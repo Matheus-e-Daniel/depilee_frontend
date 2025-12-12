@@ -1,0 +1,197 @@
+<!-- src/app/features/calendar-events/calendar-events.component.html -->
+<div class="calendar-events-container">
+  <!-- Header -->
+  <div class="calendar-header">
+    <div class="header-left">
+      <h1>Calendário de Eventos</h1>
+      <div class="week-navigation">
+        <button pButton icon="pi pi-chevron-left" class="p-button-text p-button-sm" (click)="previousWeek()"></button>
+        <button pButton label="Hoje" class="p-button-text p-button-sm" (click)="goToToday()"></button>
+        <button pButton icon="pi pi-chevron-right" class="p-button-text p-button-sm" (click)="nextWeek()"></button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button
+        pButton
+        label="🔍 Testar GET"
+        class="p-button-warning p-button-sm"
+        (click)="testGetEvents()"
+        style="margin-right: 1rem;">
+      </button>
+      <p-calendar
+        [(ngModel)]="selectedDate"
+        (onSelect)="onDateSelect($event)"
+        [inline]="false"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        placeholder="Selecionar data">
+      </p-calendar>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-grid-wrapper">
+    <div class="calendar-grid">
+      <!-- Header com dias da semana -->
+      <div class="grid-header">
+        <div class="time-column-header">Horário</div>
+        <div class="day-header" *ngFor="let day of weekDays()" [class.today]="day.isToday">
+          <div class="day-name">{{ day.dayName }}</div>
+          <div class="day-number">{{ day.dayNumber }}</div>
+        </div>
+      </div>
+
+      <!-- Grid com horários e eventos -->
+      <div class="grid-body">
+        <div class="time-row" *ngFor="let slot of timeSlots">
+          <div class="time-cell">
+            <span class="time-label">{{ slot.displayHour }}</span>
+          </div>
+
+          <div
+            class="day-cell"
+            *ngFor="let day of weekDays()"
+            [class.today]="day.isToday"
+            (click)="openEventDialog(day.date, slot.hour)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop($event, day.date, slot.hour)">
+
+            <!-- Eventos neste slot -->
+            <div
+              class="event-card"
+              *ngFor="let event of getEventsForSlot(day, slot.hour)"
+              [ngStyle]="getEventStyle(event)"
+              draggable="true"
+              (dragstart)="onDragStart(event)"
+              (click)="$event.stopPropagation()">
+
+              <div class="event-content">
+                <div class="event-title">{{ event.subject }}</div>
+                <div class="event-time">{{ getEventStartTime(event) }} - {{ getEventEndTime(event) }}</div>
+              </div>
+
+              <button
+                class="event-delete"
+                (click)="deleteEvent(event, $event)">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog para novo evento -->
+<p-dialog
+  [(visible)]="showEventDialog"
+  [style]="{width: '450px'}"
+  header="Novo Evento"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="event-dialog">
+
+  <div class="event-form">
+    <div class="form-field">
+      <label for="subject">Assunto *</label>
+      <input
+        id="subject"
+        type="text"
+        pInputText
+        [(ngModel)]="newEvent.subject"
+        placeholder="Digite o assunto do evento"
+        class="w-full" />
+    </div>
+
+    <div class="form-field">
+      <label for="description">Descrição</label>
+      <textarea
+        id="description"
+        pInputTextarea
+        [(ngModel)]="newEvent.description"
+        placeholder="Descrição (opcional)"
+        rows="3"
+        class="w-full">
+      </textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label for="type">Tipo *</label>
+        <select
+          id="type"
+          [(ngModel)]="newEvent.type"
+          class="w-full">
+          <option [value]="1">Tipo 1</option>
+          <option [value]="2">Tipo 2</option>
+          <option [value]="3">Tipo 3</option>
+          <option [value]="4">Tipo 4</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="allDay" class="checkbox-label">
+          <input
+            id="allDay"
+            type="checkbox"
+            [(ngModel)]="newEvent.allDay"
+            class="checkbox-input" />
+          <span>Dia inteiro</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label for="startTime">Hora Início</label>
+        <input
+          id="startTime"
+          type="time"
+          pInputText
+          [(ngModel)]="eventStartTime"
+          [disabled]="newEvent.allDay"
+          class="w-full" />
+      </div>
+
+      <div class="form-field">
+        <label for="endTime">Hora Fim</label>
+        <input
+          id="endTime"
+          type="time"
+          pInputText
+          [(ngModel)]="eventEndTime"
+          [disabled]="newEvent.allDay"
+          class="w-full" />
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="categoryColor">Cor da Categoria</label>
+      <input
+        id="categoryColor"
+        type="color"
+        [(ngModel)]="newEvent.categoryColor"
+        class="color-picker" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      class="p-button-text"
+      (click)="showEventDialog.set(false)">
+    </button>
+    <button
+      pButton
+      label="Salvar"
+      class="p-button-primary"
+      (click)="saveEvent()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

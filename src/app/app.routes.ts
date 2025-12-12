@@ -10,7 +10,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    canActivate: [],
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/layout/layout.component').then(m => m.LayoutComponent),
     children: [
@@ -132,6 +132,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/categories/pages/category-form/category-form.component')
             .then(m => m.CategoryFormComponent)
+      },
+      // Rota de calendário de eventos
+      {
+        path: 'calendar-events',
+        loadComponent: () =>
+          import('./features/calendar-events/calendar-events.component')
+            .then(m => m.CalendarEventsComponent)
       },
       {
         path: '',

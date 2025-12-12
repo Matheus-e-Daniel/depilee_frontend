@@ -20,9 +20,7 @@ export interface LoginResponse {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-
-  // Variável SIMPLES para controlar estado local
-  private isAuthenticated = false;
+  private readonly AUTH_KEY = 'isAuthenticated';
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     console.log('🔄 Enviando login:', credentials.email);
@@ -39,23 +37,27 @@ export class AuthService {
       withCredentials: true
     }).subscribe({
       next: () => {
-        this.isAuthenticated = false;
+        this.setAuthenticated(false);
         this.router.navigate(['/login']);
       },
       error: () => {
-        this.isAuthenticated = false;
+        this.setAuthenticated(false);
         this.router.navigate(['/login']);
       }
     });
   }
 
-  // Método SIMPLES - sempre retorna true se houve login bem-sucedido
+  // Método SIMPLES - verifica localStorage
   isAuthenticatedUser(): boolean {
-    return this.isAuthenticated;
+    return localStorage.getItem(this.AUTH_KEY) === 'true';
   }
 
   // Método para setar estado após login bem-sucedido
   setAuthenticated(value: boolean): void {
-    this.isAuthenticated = value;
+    if (value) {
+      localStorage.setItem(this.AUTH_KEY, 'true');
+    } else {
+      localStorage.removeItem(this.AUTH_KEY);
+    }
   }
 }
