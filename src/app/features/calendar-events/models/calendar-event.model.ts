@@ -8,6 +8,7 @@ export interface CalendarEvent {
   endDate?: string | null; // formato ISO: YYYY-MM-DDTHH:mm:ss
   allDay: boolean;
   categoryColor: string;
+  displayOrder?: number; // ordem de exibição para eventos no mesmo horário
 }
 
 export interface CalendarEventFormData {
