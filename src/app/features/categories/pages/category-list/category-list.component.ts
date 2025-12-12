@@ -5,11 +5,13 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-category-list',
@@ -20,21 +22,26 @@ import { Category } from '../../models/category.model';
     ButtonModule,
     TableModule,
     ToastModule,
-    ConfirmDialogModule,
-    TooltipModule
+    TooltipModule,
+    ConfirmationModalComponent,
+    SuccessModalComponent
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService],
   templateUrl: './category-list.component.html',
   styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent implements OnInit {
   private categoryService = inject(CategoryService);
-  private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  successModalService = inject(SuccessModalService);
 
   categories = signal<Category[]>([]);
   loading = signal(true);
+
+  // Delete confirmation
+  categoryToDelete: { id: string; name: string } | null = null;
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.loadCategories();
@@ -64,32 +71,43 @@ export class CategoryListComponent implements OnInit {
   }
 
   deleteCategory(id: string, name: string): void {
-    this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir "${name}"?`,
-      header: 'Confirmar Exclusão',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sim',
-      rejectLabel: 'Não',
-      accept: () => {
-        this.categoryService.delete(id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Categoria excluída'
-            });
-            this.loadCategories();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao excluir categoria'
-            });
-          }
+    this.categoryToDelete = { id, name };
+  }
+
+  getDeleteMessage(): string {
+    return this.categoryToDelete ? `Tem certeza que deseja excluir "${this.categoryToDelete.name}"?` : '';
+  }
+
+  confirmDelete(): void {
+    if (!this.categoryToDelete) return;
+
+    this.confirmationLoading.set(true);
+    this.categoryService.delete(this.categoryToDelete.id).subscribe({
+      next: () => {
+        this.categoryToDelete = null;
+        this.confirmationLoading.set(false);
+        this.successModalService.show('Categoria excluída com sucesso!');
+
+        setTimeout(() => {
+          this.successModalService.hide();
+        }, 2500);
+
+        this.loadCategories();
+      },
+      error: () => {
+        this.categoryToDelete = null;
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir categoria'
         });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.categoryToDelete = null;
   }
 
   newCategory(): void {

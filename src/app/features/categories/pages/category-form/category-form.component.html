@@ -73,4 +73,22 @@
 </div>
 
 <p-toast></p-toast>
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  [type]="isEditMode() ? 'update' : 'create'"
+  [message]="isEditMode()
+    ? 'Tem certeza que deseja atualizar esta categoria?'
+    : 'Tem certeza que deseja cadastrar esta categoria?'"
+  [confirmLabel]="isEditMode() ? 'Atualizar' : 'Cadastrar'"
+  cancelLabel="Cancelar"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmSubmit()"
+  (cancel)="cancelSubmit()">
+</app-confirmation-modal>
+
+<app-success-modal
+  [visible]="successModalService.visible()"
+  [message]="successModalService.message()"
+  (visibleChange)="successModalService.hide()">
+</app-success-modal>

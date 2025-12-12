@@ -14,6 +14,7 @@ import { ServiceOrderItemService } from '../../services/service-order-item.servi
 import { ServiceOrderItemFormData, ServiceOrder, ProductOption, ServiceOption } from '../../models/service-order-item.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-service-order-item-form',
@@ -27,7 +28,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     CardModule,
     ToastModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './service-order-item-form.component.html',
@@ -51,6 +53,10 @@ export class ServiceOrderItemFormComponent implements OnInit {
   serviceOrdersLoading = signal(true);
   productsLoading = signal(true);
   servicesLoading = signal(true);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.initForm();
@@ -200,7 +206,11 @@ export class ServiceOrderItemFormComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
     const formData: ServiceOrderItemFormData = this.itemForm.value;
 
     // Remove campos vazios
@@ -213,6 +223,8 @@ export class ServiceOrderItemFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.successModalService.show(
           this.isEditMode()
             ? 'Item atualizado com sucesso!'
@@ -225,14 +237,19 @@ export class ServiceOrderItemFormComponent implements OnInit {
         }, 2500);
       },
       error: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
           detail: 'Falha ao salvar item'
         });
-        this.loading.set(false);
       }
     });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
   }
 
   onCancel(): void {

@@ -16,6 +16,7 @@ import { ServiceService } from '../../services/service.service';
 import { ServiceFormData, ServiceCategory } from '../../models/service.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-service-form',
@@ -31,7 +32,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     CardModule,
     ToastModule,
     CheckboxModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './service-form.component.html',
@@ -51,6 +53,10 @@ export class ServiceFormComponent implements OnInit {
   serviceId = signal<string | null>(null);
   categories = signal<ServiceCategory[]>([]);
   categoriesLoading = signal(true);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.initForm();
@@ -126,7 +132,11 @@ export class ServiceFormComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
     const formData: ServiceFormData = this.serviceForm.value;
 
     const operation = this.isEditMode()
@@ -135,6 +145,8 @@ export class ServiceFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.successModalService.show(
           this.isEditMode()
             ? 'Serviço atualizado com sucesso!'
@@ -147,14 +159,19 @@ export class ServiceFormComponent implements OnInit {
         }, 2500);
       },
       error: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
           detail: 'Falha ao salvar serviço'
         });
-        this.loading.set(false);
       }
     });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
   }
 
   onCancel(): void {

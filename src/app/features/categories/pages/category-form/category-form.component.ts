@@ -14,6 +14,7 @@ import { CategoryService } from '../../services/category.service';
 import { CategoryFormData } from '../../models/category.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-category-form',
@@ -27,7 +28,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     CardModule,
     ToastModule,
     TooltipModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './category-form.component.html',
@@ -45,6 +47,10 @@ export class CategoryFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   categoryId = signal<string | null>(null);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.initForm();
@@ -95,7 +101,11 @@ export class CategoryFormComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
     const formData: CategoryFormData = this.categoryForm.value;
 
     const payload = this.isEditMode()
@@ -108,6 +118,8 @@ export class CategoryFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        this.confirmationLoading.set(false);
+        this.showConfirmation.set(false);
         this.successModalService.show(
           this.isEditMode()
             ? 'Categoria atualizada com sucesso!'
@@ -120,14 +132,18 @@ export class CategoryFormComponent implements OnInit {
         }, 2500);
       },
       error: () => {
+        this.confirmationLoading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
           detail: 'Falha ao salvar categoria'
         });
-        this.loading.set(false);
       }
     });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
   }
 
   onCancel(): void {

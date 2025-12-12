@@ -6,10 +6,12 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { ServiceService } from '../../services/service.service';
 import { Service } from '../../models/service.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-service-list',
@@ -21,20 +23,25 @@ import { Service } from '../../models/service.model';
     TableModule,
     TagModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmationModalComponent,
+    SuccessModalComponent
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.scss']
 })
 export class ServiceListComponent implements OnInit {
   private serviceService = inject(ServiceService);
-  private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  successModalService = inject(SuccessModalService);
 
   services = signal<Service[]>([]);
   loading = signal(true);
+
+  // Delete confirmation
+  serviceToDelete: { id: string; name: string } | null = null;
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.loadServices();
@@ -63,32 +70,43 @@ export class ServiceListComponent implements OnInit {
   }
 
   deleteService(id: string, name: string): void {
-    this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir "${name}"?`,
-      header: 'Confirmar Exclusão',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sim',
-      rejectLabel: 'Não',
-      accept: () => {
-        this.serviceService.delete(id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Serviço excluído'
-            });
-            this.loadServices();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao excluir serviço'
-            });
-          }
+    this.serviceToDelete = { id, name };
+  }
+
+  getDeleteMessage(): string {
+    return this.serviceToDelete ? `Tem certeza que deseja excluir "${this.serviceToDelete.name}"?` : '';
+  }
+
+  confirmDelete(): void {
+    if (!this.serviceToDelete) return;
+
+    this.confirmationLoading.set(true);
+    this.serviceService.delete(this.serviceToDelete.id).subscribe({
+      next: () => {
+        this.serviceToDelete = null;
+        this.confirmationLoading.set(false);
+        this.successModalService.show('Serviço excluído com sucesso!');
+
+        setTimeout(() => {
+          this.successModalService.hide();
+        }, 2500);
+
+        this.loadServices();
+      },
+      error: () => {
+        this.serviceToDelete = null;
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir serviço'
         });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.serviceToDelete = null;
   }
 
   newService(): void {

@@ -6,10 +6,12 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 @Component({
   selector: 'app-client-list',
@@ -21,20 +23,25 @@ import { Client } from '../../models/client.model';
     TableModule,
     TagModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmationModalComponent,
+    SuccessModalComponent
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService],
   templateUrl: './client-list.component.html',
   styleUrls: ['./client-list.component.scss']
 })
 export class ClientListComponent implements OnInit {
   private clientService = inject(ClientService);
-  private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
+  successModalService = inject(SuccessModalService);
 
   clients = signal<Client[]>([]);
   loading = signal(true);
+
+  // Delete confirmation
+  clientToDelete: { id: string; name: string } | null = null;
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.loadClients();
@@ -63,32 +70,43 @@ export class ClientListComponent implements OnInit {
   }
 
   deleteClient(id: string, name: string): void {
-    this.confirmationService.confirm({
-      message: `Tem certeza que deseja excluir "${name}"?`,
-      header: 'Confirmar Exclusão',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sim',
-      rejectLabel: 'Não',
-      accept: () => {
-        this.clientService.delete(id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Cliente excluído'
-            });
-            this.loadClients();
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao excluir cliente'
-            });
-          }
+    this.clientToDelete = { id, name };
+  }
+
+  getDeleteMessage(): string {
+    return this.clientToDelete ? `Tem certeza que deseja excluir "${this.clientToDelete.name}"?` : '';
+  }
+
+  confirmDelete(): void {
+    if (!this.clientToDelete) return;
+
+    this.confirmationLoading.set(true);
+    this.clientService.delete(this.clientToDelete.id).subscribe({
+      next: () => {
+        this.clientToDelete = null;
+        this.confirmationLoading.set(false);
+        this.successModalService.show('Cliente excluído com sucesso!');
+
+        setTimeout(() => {
+          this.successModalService.hide();
+        }, 2500);
+
+        this.loadClients();
+      },
+      error: () => {
+        this.clientToDelete = null;
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir cliente'
         });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.clientToDelete = null;
   }
 
   newClient(): void {

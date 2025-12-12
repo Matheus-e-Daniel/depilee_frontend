@@ -269,3 +269,11 @@
 
 <p-toast></p-toast>
 <app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  [type]="isEditMode() ? 'update' : 'create'"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmSubmit()"
+  (cancel)="cancelSubmit()">
+</app-confirmation-modal>

@@ -16,6 +16,7 @@ import { ProductService } from '../../services/product.service';
 import { ProductFormData } from '../../models/product.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-product-form',
@@ -31,7 +32,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ToastModule,
     DropdownModule,
     CheckboxModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './product-form.component.html',
@@ -49,6 +51,10 @@ export class ProductFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   productId = signal<string | null>(null);
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   // Lista de marcas (pode vir de um serviço depois)
   brands = [
@@ -123,45 +129,56 @@ export class ProductFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (this.productForm.invalid) {
-    this.markFormGroupTouched();
-    return;
+    if (this.productForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
+    this.showConfirmation.set(true);
   }
 
-  this.loading.set(true);
-  const formData: ProductFormData = this.productForm.value;
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
+    const formData: ProductFormData = this.productForm.value;
 
-  const payload = this.isEditMode()
-    ? { id: this.productId(), ...formData }
-    : formData;
+    const payload = this.isEditMode()
+      ? { id: this.productId(), ...formData }
+      : formData;
 
-  const operation = this.isEditMode()
-    ? this.productService.update(payload)
-    : this.productService.create(payload);
+    const operation = this.isEditMode()
+      ? this.productService.update(payload)
+      : this.productService.create(payload);
 
-  operation.subscribe({
-    next: () => {
-      this.successModalService.show(
-        this.isEditMode()
-          ? 'Produto atualizado com sucesso!'
-          : 'Produto criado com sucesso!'
-      );
+    operation.subscribe({
+      next: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
+        this.successModalService.show(
+          this.isEditMode()
+            ? 'Produto atualizado com sucesso!'
+            : 'Produto criado com sucesso!'
+        );
 
-      setTimeout(() => {
-        this.successModalService.hide();
-        this.router.navigate(['/products']);
-      }, 2500);
-    },
-    error: () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Falha ao salvar produto'
-      });
-      this.loading.set(false);
-    }
-  });
-}
+        setTimeout(() => {
+          this.successModalService.hide();
+          this.router.navigate(['/products']);
+        }, 2500);
+      },
+      error: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao salvar produto'
+        });
+      }
+    });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
+  }
 
 
   onCancel(): void {

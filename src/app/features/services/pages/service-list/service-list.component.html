@@ -93,4 +93,18 @@
 </div>
 
 <p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+
+<app-confirmation-modal
+  [visible]="!!serviceToDelete"
+  [type]="'delete'"
+  [loading]="confirmationLoading()"
+  [message]="getDeleteMessage()"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-success-modal
+  [visible]="successModalService.visible()"
+  [message]="successModalService.message()"
+  (visibleChange)="successModalService.hide()">
+</app-success-modal>

@@ -16,6 +16,7 @@ import { ClientService } from '../../services/client.service';
 import { ClientFormData } from '../../models/client.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-client-form',
@@ -32,7 +33,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     CardModule,
     ToastModule,
     CheckboxModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   providers: [MessageService],
   templateUrl: './client-form.component.html',
@@ -50,7 +52,11 @@ export class ClientFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   clientId = signal<string | null>(null);
-  maxDate: Date = new Date(); // ✅ Inicializado diretamente
+  maxDate: Date = new Date();
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
 
   genderOptions = [
     { label: 'Masculino', value: 'M' },
@@ -162,7 +168,11 @@ export class ClientFormComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
     const formData: ClientFormData = {
       ...this.clientForm.value,
       birth: this.formatDate(this.clientForm.get('birth')?.value)
@@ -174,6 +184,8 @@ export class ClientFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.successModalService.show(
           this.isEditMode()
             ? 'Cliente atualizado com sucesso!'
@@ -186,14 +198,19 @@ export class ClientFormComponent implements OnInit {
         }, 2500);
       },
       error: () => {
+        this.showConfirmation.set(false);
+        this.confirmationLoading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
           detail: 'Falha ao salvar cliente'
         });
-        this.loading.set(false);
       }
     });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
   }
 
   onCancel(): void {
