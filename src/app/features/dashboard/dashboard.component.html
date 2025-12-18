@@ -49,11 +49,11 @@
           <div class="card-body">
             <span class="value">{{ totalClientes | number }}</span>
             <div class="card-footer">
-              <span class="indicator positive">
-                <i class="pi pi-arrow-up"></i>
+              <span class="indicator" [ngClass]="crescimentoClientes.startsWith('+') ? 'positive' : crescimentoClientes.startsWith('-') ? 'negative' : 'neutral'">
+                <i class="pi" [ngClass]="crescimentoClientes.startsWith('+') ? 'pi-arrow-up' : crescimentoClientes.startsWith('-') ? 'pi-arrow-down' : 'pi-minus'"></i>
                 {{ crescimentoClientes }}
               </span>
-              <span class="trend-label">vs. último mês</span>
+              <span class="trend-label">vs. mês anterior</span>
             </div>
           </div>
         </div>

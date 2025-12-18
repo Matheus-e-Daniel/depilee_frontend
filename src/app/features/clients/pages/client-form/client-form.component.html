@@ -58,15 +58,13 @@
 
           <div class="field col-4 md:col-3">
             <label for="birth" class="block font-medium mb-2">Data de Nascimento *</label>
-            <p-calendar
+            <p-inputMask
               id="birth"
               formControlName="birth"
-              dateFormat="dd/mm/yy"
-              [showIcon]="true"
-              [maxDate]="maxDate"
+              mask="99/99/9999"
               placeholder="dd/mm/aaaa"
               class="w-full">
-            </p-calendar>
+            </p-inputMask>
             <small
               *ngIf="clientForm.get('birth')?.invalid && clientForm.get('birth')?.touched"
               class="p-error block mt-1">
@@ -131,13 +129,15 @@
 
           <div class="field col-12 md:col-3">
             <label for="cep" class="block font-medium mb-2">CEP *</label>
-            <p-inputMask
+           <p-inputMask
               id="cep"
               formControlName="cep"
               mask="99999-999"
               placeholder="00000-000"
-              (onComplete)="searchCep()"
               class="w-full">
+              <ng-template pTemplate="suffix">
+                <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
+              </ng-template>
             </p-inputMask>
             <small
               *ngIf="clientForm.get('cep')?.invalid && clientForm.get('cep')?.touched"

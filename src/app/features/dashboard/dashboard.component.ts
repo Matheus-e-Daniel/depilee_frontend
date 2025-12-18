@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -7,6 +7,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ListboxModule } from 'primeng/listbox';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ClientService } from '../clients/services/client.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
+
+  private clientService = inject(ClientService);
 
   loading = signal(true);
 
@@ -61,10 +64,61 @@ export class DashboardComponent implements OnInit {
   loadData() {
     this.loading.set(true);
 
-    setTimeout(() => {
-      this.totalClientes = 1480;
-      this.crescimentoClientes = '+14%';
+    // Buscar total de clientes do endpoint real
+    this.clientService.getAll().subscribe({
+      next: (response) => {
+        this.totalClientes = response.totalCount;
 
+        // Calcular crescimento: comparar total de clientes agora vs total que existia no fim do mês passado
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+        console.log('=== CÁLCULO DE CRESCIMENTO ===');
+        console.log('Data atual:', now);
+        console.log('Mês atual:', currentMonth, '/', currentYear, '(0=Jan, 11=Dez)');
+        console.log('Mês anterior:', lastMonth, '/', lastMonthYear);
+
+        // Total de clientes AGORA (todos cadastrados até hoje)
+        const totalAtual = response.totalCount;
+
+        // Total de clientes que EXISTIAM até o final do mês passado
+        const totalMesPassado = response.data.filter(client => {
+          const regDate = new Date(client.registrationDate);
+          // Conta se foi cadastrado ANTES do início deste mês
+          const inicioMesAtual = new Date(currentYear, currentMonth, 1);
+          return regDate < inicioMesAtual;
+        }).length;
+
+        console.log('Total de clientes AGORA:', totalAtual);
+        console.log('Total que existia no fim do mês passado:', totalMesPassado);
+
+        // Calcular porcentagem de crescimento
+        if (totalMesPassado === 0) {
+          this.crescimentoClientes = totalAtual > 0 ? '+100%' : '0%';
+          console.log('Mês passado = 0, resultado:', this.crescimentoClientes);
+        } else {
+          const diferenca = totalAtual - totalMesPassado;
+          const crescimento = (diferenca / totalMesPassado) * 100;
+          const sinal = crescimento > 0 ? '+' : '';
+          this.crescimentoClientes = `${sinal}${crescimento.toFixed(0)}%`;
+          console.log('Diferença:', diferenca);
+          console.log('Crescimento:', crescimento);
+          console.log('Resultado final:', this.crescimentoClientes);
+        }
+        console.log('==============================');
+      },
+      error: (error) => {
+        console.error('Erro ao carregar clientes:', error);
+        this.totalClientes = 0;
+        this.crescimentoClientes = '0%';
+      }
+    });
+
+    setTimeout(() => {
       this.valorCaixa = 50250.35;
       this.crescimentoCaixa = '+10%';
 

@@ -9,7 +9,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(AuthService);
 
-  // SIMPLES: Só adiciona withCredentials para todas as requisições
+  // Não interceptar chamadas para APIs externas (como ViaCEP)
+  const isExternalApi = !req.url.includes('localhost') &&
+                        !req.url.includes('127.0.0.1') &&
+                        !req.url.includes('depilee') &&
+                        req.url.includes('http');
+
+  // Se for API externa, passa a requisição sem modificar
+  if (isExternalApi) {
+    console.log('🌐 Requisição externa detectada, não interceptando:', req.url);
+    return next(req);
+  }
+
+  // SIMPLES: Só adiciona withCredentials para requisições internas
   const clonedReq = req.clone({
     withCredentials: true
   });

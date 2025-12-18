@@ -2,6 +2,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputMaskModule } from 'primeng/inputmask';
 import { DropdownModule } from 'primeng/dropdown';
@@ -46,6 +48,7 @@ export class ClientFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
+  private http = inject(HttpClient);
   successModalService = inject(SuccessModalService);
 
   clientForm!: FormGroup;
@@ -53,6 +56,8 @@ export class ClientFormComponent implements OnInit {
   isEditMode = signal(false);
   clientId = signal<string | null>(null);
   maxDate: Date = new Date();
+  loadingCep = signal(false);
+  isLoadingClientData = false; // Flag para indicar se está carregando dados do cliente
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -101,20 +106,111 @@ export class ClientFormComponent implements OnInit {
 
   private initForm(): void {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      gender: ['', Validators.required],
-      cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
-      phone: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      birth: ['', Validators.required],
-      cep: ['', [Validators.required, Validators.pattern(/^\d{5}-\d{3}$/)]],
-      state: ['', Validators.required],
-      city: ['', Validators.required],
-      neighborhood: ['', Validators.required],
-      street: ['', Validators.required],
-      number: ['', Validators.required],
+      name: ['', [Validators.minLength(3)]],
+      gender: [''],
+      cpf: ['', [Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
+      phone: [''],
+      email: ['', [Validators.email]],
+      birth: [''],
+      cep: ['', [Validators.pattern(/^\d{5}-\d{3}$/)]],
+      state: [''],
+      city: [''],
+      neighborhood: [''],
+      street: [''],
+      number: [''],
       complement: [''],
       active: [true]
+    });
+
+    // Listener para buscar endereço quando o CEP for preenchido
+    this.clientForm.get('cep')?.valueChanges.pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      filter(cep => cep && cep.length === 9)
+    ).subscribe(cep => {
+      this.buscarCep(cep);
+    });
+  }
+
+  buscarCep(cep: string): void {
+    const cepLimpo = cep.replace(/\D/g, '');
+    console.log('🔍 CEP digitado:', cep);
+    console.log('🔍 CEP limpo:', cepLimpo);
+
+    // Se está carregando dados do cliente, não busca CEP automaticamente
+    if (this.isLoadingClientData) {
+      console.log('⏭️ Pulando busca de CEP - carregando dados do cliente');
+      return;
+    }
+
+    if (cepLimpo.length !== 8 || this.loadingCep()) {
+      console.log('❌ CEP inválido ou já carregando:', {
+        comprimento: cepLimpo.length,
+        jaCarregando: this.loadingCep()
+      });
+      return;
+    }
+
+    this.loadingCep.set(true);
+    this.clientForm.get('cep')?.disable();
+    console.log('📡 Buscando CEP na API ViaCEP...');
+
+    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).subscribe({
+      next: (data: any) => {
+        console.log('✅ Resposta da API ViaCEP:', data);
+
+        if (data.erro) {
+          console.log('⚠️ CEP não encontrado na base do ViaCEP');
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'CEP não encontrado',
+            detail: 'O CEP informado não foi encontrado'
+          });
+          this.loadingCep.set(false);
+          this.clientForm.get('cep')?.enable();
+          return;
+        }
+
+        console.log('📝 Preenchendo campos com os dados:', {
+          uf: data.uf,
+          cidade: data.localidade,
+          bairro: data.bairro,
+          logradouro: data.logradouro,
+          complemento: data.complemento
+        });
+
+        // Preencher os campos automaticamente
+        this.clientForm.patchValue({
+          state: data.uf,
+          city: data.localidade,
+          neighborhood: data.bairro,
+          street: data.logradouro,
+          complement: data.complemento
+        }, { emitEvent: false });
+
+        this.loadingCep.set(false);
+        this.clientForm.get('cep')?.enable();
+        console.log('✅ Campos preenchidos com sucesso');
+
+        // Focar no campo número
+        setTimeout(() => {
+          document.getElementById('number')?.focus();
+        }, 100);
+      },
+      error: (error) => {
+        console.error('❌ Erro ao buscar CEP:', error);
+        console.error('❌ Status do erro:', error.status);
+        console.error('❌ Mensagem do erro:', error.message);
+        console.error('❌ Erro completo:', error);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao buscar CEP'
+        });
+        this.loadingCep.set(false);
+        this.clientForm.get('cep')?.enable();
+      }
     });
   }
 
@@ -130,8 +226,13 @@ export class ClientFormComponent implements OnInit {
 
   private loadClient(id: string): void {
     this.loading.set(true);
+    this.isLoadingClientData = true; // Bloqueia busca automática de CEP
+
     this.clientService.getById(id).subscribe({
       next: (client) => {
+        console.log('📋 Cliente carregado:', client);
+        console.log('📅 Data de nascimento do backend:', client.birth);
+
         // Formatar dados para o formulário
         this.clientForm.patchValue({
           name: client.name,
@@ -139,7 +240,7 @@ export class ClientFormComponent implements OnInit {
           cpf: client.cpf,
           phone: client.phone,
           email: client.email,
-          birth: new Date(client.birth),
+          birth: this.formatDateToDDMMYYYY(client.birth),
           cep: client.address.cep,
           state: client.address.state,
           city: client.address.city,
@@ -148,7 +249,15 @@ export class ClientFormComponent implements OnInit {
           number: client.address.number,
           complement: client.address.complement
         });
+
+        console.log('📅 Data formatada para o formulário:', this.clientForm.get('birth')?.value);
         this.loading.set(false);
+
+        // Libera busca de CEP após carregar os dados
+        setTimeout(() => {
+          this.isLoadingClientData = false;
+          console.log('✅ Busca de CEP liberada - usuário pode editar o CEP agora');
+        }, 1000);
       },
       error: () => {
         this.messageService.add({
@@ -156,6 +265,7 @@ export class ClientFormComponent implements OnInit {
           summary: 'Erro',
           detail: 'Falha ao carregar cliente'
         });
+        this.isLoadingClientData = false;
         this.router.navigate(['/clients']);
       }
     });
@@ -174,6 +284,9 @@ export class ClientFormComponent implements OnInit {
     this.confirmationLoading.set(true);
 
     const formValue = this.clientForm.value;
+    console.log('📋 Valores do formulário:', formValue);
+    console.log('📅 Valor da data de nascimento:', formValue.birth, typeof formValue.birth);
+
     const formData: ClientFormData = {
       name: formValue.name,
       gender: formValue.gender,
@@ -235,9 +348,65 @@ export class ClientFormComponent implements OnInit {
     this.router.navigate(['/clients']);
   }
 
-  private formatDateToISO(date: Date): string {
-    // Retorna no formato "1990-05-15T00:00:00"
-    return date.toISOString().split('.')[0];
+  private formatDateToISO(date: Date | string | null): string {
+    if (!date) {
+      return '';
+    }
+
+    // Se for uma string no formato DD/MM/YYYY (vindo do InputMask)
+    if (typeof date === 'string') {
+      // Verifica se está no formato DD/MM/YYYY
+      const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+      const match = date.match(ddmmyyyyPattern);
+
+      if (match) {
+        const [, day, month, year] = match;
+        // Converte para formato ISO: YYYY-MM-DDTHH:mm:ss
+        const isoDate = `${year}-${month}-${day}T00:00:00`;
+        console.log('📅 Convertendo data de', date, 'para', isoDate);
+        return isoDate;
+      }
+
+      // Se já estiver em formato ISO ou outro formato, retorna como está
+      return date;
+    }
+
+    // Se for um objeto Date válido
+    if (date instanceof Date && !isNaN(date.getTime())) {
+      // Retorna no formato "1990-05-15T00:00:00"
+      return date.toISOString().split('.')[0];
+    }
+
+    console.error('❌ Data inválida recebida:', date, typeof date);
+    return '';
+  }
+
+  private formatDateToDDMMYYYY(date: string | Date | null): string {
+    if (!date) {
+      return '';
+    }
+
+    let dateObj: Date;
+
+    // Se for string, converte para Date
+    if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else {
+      dateObj = date;
+    }
+
+    // Verifica se é uma data válida
+    if (isNaN(dateObj.getTime())) {
+      console.error('❌ Data inválida ao formatar para DD/MM/YYYY:', date);
+      return '';
+    }
+
+    // Formata para DD/MM/YYYY
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+
+    return `${day}/${month}/${year}`;
   }
 
   private markFormGroupTouched(): void {

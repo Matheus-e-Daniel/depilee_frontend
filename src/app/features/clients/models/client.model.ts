@@ -25,6 +25,7 @@ export interface Client {
     complement?: string;
   };
   active: boolean;
+  registrationDate: string;
   createdAt: string;
   updatedAt: string;
 }
