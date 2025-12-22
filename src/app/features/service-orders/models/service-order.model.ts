@@ -28,12 +28,12 @@ export interface ServiceOrder {
 
 export interface ServiceOrderFormData {
   orderNumber: string;
-  clientId: number;
-  discount: number;
+  clientId: number | null;
+  discount: number | null;
   total: number;
   orderStatus: OrderStatus;
-  cashRegisterId: number;
-  notes?: string;
+  cashRegisterId: number | null;
+  notes?: string | null;
 }
 
 export enum OrderStatus {

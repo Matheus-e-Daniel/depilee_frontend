@@ -66,6 +66,7 @@ export class ServiceOrderItemFormComponent implements OnInit {
     this.loadProducts();
     this.loadServices();
     this.checkEditMode();
+    this.checkServiceOrderParam();
   }
 
   private initForm(): void {
@@ -168,6 +169,24 @@ export class ServiceOrderItemFormComponent implements OnInit {
     }
   }
 
+  private checkServiceOrderParam(): void {
+    const serviceOrderId = this.route.snapshot.queryParamMap.get('serviceOrderId');
+
+    if (serviceOrderId && !this.isEditMode()) {
+      // Wait for service orders to load before setting the value
+      const checkLoaded = setInterval(() => {
+        if (!this.serviceOrdersLoading()) {
+          this.itemForm.patchValue({
+            serviceOrderId: Number(serviceOrderId)
+          });
+          // Disable the service order field since it's pre-selected
+          this.itemForm.get('serviceOrderId')?.disable();
+          clearInterval(checkLoaded);
+        }
+      }, 100);
+    }
+  }
+
   private loadItem(id: number): void {
     this.loading.set(true);
     this.serviceOrderItemService.getById(id).subscribe({
@@ -203,7 +222,9 @@ export class ServiceOrderItemFormComponent implements OnInit {
 
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
-    const formData: ServiceOrderItemFormData = this.itemForm.value;
+
+    // Get raw value to include disabled fields
+    const formData: ServiceOrderItemFormData = this.itemForm.getRawValue();
 
     const payload = this.isEditMode()
       ? { id: this.itemId()!, ...formData }

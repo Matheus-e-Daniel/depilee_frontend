@@ -3,7 +3,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
@@ -12,10 +11,9 @@ import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ServiceOrderService } from '../../services/service-order.service';
-import { ServiceOrderFormData, Client, CashRegister, OrderStatus } from '../../models/service-order.model';
-import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
-import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
-import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { Client } from '../../models/service-order.model';
+import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
+import { ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
 
 @Component({
   selector: 'app-service-order-form',
@@ -23,15 +21,12 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    InputTextModule,
     InputNumberModule,
     InputTextareaModule,
     DropdownModule,
     ButtonModule,
     CardModule,
-    ToastModule,
-    SuccessModalComponent,
-    ConfirmationModalComponent
+    ToastModule
   ],
   providers: [MessageService],
   templateUrl: './service-order-form.component.html',
@@ -40,47 +35,40 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
 export class ServiceOrderFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private serviceOrderService = inject(ServiceOrderService);
+  private serviceOrderItemService = inject(ServiceOrderItemService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
-  successModalService = inject(SuccessModalService);
 
   orderForm!: FormGroup;
   loading = signal(false);
   isEditMode = signal(false);
   orderId = signal<number | null>(null);
   clients = signal<Client[]>([]);
-  cashRegisters = signal<CashRegister[]>([]);
   clientsLoading = signal(true);
-  cashRegistersLoading = signal(true);
-
-  // Confirmation modal
-  showConfirmation = signal(false);
-  confirmationLoading = signal(false);
-
-  orderStatusOptions = [
-    { label: 'Pendente', value: OrderStatus.Pending },
-    { label: 'Em Andamento', value: OrderStatus.InProgress },
-    { label: 'Concluído', value: OrderStatus.Completed },
-    { label: 'Cancelado', value: OrderStatus.Cancelled }
-  ];
+  products = signal<ProductOption[]>([]);
+  services = signal<ServiceOption[]>([]);
+  productsLoading = signal(true);
+  servicesLoading = signal(true);
 
   ngOnInit(): void {
     this.initForm();
     this.loadClients();
-    this.loadCashRegisters();
+    this.loadProducts();
+    this.loadServices();
     this.checkEditMode();
   }
 
   private initForm(): void {
     this.orderForm = this.fb.group({
-      orderNumber: ['', [Validators.required, Validators.minLength(3)]],
-      clientId: ['', Validators.required],
-      discount: [0, [Validators.min(0)]],
+      clientId: [null],
+      discount: [null, [Validators.min(0)]],
       total: [0, [Validators.required, Validators.min(0.01)]],
-      orderStatus: [OrderStatus.Pending, Validators.required],
-      cashRegisterId: ['', Validators.required],
-      notes: ['']
+      notes: [''],
+      productId: [null],
+      serviceId: [null],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+      unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
   }
 
@@ -102,27 +90,64 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
-  private loadCashRegisters(): void {
-    this.cashRegistersLoading.set(true);
-    this.serviceOrderService.getCashRegisters().subscribe({
+  private loadProducts(): void {
+    this.productsLoading.set(true);
+    this.serviceOrderItemService.getProducts().subscribe({
       next: (response) => {
-        this.cashRegisters.set(response.data);
-        this.cashRegistersLoading.set(false);
+        this.products.set(response.data);
+        this.productsLoading.set(false);
       },
       error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Falha ao carregar caixas'
+          detail: 'Falha ao carregar produtos'
         });
-        this.cashRegistersLoading.set(false);
+        this.productsLoading.set(false);
       }
     });
   }
 
+  private loadServices(): void {
+    this.servicesLoading.set(true);
+    this.serviceOrderItemService.getServices().subscribe({
+      next: (response) => {
+        this.services.set(response.data);
+        this.servicesLoading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar serviços'
+        });
+        this.servicesLoading.set(false);
+      }
+    });
+  }
+
+  onProductChange(productId: number): void {
+    if (productId) {
+      this.orderForm.patchValue({ serviceId: null });
+      const product = this.products().find(p => p.id === productId);
+      if (product) {
+        this.orderForm.patchValue({ unitPrice: product.salePrice });
+      }
+    }
+  }
+
+  onServiceChange(serviceId: number): void {
+    if (serviceId) {
+      this.orderForm.patchValue({ productId: null });
+      const service = this.services().find(s => s.id === serviceId);
+      if (service) {
+        this.orderForm.patchValue({ unitPrice: service.price });
+      }
+    }
+  }
+
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
-
     if (id) {
       this.isEditMode.set(true);
       this.orderId.set(Number(id));
@@ -135,15 +160,14 @@ export class ServiceOrderFormComponent implements OnInit {
     this.serviceOrderService.getById(id).subscribe({
       next: (order) => {
         this.orderForm.patchValue({
-          orderNumber: order.orderNumber,
           clientId: order.clientId,
           discount: order.discount,
           total: order.total,
-          orderStatus: order.orderStatus,
-          cashRegisterId: order.cashRegisterId,
           notes: order.notes || ''
         });
-        this.loading.set(false);
+
+        // Carregar os itens da ordem de serviço
+        this.loadOrderItems(id);
       },
       error: () => {
         this.messageService.add({
@@ -151,7 +175,38 @@ export class ServiceOrderFormComponent implements OnInit {
           summary: 'Erro',
           detail: 'Falha ao carregar ordem de serviço'
         });
+        this.loading.set(false);
         this.router.navigate(['/service-orders']);
+      }
+    });
+  }
+
+  private loadOrderItems(serviceOrderId: number): void {
+    this.serviceOrderItemService.getAll().subscribe({
+      next: (response) => {
+        // Filtrar apenas os itens desta ordem de serviço
+        const items = response.data.filter(item => item.serviceOrderId === serviceOrderId);
+
+        if (items.length > 0) {
+          // Preencher com o primeiro item (assumindo 1 item por ordem neste fluxo)
+          const firstItem = items[0];
+          this.orderForm.patchValue({
+            productId: firstItem.productId || null,
+            serviceId: firstItem.serviceId || null,
+            quantity: firstItem.quantity,
+            unitPrice: firstItem.unitPrice
+          });
+        }
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar itens da ordem'
+        });
+        this.loading.set(false);
       }
     });
   }
@@ -162,50 +217,76 @@ export class ServiceOrderFormComponent implements OnInit {
       return;
     }
 
-    this.showConfirmation.set(true);
-  }
+    this.loading.set(true);
+    const formValues = this.orderForm.value;
 
-  confirmSubmit(): void {
-    this.confirmationLoading.set(true);
-    const formData: ServiceOrderFormData = this.orderForm.value;
+    // ETAPA 1: Criar a ordem de serviço
+    const serviceOrderPayload = {
+      clientId: formValues.clientId || null,
+      discount: formValues.discount || null,
+      total: formValues.total,
+      notes: formValues.notes || null
+    };
 
-    const payload = this.isEditMode()
-      ? { id: this.orderId()!, ...formData }
-      : formData;
+    console.log('========== ETAPA 1: CRIAR ORDEM DE SERVIÇO ==========');
+    console.log('Payload da ordem de serviço:', serviceOrderPayload);
 
-    const operation = this.isEditMode()
-      ? this.serviceOrderService.update(payload)
-      : this.serviceOrderService.create(formData);
+    this.serviceOrderService.create(serviceOrderPayload as any).subscribe({
+      next: (serviceOrderResponse) => {
+        console.log('Ordem de serviço criada com sucesso:', serviceOrderResponse);
+        console.log('ID da ordem criada:', serviceOrderResponse.id);
 
-    operation.subscribe({
-      next: () => {
-        this.showConfirmation.set(false);
-        this.confirmationLoading.set(false);
-        this.successModalService.show(
-          this.isEditMode()
-            ? 'Ordem de serviço atualizada com sucesso!'
-            : 'Ordem de serviço criada com sucesso!'
-        );
+        // ETAPA 2: Criar o item da ordem de serviço
+        const serviceOrderItemPayload = {
+          serviceOrderId: serviceOrderResponse.id,
+          productId: formValues.productId || null,
+          serviceId: formValues.serviceId || null,
+          quantity: formValues.quantity,
+          unitPrice: formValues.unitPrice
+        };
 
-        setTimeout(() => {
-          this.router.navigate(['/service-orders']);
-        }, 2500);
+        console.log('========== ETAPA 2: CRIAR ITEM DA ORDEM DE SERVIÇO ==========');
+        console.log('Payload do item:', serviceOrderItemPayload);
+
+        this.serviceOrderItemService.create(serviceOrderItemPayload).subscribe({
+          next: (itemResponse) => {
+            console.log('Item da ordem de serviço criado com sucesso:', itemResponse);
+            console.log('========== PROCESSO COMPLETO! ==========');
+
+            this.loading.set(false);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Ordem de serviço e item criados com sucesso!'
+            });
+
+            setTimeout(() => {
+              this.router.navigate(['/service-orders']);
+            }, 1500);
+          },
+          error: (itemError) => {
+            console.error('========== ERRO AO CRIAR ITEM ==========');
+            console.error('Erro:', itemError);
+            this.loading.set(false);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Ordem criada, mas falha ao criar item'
+            });
+          }
+        });
       },
-      error: () => {
-        this.confirmationLoading.set(false);
+      error: (error) => {
+        console.error('========== ERRO AO CRIAR ORDEM DE SERVIÇO ==========');
+        console.error('Erro:', error);
+        this.loading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: this.isEditMode()
-            ? 'Falha ao atualizar ordem de serviço'
-            : 'Falha ao criar ordem de serviço'
+          detail: 'Falha ao criar ordem de serviço'
         });
       }
     });
-  }
-
-  cancelSubmit(): void {
-    this.showConfirmation.set(false);
   }
 
   onCancel(): void {

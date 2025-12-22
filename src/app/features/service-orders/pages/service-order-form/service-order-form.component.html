@@ -10,34 +10,16 @@
       (click)="onCancel()">
     </button>
 
-    <h1>{{ isEditMode() ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço' }}</h1>
+    <h1>Nova Ordem de Serviço</h1>
   </div>
 
   <div class="card">
     <p-card>
       <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="service-order-form">
         <div class="form-grid">
-          <!-- Linha 1: Número da Ordem e Cliente -->
+          <!-- Cliente -->
           <div class="field col-12 md:col-6">
-            <label for="orderNumber" class="block font-medium mb-2">Número da Ordem *</label>
-            <input
-              id="orderNumber"
-              type="text"
-              pInputText
-              formControlName="orderNumber"
-              class="w-full"
-              placeholder="Ex: OS-2025-001" />
-
-            <small
-              *ngIf="orderForm.get('orderNumber')?.invalid && orderForm.get('orderNumber')?.touched"
-              class="p-error block mt-1">
-              <span *ngIf="orderForm.get('orderNumber')?.errors?.['required']">Número da ordem é obrigatório</span>
-              <span *ngIf="orderForm.get('orderNumber')?.errors?.['minlength']">Mínimo 3 caracteres</span>
-            </small>
-          </div>
-
-          <div class="field col-12 md:col-6">
-            <label for="clientId" class="block font-medium mb-2">Cliente *</label>
+            <label for="clientId" class="block font-medium mb-2">Cliente (opcional)</label>
             <p-dropdown
               id="clientId"
               formControlName="clientId"
@@ -46,22 +28,17 @@
               optionValue="id"
               placeholder="Selecione o cliente"
               [loading]="clientsLoading()"
+              [showClear]="true"
               class="w-full">
               <ng-template pTemplate="empty">
                 <div class="p-2">Nenhum cliente encontrado</div>
               </ng-template>
             </p-dropdown>
-
-            <small
-              *ngIf="orderForm.get('clientId')?.invalid && orderForm.get('clientId')?.touched"
-              class="p-error block mt-1">
-              Cliente é obrigatório
-            </small>
           </div>
 
-          <!-- Linha 2: Desconto e Total -->
+          <!-- Desconto -->
           <div class="field col-12 md:col-6">
-            <label for="discount" class="block font-medium mb-2">Desconto</label>
+            <label for="discount" class="block font-medium mb-2">Desconto (opcional)</label>
             <p-inputNumber
               id="discount"
               formControlName="discount"
@@ -70,10 +47,18 @@
               locale="pt-BR"
               class="w-full"
               [showButtons]="false"
-              [minFractionDigits]="2">
+              [minFractionDigits]="2"
+              placeholder="R$ 0,00">
             </p-inputNumber>
+
+            <small
+              *ngIf="orderForm.get('discount')?.invalid && orderForm.get('discount')?.touched"
+              class="p-error block mt-1">
+              Valor mínimo: R$ 0,00
+            </small>
           </div>
 
+          <!-- Total -->
           <div class="field col-12 md:col-6">
             <label for="total" class="block font-medium mb-2">Total *</label>
             <p-inputNumber
@@ -84,7 +69,8 @@
               locale="pt-BR"
               class="w-full"
               [showButtons]="false"
-              [minFractionDigits]="2">
+              [minFractionDigits]="2"
+              placeholder="R$ 0,00">
             </p-inputNumber>
 
             <small
@@ -95,59 +81,103 @@
             </small>
           </div>
 
-          <!-- Linha 3: Status e Caixa -->
-          <div class="field col-12 md:col-6">
-            <label for="orderStatus" class="block font-medium mb-2">Status *</label>
-            <p-dropdown
-              id="orderStatus"
-              formControlName="orderStatus"
-              [options]="orderStatusOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecione o status"
-              class="w-full">
-            </p-dropdown>
-
-            <small
-              *ngIf="orderForm.get('orderStatus')?.invalid && orderForm.get('orderStatus')?.touched"
-              class="p-error block mt-1">
-              Status é obrigatório
-            </small>
-          </div>
-
-          <div class="field col-12 md:col-6">
-            <label for="cashRegisterId" class="block font-medium mb-2">Caixa *</label>
-            <p-dropdown
-              id="cashRegisterId"
-              formControlName="cashRegisterId"
-              [options]="cashRegisters()"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Selecione o caixa"
-              [loading]="cashRegistersLoading()"
-              class="w-full">
-              <ng-template pTemplate="empty">
-                <div class="p-2">Nenhum caixa encontrado</div>
-              </ng-template>
-            </p-dropdown>
-
-            <small
-              *ngIf="orderForm.get('cashRegisterId')?.invalid && orderForm.get('cashRegisterId')?.touched"
-              class="p-error block mt-1">
-              Caixa é obrigatório
-            </small>
-          </div>
-
-          <!-- Linha 4: Observações (linha inteira) -->
+          <!-- Observações -->
           <div class="field col-12">
-            <label for="notes" class="block font-medium mb-2">Observações</label>
+            <label for="notes" class="block font-medium mb-2">Observações (opcional)</label>
             <textarea
               id="notes"
               pInputTextarea
               formControlName="notes"
-              rows="3"
+              rows="4"
               class="w-full"
-              placeholder="Observações sobre a ordem (opcional)"></textarea>
+              placeholder="Digite observações sobre a ordem de serviço..."></textarea>
+          </div>
+        </div>
+
+        <!-- Seção de Itens -->
+        <div class="mt-5">
+          <h2 class="text-xl font-semibold mb-4">Itens da Ordem de Serviço</h2>
+          <div class="form-grid">
+            <!-- Produto -->
+            <div class="field col-12 md:col-6">
+              <label for="productId" class="block font-medium mb-2">Produto</label>
+              <p-dropdown
+                id="productId"
+                formControlName="productId"
+                [options]="products()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione um produto"
+                [loading]="productsLoading()"
+                [showClear]="true"
+                (onChange)="onProductChange($event.value)"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhum produto encontrado</div>
+                </ng-template>
+              </p-dropdown>
+            </div>
+
+            <!-- Serviço -->
+            <div class="field col-12 md:col-6">
+              <label for="serviceId" class="block font-medium mb-2">Serviço</label>
+              <p-dropdown
+                id="serviceId"
+                formControlName="serviceId"
+                [options]="services()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione um serviço"
+                [loading]="servicesLoading()"
+                [showClear]="true"
+                (onChange)="onServiceChange($event.value)"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhum serviço encontrado</div>
+                </ng-template>
+              </p-dropdown>
+            </div>
+
+            <!-- Quantidade -->
+            <div class="field col-12 md:col-6">
+              <label for="quantity" class="block font-medium mb-2">Quantidade *</label>
+              <p-inputNumber
+                id="quantity"
+                formControlName="quantity"
+                class="w-full"
+                [min]="1"
+                [showButtons]="true">
+              </p-inputNumber>
+
+              <small
+                *ngIf="orderForm.get('quantity')?.invalid && orderForm.get('quantity')?.touched"
+                class="p-error block mt-1">
+                <span *ngIf="orderForm.get('quantity')?.errors?.['required']">Quantidade é obrigatória</span>
+                <span *ngIf="orderForm.get('quantity')?.errors?.['min']">Valor mínimo: 1</span>
+              </small>
+            </div>
+
+            <!-- Preço Unitário -->
+            <div class="field col-12 md:col-6">
+              <label for="unitPrice" class="block font-medium mb-2">Preço Unitário *</label>
+              <p-inputNumber
+                id="unitPrice"
+                formControlName="unitPrice"
+                mode="currency"
+                currency="BRL"
+                locale="pt-BR"
+                class="w-full"
+                [showButtons]="false"
+                [minFractionDigits]="2">
+              </p-inputNumber>
+
+              <small
+                *ngIf="orderForm.get('unitPrice')?.invalid && orderForm.get('unitPrice')?.touched"
+                class="p-error block mt-1">
+                <span *ngIf="orderForm.get('unitPrice')?.errors?.['required']">Preço unitário é obrigatório</span>
+                <span *ngIf="orderForm.get('unitPrice')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+              </small>
+            </div>
           </div>
         </div>
 
@@ -164,10 +194,9 @@
           <button
             pButton
             type="submit"
-            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            label="Criar Ordem"
             class="p-button-primary"
             [disabled]="orderForm.invalid || loading()">
-
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>
         </div>
@@ -177,12 +206,3 @@
 </div>
 
 <p-toast></p-toast>
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
-
-<app-confirmation-modal
-  [visible]="showConfirmation()"
-  [type]="isEditMode() ? 'update' : 'create'"
-  [loading]="confirmationLoading()"
-  (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
-</app-confirmation-modal>
