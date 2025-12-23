@@ -25,7 +25,6 @@ export class SidebarComponent {
     { label: 'Marcas', icon: 'pi pi-tag', route: '/brands' },
     { label: 'Categorias', icon: 'pi pi-list', route: '/categories' },
     { label: 'Ordens de Serviço', icon: 'pi pi-file-edit', route: '/service-orders' },
-    { label: 'Itens de OS', icon: 'pi pi-file', route: '/service-order-items' },
     //{ label: 'Triagem', icon: 'pi pi-heart', route: '/triagem' },
     //{ label: 'Gerar Senhas', icon: 'pi pi-ticket', route: '/senhas' }
   ];

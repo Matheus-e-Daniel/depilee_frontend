@@ -76,25 +76,6 @@ export const routes: Routes = [
           import('./features/services/pages/service-form/service-form.component')
             .then(m => m.ServiceFormComponent)
       },
-      // Rotas de itens da ordem de serviço (adicionadas)
-      {
-        path: 'service-order-items',
-        loadComponent: () =>
-          import('./features/service-order-items/pages/service-order-item-list/service-order-item-list.component')
-            .then(m => m.ServiceOrderItemListComponent)
-      },
-      {
-        path: 'service-order-items/new',
-        loadComponent: () =>
-          import('./features/service-order-items/pages/service-order-item-form/service-order-item-form.component')
-            .then(m => m.ServiceOrderItemFormComponent)
-      },
-      {
-        path: 'service-order-items/edit/:id',
-        loadComponent: () =>
-          import('./features/service-order-items/pages/service-order-item-form/service-order-item-form.component')
-            .then(m => m.ServiceOrderItemFormComponent)
-      },
       // Rotas de ordens de serviço
       {
         path: 'service-orders',
