@@ -36,146 +36,187 @@
             </p-dropdown>
           </div>
 
-          <!-- Desconto -->
-          <div class="field col-12 md:col-6">
-            <label for="discount" class="block font-medium mb-2">Desconto (opcional)</label>
-            <p-inputNumber
-              id="discount"
-              formControlName="discount"
-              mode="currency"
-              currency="BRL"
-              locale="pt-BR"
-              class="w-full"
-              [showButtons]="false"
-              [minFractionDigits]="2"
-              placeholder="R$ 0,00">
-            </p-inputNumber>
-
-            <small
-              *ngIf="orderForm.get('discount')?.invalid && orderForm.get('discount')?.touched"
-              class="p-error block mt-1">
-              Valor mínimo: R$ 0,00
-            </small>
-          </div>
-
-          <!-- Total -->
-          <div class="field col-12 md:col-6">
-            <label for="total" class="block font-medium mb-2">Total *</label>
-            <p-inputNumber
-              id="total"
-              formControlName="total"
-              mode="currency"
-              currency="BRL"
-              locale="pt-BR"
-              class="w-full"
-              [showButtons]="false"
-              [minFractionDigits]="2"
-              placeholder="R$ 0,00">
-            </p-inputNumber>
-
-            <small
-              *ngIf="orderForm.get('total')?.invalid && orderForm.get('total')?.touched"
-              class="p-error block mt-1">
-              <span *ngIf="orderForm.get('total')?.errors?.['required']">Total é obrigatório</span>
-              <span *ngIf="orderForm.get('total')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
-            </small>
-          </div>
-
           <!-- Observações -->
-          <div class="field col-12">
+          <div class="field col-12 md:col-6">
             <label for="notes" class="block font-medium mb-2">Observações (opcional)</label>
             <textarea
               id="notes"
               pInputTextarea
               formControlName="notes"
-              rows="4"
+              rows="3"
               class="w-full"
               placeholder="Digite observações sobre a ordem de serviço..."></textarea>
           </div>
         </div>
 
         <!-- Seção de Itens -->
+        <div class="items-section">
+          <div class="items-header">
+            <div class="items-title-wrapper">
+              <i class="pi pi-list"></i>
+              <h2>Itens da Ordem de Serviço</h2>
+            </div>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-plus"
+              label="Adicionar Item"
+              class="add-item-btn"
+              (click)="addItem()">
+            </button>
+          </div>
+
+          <div *ngFor="let item of items.controls; let i = index" class="item-card" [formGroup]="$any(item)">
+            <div class="item-card-header">
+              <div class="item-number">
+                <span class="item-badge">{{ i + 1 }}</span>
+                <h3>Item {{ i + 1 }}</h3>
+              </div>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="remove-item-btn"
+                pTooltip="Remover item"
+                tooltipPosition="top"
+                (click)="removeItem(i)">
+              </button>
+            </div>
+
+              <div class="item-card-content">
+                <div class="form-grid">
+                  <!-- Produto -->
+                  <div class="field col-12 md:col-6">
+                    <label [for]="'productId-' + i" class="block font-medium mb-2">Produto</label>
+                    <p-dropdown
+                      [id]="'productId-' + i"
+                      formControlName="productId"
+                      [options]="products()"
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="Selecione um produto"
+                      [loading]="productsLoading()"
+                      [showClear]="true"
+                      (onChange)="onProductChange($event.value, i)"
+                      class="w-full">
+                      <ng-template pTemplate="empty">
+                        <div class="p-2">Nenhum produto encontrado</div>
+                      </ng-template>
+                    </p-dropdown>
+                  </div>
+                <div class="field col-12 md:col-6">
+                  <label [for]="'serviceId-' + i" class="block font-medium mb-2">Serviço</label>
+                  <p-dropdown
+                    [id]="'serviceId-' + i"
+                    formControlName="serviceId"
+                    [options]="services()"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Selecione um serviço"
+                    [loading]="servicesLoading()"
+                    [showClear]="true"
+                    (onChange)="onServiceChange($event.value, i)"
+                    class="w-full">
+                    <ng-template pTemplate="empty">
+                      <div class="p-2">Nenhum serviço encontrado</div>
+                    </ng-template>
+                  </p-dropdown>
+                </div>
+
+                <!-- Quantidade -->
+                <div class="field col-12 md:col-6">
+                  <label [for]="'quantity-' + i" class="block font-medium mb-2">Quantidade *</label>
+                  <p-inputNumber
+                    [id]="'quantity-' + i"
+                    formControlName="quantity"
+                    class="w-full"
+                    [min]="1"
+                    [showButtons]="true">
+                  </p-inputNumber>
+
+                  <small
+                    *ngIf="item.get('quantity')?.invalid && item.get('quantity')?.touched"
+                    class="p-error block mt-1">
+                    <span *ngIf="item.get('quantity')?.errors?.['required']">Quantidade é obrigatória</span>
+                    <span *ngIf="item.get('quantity')?.errors?.['min']">Valor mínimo: 1</span>
+                  </small>
+                </div>
+
+                <!-- Preço Unitário -->
+                <div class="field col-12 md:col-6">
+                  <label [for]="'unitPrice-' + i" class="block font-medium mb-2">Preço Unitário *</label>
+                  <p-inputNumber
+                    [id]="'unitPrice-' + i"
+                    formControlName="unitPrice"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    class="w-full"
+                    [showButtons]="false"
+                    [minFractionDigits]="2">
+                  </p-inputNumber>
+
+                  <small
+                    *ngIf="item.get('unitPrice')?.invalid && item.get('unitPrice')?.touched"
+                    class="p-error block mt-1">
+                    <span *ngIf="item.get('unitPrice')?.errors?.['required']">Preço unitário é obrigatório</span>
+                    <span *ngIf="item.get('unitPrice')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de Resumo -->
         <div class="mt-5">
-          <h2 class="text-xl font-semibold mb-4">Itens da Ordem de Serviço</h2>
+          <h2 class="text-xl font-semibold mb-4">Resumo da Ordem</h2>
           <div class="form-grid">
-            <!-- Produto -->
+            <!-- Desconto -->
             <div class="field col-12 md:col-6">
-              <label for="productId" class="block font-medium mb-2">Produto</label>
-              <p-dropdown
-                id="productId"
-                formControlName="productId"
-                [options]="products()"
-                optionLabel="name"
-                optionValue="id"
-                placeholder="Selecione um produto"
-                [loading]="productsLoading()"
-                [showClear]="true"
-                (onChange)="onProductChange($event.value)"
-                class="w-full">
-                <ng-template pTemplate="empty">
-                  <div class="p-2">Nenhum produto encontrado</div>
-                </ng-template>
-              </p-dropdown>
-            </div>
-
-            <!-- Serviço -->
-            <div class="field col-12 md:col-6">
-              <label for="serviceId" class="block font-medium mb-2">Serviço</label>
-              <p-dropdown
-                id="serviceId"
-                formControlName="serviceId"
-                [options]="services()"
-                optionLabel="name"
-                optionValue="id"
-                placeholder="Selecione um serviço"
-                [loading]="servicesLoading()"
-                [showClear]="true"
-                (onChange)="onServiceChange($event.value)"
-                class="w-full">
-                <ng-template pTemplate="empty">
-                  <div class="p-2">Nenhum serviço encontrado</div>
-                </ng-template>
-              </p-dropdown>
-            </div>
-
-            <!-- Quantidade -->
-            <div class="field col-12 md:col-6">
-              <label for="quantity" class="block font-medium mb-2">Quantidade *</label>
+              <label for="discount" class="block font-medium mb-2">Desconto (%) (opcional)</label>
               <p-inputNumber
-                id="quantity"
-                formControlName="quantity"
+                id="discount"
+                formControlName="discount"
+                suffix="%"
                 class="w-full"
-                [min]="1"
-                [showButtons]="true">
+                [showButtons]="false"
+                [min]="0"
+                [max]="100"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="2"
+                placeholder="0%">
               </p-inputNumber>
 
               <small
-                *ngIf="orderForm.get('quantity')?.invalid && orderForm.get('quantity')?.touched"
+                *ngIf="orderForm.get('discount')?.invalid && orderForm.get('discount')?.touched"
                 class="p-error block mt-1">
-                <span *ngIf="orderForm.get('quantity')?.errors?.['required']">Quantidade é obrigatória</span>
-                <span *ngIf="orderForm.get('quantity')?.errors?.['min']">Valor mínimo: 1</span>
+                <span *ngIf="orderForm.get('discount')?.errors?.['min']">Valor mínimo: 0%</span>
+                <span *ngIf="orderForm.get('discount')?.errors?.['max']">Valor máximo: 100%</span>
               </small>
             </div>
 
-            <!-- Preço Unitário -->
+            <!-- Total -->
             <div class="field col-12 md:col-6">
-              <label for="unitPrice" class="block font-medium mb-2">Preço Unitário *</label>
+              <label for="total" class="block font-medium mb-2">Total *</label>
               <p-inputNumber
-                id="unitPrice"
-                formControlName="unitPrice"
+                id="total"
+                formControlName="total"
                 mode="currency"
                 currency="BRL"
                 locale="pt-BR"
                 class="w-full"
                 [showButtons]="false"
-                [minFractionDigits]="2">
+                [minFractionDigits]="2"
+                [readonly]="true"
+                placeholder="R$ 0,00">
               </p-inputNumber>
 
               <small
-                *ngIf="orderForm.get('unitPrice')?.invalid && orderForm.get('unitPrice')?.touched"
+                *ngIf="orderForm.get('total')?.invalid && orderForm.get('total')?.touched"
                 class="p-error block mt-1">
-                <span *ngIf="orderForm.get('unitPrice')?.errors?.['required']">Preço unitário é obrigatório</span>
-                <span *ngIf="orderForm.get('unitPrice')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
+                <span *ngIf="orderForm.get('total')?.errors?.['required']">Total é obrigatório</span>
+                <span *ngIf="orderForm.get('total')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
               </small>
             </div>
           </div>

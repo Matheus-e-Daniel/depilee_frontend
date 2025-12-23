@@ -9,6 +9,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ServiceOrderService } from '../../services/service-order.service';
 import { ServiceOrder, OrderStatus } from '../../models/service-order.model';
+import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
+import { ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -32,6 +34,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
 })
 export class ServiceOrderListComponent implements OnInit {
   private serviceOrderService = inject(ServiceOrderService);
+  private serviceOrderItemService = inject(ServiceOrderItemService);
   private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
@@ -42,6 +45,8 @@ export class ServiceOrderListComponent implements OnInit {
   deleteLoading = signal(false);
   orderToDelete: { id: number; orderNumber: string } | null = null;
   OrderStatus = OrderStatus;
+  expandedRows: { [key: number]: boolean } = {};
+  orderItems: { [key: number]: ServiceOrderItem[] } = {};
 
   ngOnInit(): void {
     this.loadOrders();
@@ -104,6 +109,68 @@ export class ServiceOrderListComponent implements OnInit {
 
   newOrder(): void {
     this.router.navigate(['/service-orders/new']);
+  }
+
+  toggleRow(orderId: number): void {
+    this.expandedRows[orderId] = !this.expandedRows[orderId];
+
+    // Carregar itens se estiver expandindo e ainda não foram carregados
+    if (this.expandedRows[orderId] && !this.orderItems[orderId]) {
+      this.loadOrderItems(orderId);
+    }
+  }
+
+  loadOrderItems(orderId: number): void {
+    this.serviceOrderItemService.getAll().subscribe({
+      next: (response) => {
+        console.log('='.repeat(80));
+        console.log(`CARREGANDO ITENS PARA ORDEM ID: ${orderId}`);
+        console.log('Todos os itens retornados da API:', response.data);
+
+        // Filtrar itens desta ordem
+        const filteredItems = response.data.filter(
+          item => item.serviceOrderId === orderId
+        );
+
+        console.log(`Total de itens encontrados para ordem ${orderId}:`, filteredItems.length);
+        console.log('Itens filtrados:', JSON.stringify(filteredItems, null, 2));
+        console.log('='.repeat(80));
+
+        this.orderItems[orderId] = filteredItems;
+
+        // Carregar detalhes dos produtos/serviços se necessário
+        this.loadItemDetails(filteredItems);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar itens da ordem'
+        });
+      }
+    });
+  }
+
+  private loadItemDetails(items: ServiceOrderItem[]): void {
+    // Carregar produtos se houver productIds
+    const productIds = items.filter(i => i.productId).map(i => i.productId!);
+    const serviceIds = items.filter(i => i.serviceId).map(i => i.serviceId!);
+
+    console.log('ProductIds encontrados:', productIds);
+    console.log('ServiceIds encontrados:', serviceIds);
+  }
+
+  getItemName(item: ServiceOrderItem): string {
+    // Tentar diferentes fontes para o nome
+    if (item.productName) return item.productName;
+    if (item.serviceName) return item.serviceName;
+    if (item.productId) return `Produto ID: ${item.productId}`;
+    if (item.serviceId) return `Serviço ID: ${item.serviceId}`;
+    return 'Sem produto/serviço';
+  }
+
+  getItemType(item: ServiceOrderItem): string {
+    return item.productId ? 'Produto' : 'Serviço';
   }
 
   getStatusLabel(status: OrderStatus): string {

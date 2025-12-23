@@ -4,6 +4,7 @@
   margin: 0 auto;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: 100vh;
+  overflow-x: hidden;
 
   .header {
     display: flex;
@@ -101,6 +102,15 @@
     ::ng-deep .p-datatable {
       border-radius: 16px;
       overflow: hidden;
+
+      .p-datatable-wrapper {
+        overflow-x: hidden !important;
+      }
+
+      .p-datatable-table {
+        table-layout: auto;
+        width: 100%;
+      }
 
       .p-datatable-thead {
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);

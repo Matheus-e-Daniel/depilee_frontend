@@ -1,7 +1,7 @@
 // src/app/features/service-orders/pages/service-order-form/service-order-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -50,6 +50,7 @@ export class ServiceOrderFormComponent implements OnInit {
   services = signal<ServiceOption[]>([]);
   productsLoading = signal(true);
   servicesLoading = signal(true);
+  private isLoadingData = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -62,14 +63,79 @@ export class ServiceOrderFormComponent implements OnInit {
   private initForm(): void {
     this.orderForm = this.fb.group({
       clientId: [null],
-      discount: [null, [Validators.min(0)]],
+      discount: [null, [Validators.min(0), Validators.max(100)]],
       total: [0, [Validators.required, Validators.min(0.01)]],
       notes: [''],
+      items: this.fb.array([this.createItemFormGroup()])
+    });
+
+    // Observar mudanças no desconto para recalcular o total
+    this.orderForm.get('discount')?.valueChanges.subscribe(() => this.calculateTotal());
+  }
+
+  private createItemFormGroup(): FormGroup {
+    const itemGroup = this.fb.group({
       productId: [null],
       serviceId: [null],
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
+
+    // Observar mudanças nos campos do item para recalcular o total (exceto durante carregamento)
+    itemGroup.get('quantity')?.valueChanges.subscribe(() => {
+      if (!this.isLoadingData) {
+        this.calculateTotal();
+      }
+    });
+    itemGroup.get('unitPrice')?.valueChanges.subscribe(() => {
+      if (!this.isLoadingData) {
+        this.calculateTotal();
+      }
+    });
+
+    return itemGroup;
+  }
+
+  get items(): FormArray {
+    return this.orderForm.get('items') as FormArray;
+  }
+
+  addItem(): void {
+    this.items.push(this.createItemFormGroup());
+  }
+
+  removeItem(index: number): void {
+    if (this.items.length > 1) {
+      this.items.removeAt(index);
+      this.calculateTotal();
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Aviso',
+        detail: 'A ordem deve ter pelo menos 1 item'
+      });
+    }
+  }
+
+  private calculateTotal(): void {
+    const discountPercent = this.orderForm.get('discount')?.value || 0;
+
+    // Calcular subtotal somando todos os itens
+    let subtotal = 0;
+    this.items.controls.forEach(item => {
+      const quantity = item.get('quantity')?.value || 0;
+      const unitPrice = item.get('unitPrice')?.value || 0;
+      subtotal += quantity * unitPrice;
+    });
+
+    // Calcular desconto em valor
+    const discountValue = subtotal * (discountPercent / 100);
+
+    // Calcular total
+    const total = subtotal - discountValue;
+
+    // Atualizar o campo total sem emitir evento (para evitar loop)
+    this.orderForm.get('total')?.setValue(total, { emitEvent: false });
   }
 
   private loadClients(): void {
@@ -126,22 +192,24 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
-  onProductChange(productId: number): void {
+  onProductChange(productId: number, itemIndex: number): void {
     if (productId) {
-      this.orderForm.patchValue({ serviceId: null });
+      const itemControl = this.items.at(itemIndex);
+      itemControl.patchValue({ serviceId: null });
       const product = this.products().find(p => p.id === productId);
       if (product) {
-        this.orderForm.patchValue({ unitPrice: product.salePrice });
+        itemControl.patchValue({ unitPrice: product.salePrice });
       }
     }
   }
 
-  onServiceChange(serviceId: number): void {
+  onServiceChange(serviceId: number, itemIndex: number): void {
     if (serviceId) {
-      this.orderForm.patchValue({ productId: null });
+      const itemControl = this.items.at(itemIndex);
+      itemControl.patchValue({ productId: null });
       const service = this.services().find(s => s.id === serviceId);
       if (service) {
-        this.orderForm.patchValue({ unitPrice: service.price });
+        itemControl.patchValue({ unitPrice: service.price });
       }
     }
   }
@@ -157,6 +225,8 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadOrder(id: number): void {
     this.loading.set(true);
+    this.isLoadingData = true; // Desabilitar recálculo automático
+
     this.serviceOrderService.getById(id).subscribe({
       next: (order) => {
         this.orderForm.patchValue({
@@ -176,6 +246,7 @@ export class ServiceOrderFormComponent implements OnInit {
           detail: 'Falha ao carregar ordem de serviço'
         });
         this.loading.set(false);
+        this.isLoadingData = false;
         this.router.navigate(['/service-orders']);
       }
     });
@@ -187,18 +258,30 @@ export class ServiceOrderFormComponent implements OnInit {
         // Filtrar apenas os itens desta ordem de serviço
         const items = response.data.filter(item => item.serviceOrderId === serviceOrderId);
 
+        // Limpar array de itens existente
+        while (this.items.length > 0) {
+          this.items.removeAt(0);
+        }
+
+        // Adicionar cada item carregado
         if (items.length > 0) {
-          // Preencher com o primeiro item (assumindo 1 item por ordem neste fluxo)
-          const firstItem = items[0];
-          this.orderForm.patchValue({
-            productId: firstItem.productId || null,
-            serviceId: firstItem.serviceId || null,
-            quantity: firstItem.quantity,
-            unitPrice: firstItem.unitPrice
+          items.forEach(item => {
+            const itemGroup = this.createItemFormGroup();
+            itemGroup.patchValue({
+              productId: item.productId || null,
+              serviceId: item.serviceId || null,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice
+            });
+            this.items.push(itemGroup);
           });
+        } else {
+          // Se não houver itens, adicionar um vazio
+          this.items.push(this.createItemFormGroup());
         }
 
         this.loading.set(false);
+        this.isLoadingData = false; // Reabilitar recálculo automático
       },
       error: () => {
         this.messageService.add({
@@ -207,6 +290,7 @@ export class ServiceOrderFormComponent implements OnInit {
           detail: 'Falha ao carregar itens da ordem'
         });
         this.loading.set(false);
+        this.isLoadingData = false;
       }
     });
   }
@@ -236,44 +320,46 @@ export class ServiceOrderFormComponent implements OnInit {
         console.log('Ordem de serviço criada com sucesso:', serviceOrderResponse);
         console.log('ID da ordem criada:', serviceOrderResponse.id);
 
-        // ETAPA 2: Criar o item da ordem de serviço
-        const serviceOrderItemPayload = {
-          serviceOrderId: serviceOrderResponse.id,
-          productId: formValues.productId || null,
-          serviceId: formValues.serviceId || null,
-          quantity: formValues.quantity,
-          unitPrice: formValues.unitPrice
-        };
+        // ETAPA 2: Criar todos os itens da ordem de serviço
+        const items = formValues.items || [];
+        console.log('========== ETAPA 2: CRIAR ITENS DA ORDEM DE SERVIÇO ==========');
+        console.log(`Total de itens para criar: ${items.length}`);
 
-        console.log('========== ETAPA 2: CRIAR ITEM DA ORDEM DE SERVIÇO ==========');
-        console.log('Payload do item:', serviceOrderItemPayload);
+        // Criar cada item
+        let itemsCreated = 0;
+        let itemsWithError = 0;
 
-        this.serviceOrderItemService.create(serviceOrderItemPayload).subscribe({
-          next: (itemResponse) => {
-            console.log('Item da ordem de serviço criado com sucesso:', itemResponse);
-            console.log('========== PROCESSO COMPLETO! ==========');
+        items.forEach((item: any, index: number) => {
+          const serviceOrderItemPayload = {
+            serviceOrderId: serviceOrderResponse.id,
+            productId: item.productId || null,
+            serviceId: item.serviceId || null,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice
+          };
 
-            this.loading.set(false);
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Ordem de serviço e item criados com sucesso!'
-            });
+          console.log(`Criando item ${index + 1}:`, serviceOrderItemPayload);
 
-            setTimeout(() => {
-              this.router.navigate(['/service-orders']);
-            }, 1500);
-          },
-          error: (itemError) => {
-            console.error('========== ERRO AO CRIAR ITEM ==========');
-            console.error('Erro:', itemError);
-            this.loading.set(false);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Ordem criada, mas falha ao criar item'
-            });
-          }
+          this.serviceOrderItemService.create(serviceOrderItemPayload).subscribe({
+            next: (itemResponse) => {
+              itemsCreated++;
+              console.log(`Item ${index + 1} criado com sucesso:`, itemResponse);
+
+              // Verificar se todos os itens foram processados
+              if (itemsCreated + itemsWithError === items.length) {
+                this.finishSubmit(itemsCreated, itemsWithError);
+              }
+            },
+            error: (itemError) => {
+              itemsWithError++;
+              console.error(`Erro ao criar item ${index + 1}:`, itemError);
+
+              // Verificar se todos os itens foram processados
+              if (itemsCreated + itemsWithError === items.length) {
+                this.finishSubmit(itemsCreated, itemsWithError);
+              }
+            }
+          });
         });
       },
       error: (error) => {
@@ -287,6 +373,31 @@ export class ServiceOrderFormComponent implements OnInit {
         });
       }
     });
+  }
+
+  private finishSubmit(itemsCreated: number, itemsWithError: number): void {
+    console.log('========== PROCESSO COMPLETO! ==========');
+    console.log(`Itens criados: ${itemsCreated}, Erros: ${itemsWithError}`);
+
+    this.loading.set(false);
+
+    if (itemsWithError === 0) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: `Ordem de serviço e ${itemsCreated} item(ns) criados com sucesso!`
+      });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Aviso',
+        detail: `Ordem criada. ${itemsCreated} item(ns) criado(s), ${itemsWithError} com erro.`
+      });
+    }
+
+    setTimeout(() => {
+      this.router.navigate(['/service-orders']);
+    }, 1500);
   }
 
   onCancel(): void {

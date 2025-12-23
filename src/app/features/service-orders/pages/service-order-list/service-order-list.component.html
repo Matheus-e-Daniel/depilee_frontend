@@ -26,6 +26,7 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"></th>
           <th>Número da Ordem</th>
           <th>Cliente</th>
           <th>Status</th>
@@ -38,6 +39,15 @@
 
       <ng-template pTemplate="body" let-order>
         <tr>
+          <td>
+            <button
+              type="button"
+              pButton
+              [icon]="expandedRows[order.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+              class="p-button-text p-button-rounded p-button-plain"
+              (click)="toggleRow(order.id)">
+            </button>
+          </td>
           <td>{{ order.orderNumber }}</td>
           <td>{{ order.clientName || 'N/A' }}</td>
           <td>
@@ -46,7 +56,7 @@
               [severity]="getStatusSeverity(order.orderStatus)">
             </p-tag>
           </td>
-          <td>{{ order.discount | currency:'BRL' }}</td>
+          <td>{{ order.discount ? order.discount + '%' : '0%' }}</td>
           <td>{{ order.total | currency:'BRL' }}</td>
           <td>{{ order.cashRegisterName || 'N/A' }}</td>
           <td>
@@ -70,11 +80,52 @@
             </div>
           </td>
         </tr>
+        <tr *ngIf="expandedRows[order.id]">
+          <td colspan="8">
+            <div class="p-3" style="background-color: #f8f9fa;">
+              <h3 class="mb-3">Itens da Ordem</h3>
+              <p-table
+                [value]="orderItems[order.id] || []"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Total</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                  <tr>
+                    <td>
+                      <p-tag
+                        [value]="getItemType(item)"
+                        [severity]="item.productId ? 'success' : 'info'">
+                      </p-tag>
+                    </td>
+                    <td>{{ getItemName(item) }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unitPrice | currency:'BRL' }}</td>
+                    <td>{{ (item.quantity * item.unitPrice) | currency:'BRL' }}</td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr>
+                    <td colspan="5" class="text-center py-3">
+                      <span class="text-muted">Nenhum item encontrado para esta ordem</span>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </td>
+        </tr>
       </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7" class="text-center py-5">
+          <td colspan="8" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhuma ordem de serviço encontrada</h3>
