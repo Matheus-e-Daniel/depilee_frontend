@@ -1,5 +1,6 @@
 <!-- src/app/features/brands/pages/brand-list/brand-list.component.html -->
 <div class="brand-list-container w-full">
+
   <div class="header">
     <div class="title-section">
       <h1>Marcas</h1>
@@ -14,9 +15,54 @@
     </button>
   </div>
 
+  <div class="filters-card">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="pi pi-filter"></i>
+        <h3>Filtros</h3>
+      </div>
+      <button
+        pButton
+        icon="pi pi-times"
+        label="Limpar Filtros"
+        class="p-button-text p-button-sm clear-filters-btn"
+        (click)="searchValue = ''; sortOrderValue = 'desc';"
+      ></button>
+    </div>
+    <div class="filters-content">
+      <div class="filter-group">
+        <label for="brandSearch">Buscar por nome</label>
+        <span class="p-input-icon-right w-full">
+          <input
+            id="brandSearch"
+            type="text"
+            pInputText
+            placeholder="Digite o nome da marca..."
+            [ngModel]="searchValue"
+            (ngModelChange)="searchValue = $event"
+            class="w-full brand-search-input"
+          />
+        </span>
+      </div>
+      <div class="filter-group">
+        <label for="brandSort">Ordenar por</label>
+        <p-dropdown
+          id="brandSort"
+          [options]="sortOptions"
+          [ngModel]="sortOrderValue"
+          (ngModelChange)="sortOrderValue = $event"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione a ordenação"
+          class="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <p-table
-      [value]="brands()"
+      [value]="filteredBrands()"
       [loading]="loading()"
       styleClass="p-datatable-striped"
       [paginator]="true"

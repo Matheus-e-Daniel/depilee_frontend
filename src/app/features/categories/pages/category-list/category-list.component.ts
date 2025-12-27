@@ -1,11 +1,13 @@
 // src/app/features/categories/pages/category-list/category-list.component.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { FormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
@@ -19,10 +21,12 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     ButtonModule,
     TableModule,
     ToastModule,
     TooltipModule,
+    DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -31,6 +35,41 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent implements OnInit {
+  // Filtro e ordenação
+  search = signal('');
+  sortOrder = signal<'desc' | 'asc'>('desc');
+  sortOptions = [
+    { label: 'Mais recente', value: 'desc' },
+    { label: 'Mais antiga', value: 'asc' }
+  ];
+
+  get searchValue() {
+    return this.search();
+  }
+  set searchValue(val: string) {
+    this.search.set(val);
+  }
+
+  get sortOrderValue() {
+    return this.sortOrder();
+  }
+  set sortOrderValue(val: 'desc' | 'asc') {
+    this.sortOrder.set(val);
+  }
+
+  filteredCategories = computed(() => {
+    let list = this.categories();
+    const search = this.search().toLowerCase().trim();
+    if (search) {
+      list = list.filter(c => c.name.toLowerCase().includes(search));
+    }
+    if (this.sortOrder() === 'desc') {
+      list = [...list].sort((a, b) => b.id.localeCompare(a.id));
+    } else {
+      list = [...list].sort((a, b) => a.id.localeCompare(b.id));
+    }
+    return list;
+  });
   private categoryService = inject(CategoryService);
   private messageService = inject(MessageService);
   private router = inject(Router);

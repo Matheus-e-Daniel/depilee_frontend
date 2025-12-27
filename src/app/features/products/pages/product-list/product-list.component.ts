@@ -1,11 +1,13 @@
 // src/app/features/products/pages/product-list/product-list.component.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
@@ -19,10 +21,12 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     ButtonModule,
     TableModule,
     TagModule,
     ToastModule,
+    DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -36,8 +40,67 @@ export class ProductListComponent implements OnInit {
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
-  products = signal<Product[]>([]);
+  allProducts = signal<Product[]>([]);
   loading = signal(true);
+
+  // Filtros
+  searchTerm = signal('');
+  sortOrder = signal<string>('newest');
+
+  sortOptions = [
+    { label: 'Mais recente', value: 'newest' },
+    { label: 'Mais antigo', value: 'oldest' },
+    { label: 'Ordem alfabética (A-Z)', value: 'alphabetical' },
+    { label: 'Status (Disponível primeiro)', value: 'status' }
+  ];
+
+  // Produtos filtrados e ordenados
+  products = computed(() => {
+    let filtered = this.allProducts();
+
+    // Filtro por nome ou marca (case insensitive)
+    const searchFilter = this.searchTerm().toLowerCase().trim();
+    if (searchFilter) {
+      filtered = filtered.filter(product => {
+        const nameMatch = product.name?.toLowerCase().startsWith(searchFilter);
+        const brandMatch = product.brandId?.toString().toLowerCase().startsWith(searchFilter);
+        return nameMatch || brandMatch;
+      });
+    }
+
+    // Ordenação
+    const sorted = [...filtered];
+    switch (this.sortOrder()) {
+      case 'newest':
+        sorted.sort((a, b) => {
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
+          return dateB - dateA;
+        });
+        break;
+      case 'oldest':
+        sorted.sort((a, b) => {
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
+          return dateA - dateB;
+        });
+        break;
+      case 'alphabetical':
+        sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        break;
+      case 'status':
+        // Disponíveis primeiro, depois esgotados, e dentro de cada grupo, ordem alfabética
+        sorted.sort((a, b) => {
+          if ((a.stock > 0) === (b.stock > 0)) {
+            return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+          }
+          return a.stock > 0 ? -1 : 1;
+        });
+        break;
+    }
+
+    return sorted;
+  });
 
   // Delete confirmation
   productToDelete: { id: string; name: string } | null = null;
@@ -45,29 +108,30 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
-    console.log(this.products());
   }
 
   loadProducts(): void {
-  this.loading.set(true);
+    this.loading.set(true);
+    this.productService.getAll().subscribe({
+      next: (response) => {
+        this.allProducts.set(response.data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar produtos'
+        });
+        this.loading.set(false);
+      }
+    });
+  }
 
-  this.productService.getAll().subscribe({
-    next: (response) => {
-      this.products.set(response.data); // <--- aqui está a correção
-      this.loading.set(false);
-
-      console.log('Produtos carregados:', response.data);
-    },
-    error: () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Falha ao carregar produtos'
-      });
-      this.loading.set(false);
-    }
-  });
-}
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.sortOrder.set('newest');
+  }
 
 
   editProduct(id: string): void {

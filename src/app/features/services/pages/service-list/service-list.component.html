@@ -14,6 +14,50 @@
     </button>
   </div>
 
+  <div class="filters-card">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="pi pi-filter"></i>
+        <h3>Filtros</h3>
+      </div>
+      <button
+        pButton
+        icon="pi pi-times"
+        label="Limpar Filtros"
+        class="p-button-text p-button-sm clear-filters-btn"
+        (click)="clearFilters()">
+      </button>
+    </div>
+    <div class="filters-content">
+      <div class="filter-group">
+        <label for="searchTerm">Buscar por nome ou categoria</label>
+        <span class="p-input-icon-right w-full">
+          <input
+            id="searchTerm"
+            type="text"
+            pInputText
+            placeholder="Digite o nome ou categoria..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+            class="w-full service-search-input" />
+        </span>
+      </div>
+      <div class="filter-group">
+        <label for="sortOrder">Ordenar por</label>
+        <p-dropdown
+          id="sortOrder"
+          [options]="sortOptions"
+          [ngModel]="sortOrder()"
+          (ngModelChange)="sortOrder.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione a ordenação"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <p-table
       [value]="services()"

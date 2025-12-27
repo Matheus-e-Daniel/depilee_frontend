@@ -1,12 +1,14 @@
 // src/app/features/brands/pages/brand-list/brand-list.component.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { BrandService } from '../../services/brand.service';
 import { Brand } from '../../models/brand.model';
@@ -20,10 +22,12 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     ButtonModule,
     TableModule,
     ToastModule,
     TooltipModule,
+    DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -32,6 +36,42 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./brand-list.component.scss']
 })
 export class BrandListComponent implements OnInit {
+  // Filtro e ordenação
+  search = signal('');
+  sortOrder = signal<'desc' | 'asc'>('desc');
+  sortOptions = [
+    { label: 'Mais recente', value: 'desc' },
+    { label: 'Mais antiga', value: 'asc' }
+  ];
+
+  get searchValue() {
+    return this.search();
+  }
+  set searchValue(val: string) {
+    this.search.set(val);
+  }
+
+  get sortOrderValue() {
+    return this.sortOrder();
+  }
+  set sortOrderValue(val: 'desc' | 'asc') {
+    this.sortOrder.set(val);
+  }
+
+  filteredBrands = computed(() => {
+    let list = this.brands();
+    const search = this.search().toLowerCase().trim();
+    if (search) {
+      list = list.filter(b => b.name.toLowerCase().includes(search));
+    }
+    if (this.sortOrder() === 'desc') {
+      // Supondo que id seja sequencial, do contrário, adicione um campo de data
+      list = [...list].sort((a, b) => b.id.localeCompare(a.id));
+    } else {
+      list = [...list].sort((a, b) => a.id.localeCompare(b.id));
+    }
+    return list;
+  });
   private brandService = inject(BrandService);
   private messageService = inject(MessageService);
   private router = inject(Router);

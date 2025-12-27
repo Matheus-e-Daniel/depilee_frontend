@@ -21,5 +21,6 @@ export interface PagedResponse<T> {
 
 export interface Product extends ProductFormData {
   id: string;
+  registrationDate: string;
   // Outras propriedades que seu produto possa ter
 }
