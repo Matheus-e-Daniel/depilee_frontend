@@ -34,30 +34,33 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
+  submitted = false;
+
+
   isLoading = signal(false);
   errorMessage = signal('');
 
- // No onSubmit() do login.component.ts (corrigido)
-// src/app/features/auth/login/login.component.ts (CORRIGIDO)
-onSubmit(): void {
-  if (this.loginForm.valid) {
-    this.isLoading.set(true);
-    this.errorMessage.set('');
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.loginForm.valid) {
+      this.isLoading.set(true);
+      this.errorMessage.set('');
 
-    const credentials = this.loginForm.value as { email: string; password: string };
+      const credentials = this.loginForm.value as { email: string; password: string };
 
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        this.isLoading.set(false);
-        console.log('✅ Login bem-sucedido:', response);
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          this.isLoading.set(false);
+          console.log('✅ Login bem-sucedido:', response);
 
-        // ATUALIZA O ESTADO PARA TRUE
-        this.authService.setAuthenticated(true);
+          // ATUALIZA O ESTADO PARA TRUE
+          this.authService.setAuthenticated(true);
 
         // REDIRECIONA DIRETAMENTE para dashboard
         this.router.navigate(['/dashboard']);
