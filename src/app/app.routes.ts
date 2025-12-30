@@ -133,6 +133,19 @@ export const routes: Routes = [
           import('./features/categories/pages/category-form/category-form.component')
             .then(m => m.CategoryFormComponent)
       },
+      // Rotas de usuários
+      {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/users/pages/user-form/user-form.component')
+            .then(m => m.UserFormComponent)
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/pages/user-list/user-list.component')
+            .then(m => m.UserListComponent)
+      },
       // Rota de calendário de eventos
       {
         path: 'calendar-events',

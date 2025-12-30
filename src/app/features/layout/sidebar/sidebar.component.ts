@@ -18,6 +18,7 @@ export class SidebarComponent {
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
     { label: 'Calendário', icon: 'pi pi-calendar', route: '/calendar-events' },
     { label: 'Clientes', icon: 'pi pi-users', route: '/clients' },
+      { label: 'Usuários', icon: 'pi pi-users', route: '/users' },
     //{ label: 'Empresas', icon: 'pi pi-building', route: '/empresas' },
     //{ label: 'Funcionários', icon: 'pi pi-id-card', route: '/funcionarios' },
     { label: 'Produtos', icon: 'pi pi-box', route: '/products' },

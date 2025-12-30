@@ -1,0 +1,142 @@
+<!-- src/app/features/users/pages/user-form/user-form.component.html -->
+<div class="user-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      type="button"
+      (click)="onCancel()">
+    </button>
+    <h1>Novo Usuário</h1>
+  </div>
+  <div class="card">
+    <p-card>
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+        <div class="form-grid">
+          <div class="field col-12">
+            <label for="email">Email *</label>
+            <input id="email" formControlName="email" type="email" class="p-inputtext" placeholder="Digite o email" />
+            <small *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="p-error block mt-1">
+              <span *ngIf="userForm.get('email')?.errors?.['required']">Email é obrigatório</span>
+              <span *ngIf="userForm.get('email')?.errors?.['email']">Email inválido</span>
+            </small>
+          </div>
+          <div class="field col-12">
+            <label for="fullName">Nome completo *</label>
+            <input id="fullName" formControlName="fullName" type="text" class="p-inputtext" placeholder="Digite o nome completo" />
+            <small *ngIf="userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched" class="p-error block mt-1">
+              Nome completo é obrigatório
+            </small>
+          </div>
+          <div class="field col-12">
+            <label for="password">Senha *</label>
+            <input id="password" formControlName="password" type="password" class="p-inputtext" placeholder="Digite a senha" />
+            <small *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="p-error block mt-1">
+              Senha é obrigatória
+            </small>
+          </div>
+          <div class="field col-12 md:col-6">
+            <label for="cpf">CPF *</label>
+            <input id="cpf" formControlName="cpf" type="text" class="p-inputtext" placeholder="Digite o CPF" />
+            <small *ngIf="userForm.get('cpf')?.invalid && userForm.get('cpf')?.touched" class="p-error block mt-1">
+              CPF é obrigatório
+            </small>
+          </div>
+          <div class="field col-12 md:col-6">
+            <label for="birth">Data de nascimento *</label>
+            <input id="birth" formControlName="birth" type="date" class="p-inputtext" />
+            <small *ngIf="userForm.get('birth')?.invalid && userForm.get('birth')?.touched" class="p-error block mt-1">
+              Data de nascimento é obrigatória
+            </small>
+          </div>
+          <div class="field col-12 md:col-6">
+            <label for="gender">Gênero *</label>
+            <select id="gender" formControlName="gender" class="p-inputtext">
+              <option value="">Selecione</option>
+              <option *ngFor="let g of genders" [value]="g">{{g}}</option>
+            </select>
+            <small *ngIf="userForm.get('gender')?.invalid && userForm.get('gender')?.touched" class="p-error block mt-1">
+              Gênero é obrigatório
+            </small>
+          </div>
+        </div>
+        <fieldset formGroupName="address" class="address-fieldset">
+          <legend>Endereço</legend>
+          <div class="form-grid">
+            <div class="field col-12 md:col-6">
+              <label for="cep">CEP *</label>
+              <input id="cep" formControlName="cep" type="text" class="p-inputtext" placeholder="Digite o CEP" />
+              <small *ngIf="userForm.get('address.cep')?.invalid && userForm.get('address.cep')?.touched" class="p-error block mt-1">
+                CEP é obrigatório
+              </small>
+            </div>
+            <div class="field col-12 md:col-6">
+              <label for="state">Estado *</label>
+              <input id="state" formControlName="state" type="text" class="p-inputtext" placeholder="Digite o estado" />
+              <small *ngIf="userForm.get('address.state')?.invalid && userForm.get('address.state')?.touched" class="p-error block mt-1">
+                Estado é obrigatório
+              </small>
+            </div>
+            <div class="field col-12 md:col-6">
+              <label for="city">Cidade *</label>
+              <input id="city" formControlName="city" type="text" class="p-inputtext" placeholder="Digite a cidade" />
+              <small *ngIf="userForm.get('address.city')?.invalid && userForm.get('address.city')?.touched" class="p-error block mt-1">
+                Cidade é obrigatória
+              </small>
+            </div>
+            <div class="field col-12 md:col-6">
+              <label for="street">Rua *</label>
+              <input id="street" formControlName="street" type="text" class="p-inputtext" placeholder="Digite a rua" />
+              <small *ngIf="userForm.get('address.street')?.invalid && userForm.get('address.street')?.touched" class="p-error block mt-1">
+                Rua é obrigatória
+              </small>
+            </div>
+            <div class="field col-12 md:col-6">
+              <label for="number">Número *</label>
+              <input id="number" formControlName="number" type="text" class="p-inputtext" placeholder="Digite o número" />
+              <small *ngIf="userForm.get('address.number')?.invalid && userForm.get('address.number')?.touched" class="p-error block mt-1">
+                Número é obrigatório
+              </small>
+            </div>
+            <div class="field col-12 md:col-6">
+              <label for="neighborhood">Bairro *</label>
+              <input id="neighborhood" formControlName="neighborhood" type="text" class="p-inputtext" placeholder="Digite o bairro" />
+              <small *ngIf="userForm.get('address.neighborhood')?.invalid && userForm.get('address.neighborhood')?.touched" class="p-error block mt-1">
+                Bairro é obrigatório
+              </small>
+            </div>
+            <div class="field col-12">
+              <label for="complement">Complemento</label>
+              <input id="complement" formControlName="complement" type="text" class="p-inputtext" placeholder="Digite o complemento (opcional)" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-danger"
+            [disabled]="loading()"
+            (click)="onCancel()">
+          </button>
+          <button
+            pButton
+            type="submit"
+            label="Cadastrar"
+            class="p-button-primary"
+            [disabled]="userForm.invalid || loading()">
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+        <div *ngIf="success()" class="success-message">
+          Usuário cadastrado com sucesso!
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+<p-toast></p-toast>

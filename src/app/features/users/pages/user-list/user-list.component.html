@@ -1,0 +1,74 @@
+<!-- src/app/features/users/pages/user-list/user-list.component.html -->
+<div class="user-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Usuários</h1>
+      <p>Gerencie os usuários do sistema</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Novo Usuário"
+      class="p-button-primary"
+      (click)="newUser()">
+    </button>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="users()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuários">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Email</th>
+          <th>Nome completo</th>
+          <th>CPF</th>
+          <th>Data de nascimento</th>
+          <th>Gênero</th>
+          <th>Cidade</th>
+          <th>Estado</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td>{{ user.email }}</td>
+          <td>{{ user.fullName }}</td>
+          <td>{{ user.cpf }}</td>
+          <td>{{ user.birth | date:'dd/MM/yyyy' }}</td>
+          <td>{{ user.gender }}</td>
+          <td>{{ user.address.city }}</td>
+          <td>{{ user.address.state }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-users" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum usuário encontrado</h3>
+              <p>Comece adicionando seu primeiro usuário</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Novo Usuário"
+                class="p-button-outlined mt-3"
+                (click)="newUser()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
