@@ -21,7 +21,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     TableModule,
     TagModule,
     ToastModule,
-    SuccessModalComponent
+    SuccessModalComponent,
   ],
   providers: [MessageService],
   templateUrl: './user-list.component.html',
@@ -29,12 +29,14 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
 })
 export class UserListComponent implements OnInit {
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
   users = signal<User[]>([]);
   loading = signal(true);
+
+  errorModalVisible = signal(false);
+  errorMessage = signal('');
 
   ngOnInit(): void {
     this.loadUsers();
@@ -50,11 +52,8 @@ export class UserListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar usuários'
-        });
+        this.errorMessage.set('Falha ao carregar usuários');
+        this.errorModalVisible.set(true);
         this.loading.set(false);
       }
     });
@@ -62,6 +61,10 @@ export class UserListComponent implements OnInit {
 
   newUser(): void {
     this.router.navigate(['/register']);
+  }
+
+  onErrorModalClose() {
+    this.errorModalVisible.set(false);
   }
 
   // Métodos para editar/deletar podem ser adicionados aqui futuramente

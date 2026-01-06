@@ -53,6 +53,10 @@
             <!-- Eventos neste slot -->
             <div
               class="event-card"
+              [class.all-day-event]="event.allDay"
+              [class.event-continuity-top]="event.allDay && isFirstSlot(day, slot.hour)"
+              [class.event-continuity-middle]="event.allDay && isMiddleSlot(day, slot.hour)"
+              [class.event-continuity-bottom]="event.allDay && isLastSlot(day, slot.hour)"
               *ngFor="let event of getEventsForSlot(day, slot.hour)"
               [ngStyle]="getEventStyle(event)"
               draggable="true"

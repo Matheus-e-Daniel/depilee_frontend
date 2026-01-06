@@ -465,14 +465,23 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {
-    return day.events
-      .filter(event => {
-        if (!event.startDate) return false;
-        const startDate = this.parseLocalDate(event.startDate);
-        const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
-        return eventHour === time;
-      })
-      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    // Eventos normais para o horário
+    const normalEvents = day.events.filter(event => {
+      if (!event.startDate) return false;
+      if (event.allDay) return false;
+      const startDate = this.parseLocalDate(event.startDate);
+      const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
+      return eventHour === time;
+    });
+
+    // Evento allDay do dia (se houver)
+    const allDayEvent = day.events.find(event => event.allDay);
+
+    // Retorna ambos, se existirem
+    const result: CalendarEvent[] = [];
+    if (allDayEvent) result.push(allDayEvent);
+    result.push(...normalEvents);
+    return result.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   previousWeek(): void {
@@ -577,5 +586,25 @@ export class CalendarEventsComponent implements OnInit {
 
   getDialogTitle(): string {
     return this.isEditingEvent() ? 'Editar Evento' : 'Novo Evento';
+  }
+
+  isFirstSlot(day: DayColumn, hour: string): boolean {
+    const allDayEvent = day.events.find(event => event.allDay);
+    if (!allDayEvent) return false;
+    return hour === this.timeSlots[0].hour;
+  }
+
+  isMiddleSlot(day: DayColumn, hour: string): boolean {
+    const allDayEvent = day.events.find(event => event.allDay);
+    if (!allDayEvent) return false;
+    const firstHour = this.timeSlots[0].hour;
+    const lastHour = this.timeSlots[this.timeSlots.length - 1].hour;
+    return hour !== firstHour && hour !== lastHour;
+  }
+
+  isLastSlot(day: DayColumn, hour: string): boolean {
+    const allDayEvent = day.events.find(event => event.allDay);
+    if (!allDayEvent) return false;
+    return hour === this.timeSlots[this.timeSlots.length - 1].hour;
   }
 }

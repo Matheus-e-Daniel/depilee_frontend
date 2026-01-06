@@ -36,6 +36,23 @@
         font-weight: 600;
       }
     }
+
+    ::ng-deep .clear-filters-btn {
+      color: #64748b;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        color: #ef4444; /* vermelho claro */
+        background: none;
+      }
+
+      .pi {
+        font-size: 0.9rem;
+      }
+    }
   }
 
   .filters-content {

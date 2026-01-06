@@ -40,10 +40,13 @@
     ::ng-deep .clear-filters-btn {
       color: #64748b;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
 
       &:hover {
-        color: #3b82f6;
-        background: #eff6ff;
+        color: #ef4444; /* vermelho claro */
+        background: none;
       }
 
       .pi {

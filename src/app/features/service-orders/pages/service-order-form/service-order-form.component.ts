@@ -308,7 +308,7 @@ export class ServiceOrderFormComponent implements OnInit {
     const serviceOrderPayload = {
       clientId: formValues.clientId || null,
       discount: formValues.discount || null,
-      total: formValues.total,
+      // total removido do payload enviado ao backend
       notes: formValues.notes || null
     };
 

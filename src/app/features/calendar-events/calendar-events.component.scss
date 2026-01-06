@@ -200,6 +200,28 @@
             max-width: 100%;
             overflow: hidden;
 
+            &.all-day-event {
+              background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%);
+              color: #1e293b;
+              border: 2px solid #f59e42;
+              font-weight: bold;
+              font-size: 1rem;
+              /* Por padrão, altura automática */
+              min-height: 40px;
+              height: auto;
+              margin-bottom: 0.5rem;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            }
+            &.all-day-event.all-day-alone {
+              /* Se for o único evento do slot, ocupa toda a célula */
+              min-height: 70px;
+              height: 100%;
+              margin-bottom: 0;
+            }
+
             &:hover {
               transform: translateY(-1px);
               box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -265,6 +287,24 @@
                 color: white;
                 font-size: 0.75rem;
               }
+            }
+
+            &.event-continuity-top {
+              border-top-left-radius: 8px;
+              border-top-right-radius: 8px;
+              border-bottom: none;
+            }
+
+            &.event-continuity-middle {
+              border-radius: 0;
+              border-top: none;
+              border-bottom: none;
+            }
+
+            &.event-continuity-bottom {
+              border-bottom-left-radius: 8px;
+              border-bottom-right-radius: 8px;
+              border-top: none;
             }
           }
         }
