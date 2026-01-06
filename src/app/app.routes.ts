@@ -114,6 +114,25 @@ export const routes: Routes = [
           import('./features/brands/pages/brand-form/brand-form.component')
             .then(m => m.BrandFormComponent)
       },
+      // Rotas de caixas
+      {
+        path: 'cash-registers',
+        loadComponent: () =>
+          import('./features/cash-registers/pages/cash-register-list/cash-register-list.component')
+            .then(m => m.CashRegisterListComponent)
+      },
+      {
+        path: 'cash-registers/new',
+        loadComponent: () =>
+          import('./features/cash-registers/pages/cash-register-form/cash-register-form.component')
+            .then(m => m.CashRegisterFormComponent)
+      },
+      {
+        path: 'cash-registers/:id/edit',
+        loadComponent: () =>
+          import('./features/cash-registers/pages/cash-register-form/cash-register-form.component')
+            .then(m => m.CashRegisterFormComponent)
+      },
       // Rotas de categorias
       {
         path: 'categories',

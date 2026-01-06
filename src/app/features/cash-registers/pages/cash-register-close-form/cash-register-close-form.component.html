@@ -1,0 +1,26 @@
+
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="confirmation-modal-card cash-register-close-modal-card">
+    <button type="button" class="close-btn" (click)="onCancel()" pButton pTooltip="Fechar" tooltipPosition="left">
+      <i class="pi pi-times"></i>
+    </button>
+    <h2 class="modal-title">Fechar Caixa</h2>
+    <form [formGroup]="form" (ngSubmit)="onConfirm()" class="close-form">
+      <div class="field">
+        <label for="finalBalance">Saldo Final *</label>
+        <input id="finalBalance" type="number" step="0.01" formControlName="finalBalance" pInputText />
+        <small *ngIf="form.get('finalBalance')?.invalid && form.get('finalBalance')?.touched" class="p-error">
+          <span *ngIf="form.get('finalBalance')?.errors?.['required']">Saldo final é obrigatório</span>
+        </small>
+      </div>
+      <div class="field">
+        <label for="notes">Observações</label>
+        <textarea id="notes" formControlName="notes" pInputText rows="3"></textarea>
+      </div>
+      <div class="actions">
+        <button pButton type="button" class="p-button-text" (click)="onCancel()">Cancelar</button>
+        <button pButton type="submit" class="p-button-primary" [disabled]="form.invalid || loading">Fechar Caixa</button>
+      </div>
+    </form>
+  </div>
+</div>

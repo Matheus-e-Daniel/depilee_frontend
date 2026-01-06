@@ -1,0 +1,328 @@
+// src/app/features/cash-registers/pages/cash-register-form/cash-register-form.component.scss
+
+// src/app/features/cash-registers/pages/cash-register-form/cash-register-form.component.scss
+.cash-register-form-container {
+  padding: 2rem;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+    gap: 1.5rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 0 0 3px 3px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      background: linear-gradient(90deg, #1e293b 0%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    ::ng-deep .p-button {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+      &:hover {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        transform: translateX(-3px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+
+        .pi {
+          color: white !important;
+        }
+      }
+
+      .pi {
+        color: #64748b;
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    ::ng-deep .p-card {
+      border: none;
+      box-shadow: none;
+      border-radius: 16px;
+    }
+
+    ::ng-deep .p-card-body {
+      padding: 2.5rem;
+    }
+
+    ::ng-deep .p-card-content {
+      padding: 0;
+    }
+  }
+
+  .cash-register-form {
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2rem;
+
+      .field {
+        position: relative;
+
+        &.col-12 { grid-column: span 12; }
+
+        label {
+          color: #334155;
+          font-weight: 600;
+          font-size: 0.9rem;
+          margin-bottom: 0.75rem;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+
+        ::ng-deep input.p-inputtext,
+        ::ng-deep textarea.p-inputtext {
+          width: 100%;
+          padding: 0.875rem 1rem;
+          border: 2px solid #e2e8f0;
+          border-radius: 12px;
+          font-size: 1rem;
+          color: #1e293b;
+          background: white;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+          &::placeholder {
+            color: #94a3b8;
+          }
+
+          &:hover {
+            border-color: #cbd5e1;
+          }
+
+          &:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+          }
+
+          &.ng-invalid.ng-touched {
+            border-color: #ef4444;
+
+            &:focus {
+              box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+            }
+          }
+        }
+
+        .p-error {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #ef4444;
+          font-size: 0.85rem;
+          margin-top: 0.5rem;
+          padding: 0.5rem 0.75rem;
+          background: #fef2f2;
+          border-radius: 8px;
+          border-left: 3px solid #ef4444;
+
+          &::before {
+            content: '⚠';
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #f1f5f9;
+
+      ::ng-deep .p-button {
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 120px;
+
+        &.p-button-text {
+          background: transparent;
+          color: #64748b;
+          border: 2px solid #e2e8f0;
+
+          &:hover {
+            background: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1;
+          }
+        }
+
+        &.p-button-primary {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          border: none;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+          }
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+
+            &::before {
+              left: 100%;
+            }
+          }
+
+          &:disabled {
+            background: #cbd5e1;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cash-register-form {
+  animation: slideIn 0.4s ease-out;
+}
+
+@media (max-width: 768px) {
+  .cash-register-form-container {
+    padding: 1.25rem;
+
+    .header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+
+    .card {
+      ::ng-deep .p-card-body {
+        padding: 1.75rem;
+      }
+    }
+
+    .cash-register-form {
+      .form-grid {
+        gap: 1.5rem;
+      }
+
+      .form-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 0.75rem;
+
+        ::ng-deep .p-button {
+          width: auto;
+          padding: 0.875rem 1.5rem;
+          min-width: 100px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .cash-register-form-container {
+    padding: 1rem;
+
+    .header {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .card {
+      ::ng-deep .p-card-body {
+        padding: 1.5rem;
+      }
+    }
+
+    .cash-register-form {
+      .form-grid {
+        gap: 1.25rem;
+      }
+
+      .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+
+        ::ng-deep .p-button {
+          width: 100%;
+          padding: 1rem;
+        }
+      }
+    }
+  }
+}
