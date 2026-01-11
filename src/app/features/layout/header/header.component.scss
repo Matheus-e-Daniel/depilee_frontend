@@ -1,3 +1,33 @@
+// Notificação customizada
+.notification-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.notification-check-btn {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  transition: color 0.2s;
+  color: #bdbdbd;
+}
+.notification-check-btn i {
+  font-size: 1.2rem;
+  color: inherit;
+}
+.notification-check-btn:hover i {
+  color: #43a047;
+}
 .header {
   background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   color: #fff;
@@ -159,8 +189,14 @@
     animation: fadeIn 0.2s ease;
 
     &#notification-menu {
+      max-width: 320px;
+      overflow-x: hidden;
+      box-sizing: border-box;
       .p-menu-content {
         padding: 0;
+        max-width: 320px;
+        box-sizing: border-box;
+        overflow-x: hidden;
       }
 
       .notification-header {
@@ -180,6 +216,15 @@
         }
       }
 
+      .notification-item-wrapper {
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
       .notification-item {
         display: flex;
         align-items: center;
@@ -189,9 +234,13 @@
         transition: background-color 0.2s;
         cursor: pointer;
         border-bottom: 1px solid #f1f1f1;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
 
         &:hover {
           background: #f5f5f5;
+          z-index: 1;
         }
 
         &:last-child {

@@ -1,5 +1,5 @@
 // src/app/features/layout/header/header.component.ts
-import { Component, output, inject, ViewChild } from '@angular/core';
+import { Component, output, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +9,8 @@ import { BadgeModule } from 'primeng/badge';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../notifications/services/notification.service';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -17,15 +19,18 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
+
+  private notificationSub?: Subscription;
 
   @ViewChild('notificationMenu') notificationMenu!: Menu;
   @ViewChild('userMenu') userMenu!: Menu;
 
   toggleSidebar = output<void>();
-  notificationCount = 3;
+  notificationCount = 0;
 
   userMenuItems: MenuItem[] = [
     {
@@ -46,37 +51,65 @@ export class HeaderComponent {
     }
   ];
 
-  notificationItems: MenuItem[] = [
-    {
-      label: 'Nova consulta agendada',
-      icon: 'pi pi-calendar',
-      badge: 'Há 5 min',
-      command: () => this.viewNotification(1)
-    },
-    {
-      label: 'Pagamento confirmado',
-      icon: 'pi pi-check-circle',
-      badge: 'Há 1 hora',
-      command: () => this.viewNotification(2)
-    },
-    {
-      label: 'Novo paciente cadastrado',
-      icon: 'pi pi-user-plus',
-      badge: 'Hoje',
-      command: () => this.viewNotification(3)
-    },
-    { separator: true },
-    {
-      label: 'Ver todas as notificações',
-      icon: 'pi pi-list',
-      command: () => this.viewAllNotifications()
-    },
-    {
-      label: 'Marcar todas como lidas',
-      icon: 'pi pi-check',
-      command: () => this.markAllAsRead()
-    }
-  ];
+  notificationItems: MenuItem[] = [];
+  ngOnInit(): void {
+    this.fetchNotifications();
+    this.notificationSub = interval(30000).subscribe(() => this.fetchNotifications());
+  }
+
+  ngOnDestroy(): void {
+    this.notificationSub?.unsubscribe();
+  }
+
+  private fetchNotifications(): void {
+    this.notificationService.getAll().subscribe({
+      next: (response: any) => {
+        // O backend retorna { data: Notification[], ... }
+        const allItems = response.data || [];
+        // Filtrar apenas notificações com notificationStatus === 0
+        const items = allItems.filter((n: any) => n.notificationStatus === 0);
+        this.notificationCount = items.length;
+        this.notificationItems = [
+          ...items.map((n: any) => ({
+            label: n.title,
+            icon: this.getNotificationIcon(n),
+            badge: this.getNotificationBadge(n),
+            id: n.id,
+            command: () => this.viewNotification(n.id)
+          })),
+          { separator: true },
+          {
+            label: 'Ver todas as notificações',
+            icon: 'pi pi-list',
+            command: () => this.viewAllNotifications()
+          },
+          {
+            label: 'Marcar todas como lidas',
+            icon: 'pi pi-check',
+            command: () => this.markAllAsRead()
+          }
+        ];
+      },
+      error: () => {
+        this.notificationItems = [
+          { label: 'Erro ao carregar notificações', icon: 'pi pi-exclamation-triangle', disabled: true }
+        ];
+      }
+    });
+  }
+
+  private getNotificationIcon(n: any): string {
+    // Exemplo: pode customizar por tipo
+    if (n.notificationType === 0) return 'pi pi-bell';
+    return 'pi pi-info-circle';
+  }
+
+  private getNotificationBadge(n: any): string {
+    // Exemplo: pode customizar badge, aqui só mostra data/hora
+    if (!n.createdAt) return '';
+    const date = new Date(n.createdAt);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  }
 
   onMenuClick(): void {
     this.toggleSidebar.emit();
@@ -115,5 +148,18 @@ export class HeaderComponent {
   markAllAsRead(): void {
     this.notificationCount = 0;
     console.log('Todas as notificações marcadas como lidas');
+  }
+
+  markNotificationAsRead(id: number, event: Event): void {
+    event.stopPropagation();
+    this.notificationService.markAsRead(id).subscribe({
+      next: () => {
+        this.notificationItems = this.notificationItems.filter((item: any) => item.id !== id);
+        this.notificationCount = Math.max(0, this.notificationCount - 1);
+      },
+      error: (err) => {
+        console.error('Erro ao marcar notificação como lida:', err);
+      }
+    });
   }
 }

@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { ServiceOrder, ServiceOrderFormData, PagedResponse, Client, CashRegister } from '../models/service-order.model';
 
 @Injectable({
@@ -12,11 +13,15 @@ export class ServiceOrderService {
   private apiUrl = 'http://localhost:5093/v1/service-orders';
 
   getAll(): Observable<PagedResponse<ServiceOrder>> {
-    return this.http.get<PagedResponse<ServiceOrder>>(this.apiUrl);
+    return this.http.get<PagedResponse<ServiceOrder>>(this.apiUrl).pipe(
+      tap(result => console.log('getAll service-orders:', result))
+    );
   }
 
   getById(id: number): Observable<ServiceOrder> {
-    return this.http.get<ServiceOrder>(`${this.apiUrl}/${id}`);
+    return this.http.get<ServiceOrder>(`${this.apiUrl}/${id}`).pipe(
+      tap(result => console.log('getById service-order:', result))
+    );
   }
 
   create(order: ServiceOrderFormData): Observable<ServiceOrder> {
@@ -32,10 +37,14 @@ export class ServiceOrderService {
   }
 
   getClients(): Observable<PagedResponse<Client>> {
-    return this.http.get<PagedResponse<Client>>('http://localhost:5093/v1/clients');
+    return this.http.get<PagedResponse<Client>>('http://localhost:5093/v1/clients').pipe(
+      tap(result => console.log('getClients:', result))
+    );
   }
 
   getCashRegisters(): Observable<PagedResponse<CashRegister>> {
-    return this.http.get<PagedResponse<CashRegister>>('http://localhost:5093/v1/cash-registers');
+    return this.http.get<PagedResponse<CashRegister>>('http://localhost:5093/v1/cash-registers').pipe(
+      tap(result => console.log('getCashRegisters:', result))
+    );
   }
 }
