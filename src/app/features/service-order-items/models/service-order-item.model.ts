@@ -31,7 +31,7 @@ export interface ServiceOrderItemFormData {
   productId?: number;
   serviceId?: number;
   quantity: number;
-  unitPrice: number;
+  unitPrice?: number;
 }
 
 export interface ServiceOrder {

@@ -1,0 +1,60 @@
+<div class="payment-section">
+  <div class="form-grid" [formGroup]="paymentForm">
+    <div class="field col-6">
+      <label for="cashRegisterId">Caixa</label>
+      <p-dropdown
+        formControlName="cashRegisterId"
+        [options]="cashRegisters()"
+        optionLabel="notes"
+        optionValue="id"
+        placeholder="Selecione o caixa"
+        [loading]="cashRegistersLoading()"
+        id="cashRegisterId">
+        <ng-template pTemplate="item" let-cashRegister>
+          <div>Caixa #{{ cashRegister.id }} - {{ cashRegister.notes }}</div>
+        </ng-template>
+        <ng-template pTemplate="selectedItem" let-cashRegister>
+          <div>Caixa #{{ cashRegister.id }} - {{ cashRegister.notes }}</div>
+        </ng-template>
+        <ng-template pTemplate="empty">
+          <div class="p-2">Nenhum caixa encontrado</div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+    <div class="field col-6">
+      <label for="paymentMethodId">Forma de pagamento</label>
+      <p-dropdown
+        formControlName="paymentMethodId"
+        [options]="paymentMethods()"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Selecione"
+        [loading]="paymentMethodsLoading()"
+        id="paymentMethodId">
+        <ng-template pTemplate="empty">
+          <div class="p-2">Nenhuma forma de pagamento encontrada</div>
+        </ng-template>
+      </p-dropdown>
+    </div>
+    <div class="field col-6">
+      <label for="amount">Valor</label>
+      <p-inputNumber
+        formControlName="amount"
+        [min]="0.01"
+        [mode]="'currency'"
+        [currency]="'BRL'"
+        [locale]="'pt-BR'"
+        id="amount">
+      </p-inputNumber>
+    </div>
+    <div class="field col-12">
+      <label for="notes">Observações</label>
+      <textarea
+        pInputTextarea
+        formControlName="notes"
+        id="notes"
+        rows="2"
+        placeholder="Observações sobre o pagamento"></textarea>
+    </div>
+  </div>
+</div>

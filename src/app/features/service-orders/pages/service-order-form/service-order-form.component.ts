@@ -14,6 +14,8 @@ import { ServiceOrderService } from '../../services/service-order.service';
 import { Client } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
+import { ServiceOrderPaymentComponent } from '../../components/service-order-payment/service-order-payment.component';
+import { ServiceOrderPaymentService } from '../../components/service-order-payment/service-order-payment.service';
 
 @Component({
   selector: 'app-service-order-form',
@@ -26,7 +28,8 @@ import { ProductOption, ServiceOption } from '../../../service-order-items/model
     DropdownModule,
     ButtonModule,
     CardModule,
-    ToastModule
+    ToastModule,
+    ServiceOrderPaymentComponent
   ],
   providers: [MessageService],
   templateUrl: './service-order-form.component.html',
@@ -36,6 +39,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
+  private paymentService = inject(ServiceOrderPaymentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -320,6 +324,9 @@ export class ServiceOrderFormComponent implements OnInit {
         console.log('Ordem de serviço criada com sucesso:', serviceOrderResponse);
         console.log('ID da ordem criada:', serviceOrderResponse.id);
 
+        // Armazenar o ID da ordem criada
+        this.orderId.set(serviceOrderResponse.id);
+
         // ETAPA 2: Criar todos os itens da ordem de serviço
         const items = formValues.items || [];
         console.log('========== ETAPA 2: CRIAR ITENS DA ORDEM DE SERVIÇO ==========');
@@ -334,8 +341,7 @@ export class ServiceOrderFormComponent implements OnInit {
             serviceOrderId: serviceOrderResponse.id,
             productId: item.productId || null,
             serviceId: item.serviceId || null,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice
+            quantity: item.quantity
           };
 
           console.log(`Criando item ${index + 1}:`, serviceOrderItemPayload);
@@ -379,21 +385,53 @@ export class ServiceOrderFormComponent implements OnInit {
     console.log('========== PROCESSO COMPLETO! ==========');
     console.log(`Itens criados: ${itemsCreated}, Erros: ${itemsWithError}`);
 
-    this.loading.set(false);
+    // ETAPA 3: Criar pagamento (se preenchido)
+    const paymentData = this.orderForm.get('payment')?.value;
+    const serviceOrderId = this.orderId();
 
-    if (itemsWithError === 0) {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: `Ordem de serviço e ${itemsCreated} item(ns) criados com sucesso!`
+    if (paymentData && serviceOrderId && paymentData.cashRegisterId && paymentData.paymentMethodId && paymentData.amount) {
+      console.log('========== ETAPA 3: CRIAR PAGAMENTO ==========');
+      const paymentPayload = {
+        ...paymentData,
+        serviceOrderId: serviceOrderId
+      };
+      console.log('Payload do pagamento:', paymentPayload);
+
+      this.paymentService.savePayment(serviceOrderId, paymentPayload).subscribe({
+        next: (paymentResponse) => {
+          console.log('Pagamento criado com sucesso:', paymentResponse);
+          this.finishWithMessage(itemsCreated, itemsWithError, true);
+        },
+        error: (paymentError) => {
+          console.error('Erro ao criar pagamento:', paymentError);
+          this.finishWithMessage(itemsCreated, itemsWithError, false);
+        }
       });
     } else {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Aviso',
-        detail: `Ordem criada. ${itemsCreated} item(ns) criado(s), ${itemsWithError} com erro.`
-      });
+      this.finishWithMessage(itemsCreated, itemsWithError, null);
     }
+  }
+
+  private finishWithMessage(itemsCreated: number, itemsWithError: number, paymentCreated: boolean | null): void {
+    this.loading.set(false);
+
+    let detail = '';
+    if (itemsWithError === 0) {
+      detail = `Ordem de serviço e ${itemsCreated} item(ns) criados com sucesso!`;
+      if (paymentCreated === true) {
+        detail += ' Pagamento registrado.';
+      } else if (paymentCreated === false) {
+        detail += ' Erro ao registrar pagamento.';
+      }
+    } else {
+      detail = `Ordem criada. ${itemsCreated} item(ns) criado(s), ${itemsWithError} com erro.`;
+    }
+
+    this.messageService.add({
+      severity: itemsWithError === 0 ? 'success' : 'warn',
+      summary: itemsWithError === 0 ? 'Sucesso' : 'Aviso',
+      detail: detail
+    });
 
     setTimeout(() => {
       this.router.navigate(['/service-orders']);

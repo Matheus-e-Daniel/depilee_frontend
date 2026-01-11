@@ -218,8 +218,15 @@
                 <span *ngIf="orderForm.get('total')?.errors?.['required']">Total é obrigatório</span>
                 <span *ngIf="orderForm.get('total')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
               </small>
+
             </div>
           </div>
+        </div>
+
+        <!-- Seção de Pagamento -->
+        <div class="mt-5">
+          <h2 class="text-xl font-semibold mb-4">Pagamento</h2>
+          <app-service-order-payment [parentForm]="orderForm"></app-service-order-payment>
         </div>
 
         <div class="form-actions">
