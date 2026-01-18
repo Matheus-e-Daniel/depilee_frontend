@@ -41,24 +41,38 @@
           <div class="field col-12 md:col-6">
             <label for="cpf">CPF *</label>
             <input id="cpf" formControlName="cpf" type="text" class="p-inputtext" placeholder="Digite o CPF" />
-            <small *ngIf="userForm.get('cpf')?.invalid && userForm.get('cpf')?.touched" class="p-error block mt-1">
+            <small *ngIf="userForm.get('cpf')?.invalid && formSubmitted()" class="p-error block mt-1">
               CPF é obrigatório
             </small>
           </div>
           <div class="field col-12 md:col-6">
             <label for="birth">Data de nascimento *</label>
-            <input id="birth" formControlName="birth" type="date" class="p-inputtext" />
-            <small *ngIf="userForm.get('birth')?.invalid && userForm.get('birth')?.touched" class="p-error block mt-1">
-              Data de nascimento é obrigatória
+            <p-inputMask
+              id="birth"
+              formControlName="birth"
+              mask="99/99/9999"
+              placeholder="dd/mm/aaaa"
+              class="w-full"
+              (onFocus)="onBirthFocus($event)"
+              (click)="onBirthClick($event)">
+            </p-inputMask>
+            <small *ngIf="userForm.get('birth')?.invalid && formSubmitted()" class="p-error block mt-1">
+              <span *ngIf="userForm.get('birth')?.errors?.['required']">Data de nascimento é obrigatória</span>
+              <span *ngIf="userForm.get('birth')?.errors?.['futureDate']">A data de nascimento não pode ser no futuro</span>
+              <span *ngIf="userForm.get('birth')?.errors?.['invalidMonth']">Mês inválido (deve ser entre 1 e 12)</span>
+              <span *ngIf="userForm.get('birth')?.errors?.['invalidDay']">Dia inválido</span>
             </small>
           </div>
           <div class="field col-12 md:col-6">
             <label for="gender">Gênero *</label>
-            <select id="gender" formControlName="gender" class="p-inputtext">
-              <option value="">Selecione</option>
-              <option *ngFor="let g of genders" [value]="g">{{g}}</option>
-            </select>
-            <small *ngIf="userForm.get('gender')?.invalid && userForm.get('gender')?.touched" class="p-error block mt-1">
+            <p-dropdown
+              id="gender"
+              formControlName="gender"
+              [options]="genderOptions"
+              placeholder="Selecione"
+              class="w-full">
+            </p-dropdown>
+            <small *ngIf="userForm.get('gender')?.invalid && formSubmitted()" class="p-error block mt-1">
               Gênero é obrigatório
             </small>
           </div>
@@ -68,43 +82,59 @@
           <div class="form-grid">
             <div class="field col-12 md:col-6">
               <label for="cep">CEP *</label>
-              <input id="cep" formControlName="cep" type="text" class="p-inputtext" placeholder="Digite o CEP" />
-              <small *ngIf="userForm.get('address.cep')?.invalid && userForm.get('address.cep')?.touched" class="p-error block mt-1">
+              <p-inputMask
+                id="cep"
+                formControlName="cep"
+                mask="99999-999"
+                placeholder="00000-000"
+                class="w-full"
+                (onFocus)="onCepFocus($event)"
+                (click)="onCepClick($event)">
+                <ng-template pTemplate="suffix">
+                  <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
+                </ng-template>
+              </p-inputMask>
+              <small *ngIf="userForm.get('address.cep')?.invalid && formSubmitted()" class="p-error block mt-1">
                 CEP é obrigatório
+              </small>
+              <small
+                *ngIf="cepErrorMessage()"
+                class="p-error block mt-1">
+                {{ cepErrorMessage() }}
               </small>
             </div>
             <div class="field col-12 md:col-6">
               <label for="state">Estado *</label>
               <input id="state" formControlName="state" type="text" class="p-inputtext" placeholder="Digite o estado" />
-              <small *ngIf="userForm.get('address.state')?.invalid && userForm.get('address.state')?.touched" class="p-error block mt-1">
+              <small *ngIf="userForm.get('address.state')?.invalid && formSubmitted()" class="p-error block mt-1">
                 Estado é obrigatório
               </small>
             </div>
             <div class="field col-12 md:col-6">
               <label for="city">Cidade *</label>
               <input id="city" formControlName="city" type="text" class="p-inputtext" placeholder="Digite a cidade" />
-              <small *ngIf="userForm.get('address.city')?.invalid && userForm.get('address.city')?.touched" class="p-error block mt-1">
+              <small *ngIf="userForm.get('address.city')?.invalid && formSubmitted()" class="p-error block mt-1">
                 Cidade é obrigatória
               </small>
             </div>
             <div class="field col-12 md:col-6">
               <label for="street">Rua *</label>
               <input id="street" formControlName="street" type="text" class="p-inputtext" placeholder="Digite a rua" />
-              <small *ngIf="userForm.get('address.street')?.invalid && userForm.get('address.street')?.touched" class="p-error block mt-1">
+              <small *ngIf="userForm.get('address.street')?.invalid && formSubmitted()" class="p-error block mt-1">
                 Rua é obrigatória
               </small>
             </div>
             <div class="field col-12 md:col-6">
               <label for="number">Número *</label>
               <input id="number" formControlName="number" type="text" class="p-inputtext" placeholder="Digite o número" />
-              <small *ngIf="userForm.get('address.number')?.invalid && userForm.get('address.number')?.touched" class="p-error block mt-1">
+              <small *ngIf="userForm.get('address.number')?.invalid && formSubmitted()" class="p-error block mt-1">
                 Número é obrigatório
               </small>
             </div>
             <div class="field col-12 md:col-6">
               <label for="neighborhood">Bairro *</label>
               <input id="neighborhood" formControlName="neighborhood" type="text" class="p-inputtext" placeholder="Digite o bairro" />
-              <small *ngIf="userForm.get('address.neighborhood')?.invalid && userForm.get('address.neighborhood')?.touched" class="p-error block mt-1">
+              <small *ngIf="userForm.get('address.neighborhood')?.invalid && formSubmitted()" class="p-error block mt-1">
                 Bairro é obrigatório
               </small>
             </div>
@@ -128,7 +158,7 @@
             type="submit"
             label="Cadastrar"
             class="p-button-primary"
-            [disabled]="userForm.invalid || loading()">
+            [disabled]="loading()">
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>
         </div>
@@ -140,3 +170,5 @@
   </div>
 </div>
 <p-toast></p-toast>
+
+<app-error-modal [visible]="errorModalService.visible()" [message]="errorModalService.message()" (visibleChange)="errorModalService.hide()"></app-error-modal>
