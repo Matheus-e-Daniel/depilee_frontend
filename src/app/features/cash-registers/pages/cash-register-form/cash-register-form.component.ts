@@ -44,6 +44,9 @@ export class CashRegisterFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   cashRegisterId = signal<string | null>(null);
+  formSubmitted = signal(false);
+  formModified = signal(false);
+  originalFormValue: any = null;
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -56,8 +59,15 @@ export class CashRegisterFormComponent implements OnInit {
 
   private initForm(): void {
     this.cashRegisterForm = this.fb.group({
-      initialBalance: [0.0, [Validators.required]],
+      initialBalance: ['', [Validators.required]],
       notes: ['']
+    });
+
+    // Track form modifications
+    this.cashRegisterForm.valueChanges.subscribe(() => {
+      if (this.isEditMode() && this.originalFormValue) {
+        this.checkFormModified();
+      }
     });
   }
 
@@ -75,10 +85,18 @@ export class CashRegisterFormComponent implements OnInit {
     this.loading.set(true);
     this.cashRegisterService.getById(id).subscribe({
       next: (cashRegister) => {
+        // Formatar saldo inicial para exibição
+        const formattedBalance = cashRegister.initialBalance.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 2
+        });
         this.cashRegisterForm.patchValue({
-          initialBalance: cashRegister.initialBalance,
+          initialBalance: formattedBalance,
           notes: cashRegister.notes || ''
         });
+        // Store original values for comparison
+        this.originalFormValue = JSON.stringify(this.cashRegisterForm.value);
         this.loading.set(false);
       },
       error: () => {
@@ -93,8 +111,9 @@ export class CashRegisterFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.cashRegisterForm.invalid) {
-      this.markFormGroupTouched();
       return;
     }
     this.showConfirmation.set(true);
@@ -102,7 +121,15 @@ export class CashRegisterFormComponent implements OnInit {
 
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
-    const formData: CashRegisterFormData = this.cashRegisterForm.value;
+    const formValue = this.cashRegisterForm.value;
+
+    // Parse saldo inicial para número
+    const initialBalanceValue = this.parseCurrency(formValue.initialBalance);
+
+    const formData: CashRegisterFormData = {
+      ...formValue,
+      initialBalance: initialBalanceValue
+    };
 
     const payload = this.isEditMode()
       ? { id: this.cashRegisterId(), ...formData }
@@ -145,9 +172,56 @@ export class CashRegisterFormComponent implements OnInit {
     this.router.navigate(['/cash-registers']);
   }
 
-  private markFormGroupTouched(): void {
-    Object.values(this.cashRegisterForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
+  onCurrencyFocus(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value || input.value.trim() === '') {
+      input.value = 'R$ ';
+    }
+  }
+
+  onCurrencyInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value.startsWith('R$ ')) {
+      input.value = 'R$ ' + input.value.replace(/^R\$\s*/, '');
+    }
+  }
+
+  formatCurrencyOnBlur(event: FocusEvent, controlName: string): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Remove R$ e espaços
+    value = value.replace(/R\$\s*/g, '').trim();
+
+    if (!value || value === '') {
+      this.cashRegisterForm.get(controlName)?.setValue('');
+      return;
+    }
+
+    // Troca ponto por nada e vírgula por ponto
+    value = value.replace(/\./g, '').replace(',', '.');
+
+    const numericValue = parseFloat(value);
+
+    if (!isNaN(numericValue)) {
+      const formatted = numericValue.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2
+      });
+      this.cashRegisterForm.get(controlName)?.setValue(formatted);
+    }
+  }
+
+  private parseCurrency(value: string): number {
+    if (!value) return 0;
+    // Remove R$, espaços e separadores de milhar, troca vírgula por ponto
+    const cleaned = value.replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
+  }
+
+  private checkFormModified(): void {
+    const currentValue = JSON.stringify(this.cashRegisterForm.value);
+    this.formModified.set(currentValue !== this.originalFormValue);
   }
 }
