@@ -11,14 +11,20 @@ import { CalendarModule } from 'primeng/calendar';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ClientService } from '../../services/client.service';
+
+// Constantes
+const CEP_DEBOUNCE_TIME = 800;
+const FOCUS_NUMBER_DELAY = 100;
+const CLIENT_DATA_LOAD_DELAY = 1000;
+const SUCCESS_REDIRECT_DELAY = 2500;
 import { ClientFormData } from '../../models/client.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 
 @Component({
   selector: 'app-client-form',
@@ -33,12 +39,11 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     InputTextareaModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     CheckboxModule,
     SuccessModalComponent,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    ErrorModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './client-form.component.html',
   styleUrls: ['./client-form.component.scss']
 })
@@ -47,9 +52,9 @@ export class ClientFormComponent implements OnInit {
   private clientService = inject(ClientService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   private http = inject(HttpClient);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   clientForm!: FormGroup;
   loading = signal(false);
@@ -57,9 +62,13 @@ export class ClientFormComponent implements OnInit {
   clientId = signal<string | null>(null);
   maxDate: Date = new Date();
   loadingCep = signal(false);
-  isLoadingClientData = false; // Flag para indicar se está carregando dados do cliente
+  isLoadingClientData = signal(false);
+  originalFormValue: any = null;
+  formModified = signal(false);
+  cepErrorMessage = signal('');
+  formSubmitted = signal(false);
 
-  // Confirmation modal
+  // Modals
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -106,13 +115,13 @@ export class ClientFormComponent implements OnInit {
 
   private initForm(): void {
     this.clientForm = this.fb.group({
-      name: ['', [Validators.minLength(3)]],
+      name: ['', [Validators.required]],
       gender: [''],
-      cpf: ['', [Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
+      cpf: [''],
       phone: [''],
-      email: ['', [Validators.email]],
-      birth: [''],
-      cep: ['', [Validators.pattern(/^\d{5}-\d{3}$/)]],
+      email: [''],
+      birth: ['', [Validators.required, this.birthDateValidator]],
+      cep: [''],
       state: [''],
       city: [''],
       neighborhood: [''],
@@ -124,62 +133,104 @@ export class ClientFormComponent implements OnInit {
 
     // Listener para buscar endereço quando o CEP for preenchido
     this.clientForm.get('cep')?.valueChanges.pipe(
-      debounceTime(800),
+      debounceTime(CEP_DEBOUNCE_TIME),
       distinctUntilChanged(),
-      filter(cep => cep && cep.length === 9)
+      filter(cep => {
+        // Limpa mensagem de erro quando o usuário começa a digitar
+        this.cepErrorMessage.set('');
+        const cepLimpo = cep?.replace(/\D/g, '') || '';
+        return cepLimpo.length === 8;
+      })
     ).subscribe(cep => {
       this.buscarCep(cep);
     });
+
+    // Listener para detectar mudanças no formulário
+    this.clientForm.valueChanges.subscribe(() => {
+      this.checkFormModified();
+    });
+  }
+
+  private birthDateValidator(control: any): { [key: string]: boolean } | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const value = control.value;
+    let year: number;
+    let month: number;
+    let day: number;
+
+    // Se for string no formato DD/MM/YYYY
+    if (typeof value === 'string' && value.includes('/')) {
+      const parts = value.split('/');
+      if (parts.length === 3) {
+        day = parseInt(parts[0], 10);
+        month = parseInt(parts[1], 10);
+        year = parseInt(parts[2], 10);
+      } else {
+        return null;
+      }
+    } else if (value instanceof Date) {
+      day = value.getDate();
+      month = value.getMonth() + 1;
+      year = value.getFullYear();
+    } else {
+      return null;
+    }
+
+    // Valida mês
+    if (month > 12 || month < 1) {
+      return { invalidMonth: true };
+    }
+
+    // Valida dia
+    if (day < 1 || day > 31) {
+      return { invalidDay: true };
+    }
+
+    // Valida ano futuro
+    const currentYear = new Date().getFullYear();
+    if (year > currentYear) {
+      return { futureDate: true };
+    }
+
+    return null;
+  }
+
+  private checkFormModified(): void {
+    if (!this.isEditMode() || !this.originalFormValue) {
+      this.formModified.set(true);
+      return;
+    }
+
+    const currentValue = this.clientForm.value;
+    const hasChanges = JSON.stringify(currentValue) !== JSON.stringify(this.originalFormValue);
+    this.formModified.set(hasChanges);
   }
 
   buscarCep(cep: string): void {
     const cepLimpo = cep.replace(/\D/g, '');
-    console.log('🔍 CEP digitado:', cep);
-    console.log('🔍 CEP limpo:', cepLimpo);
 
-    // Se está carregando dados do cliente, não busca CEP automaticamente
-    if (this.isLoadingClientData) {
-      console.log('⏭️ Pulando busca de CEP - carregando dados do cliente');
+    if (this.isLoadingClientData()) {
       return;
     }
 
     if (cepLimpo.length !== 8 || this.loadingCep()) {
-      console.log('❌ CEP inválido ou já carregando:', {
-        comprimento: cepLimpo.length,
-        jaCarregando: this.loadingCep()
-      });
       return;
     }
 
     this.loadingCep.set(true);
-    this.clientForm.get('cep')?.disable();
-    console.log('📡 Buscando CEP na API ViaCEP...');
 
     this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).subscribe({
       next: (data: any) => {
-        console.log('✅ Resposta da API ViaCEP:', data);
-
         if (data.erro) {
-          console.log('⚠️ CEP não encontrado na base do ViaCEP');
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'CEP não encontrado',
-            detail: 'O CEP informado não foi encontrado'
-          });
+          this.errorModalService.show('O CEP informado não foi encontrado');
+          this.cepErrorMessage.set('Por favor, digite um CEP válido');
           this.loadingCep.set(false);
-          this.clientForm.get('cep')?.enable();
           return;
         }
 
-        console.log('📝 Preenchendo campos com os dados:', {
-          uf: data.uf,
-          cidade: data.localidade,
-          bairro: data.bairro,
-          logradouro: data.logradouro,
-          complemento: data.complemento
-        });
-
-        // Preencher os campos automaticamente
         this.clientForm.patchValue({
           state: data.uf,
           city: data.localidade,
@@ -189,27 +240,15 @@ export class ClientFormComponent implements OnInit {
         }, { emitEvent: false });
 
         this.loadingCep.set(false);
-        this.clientForm.get('cep')?.enable();
-        console.log('✅ Campos preenchidos com sucesso');
 
-        // Focar no campo número
         setTimeout(() => {
           document.getElementById('number')?.focus();
-        }, 100);
+        }, FOCUS_NUMBER_DELAY);
       },
-      error: (error) => {
-        console.error('❌ Erro ao buscar CEP:', error);
-        console.error('❌ Status do erro:', error.status);
-        console.error('❌ Mensagem do erro:', error.message);
-        console.error('❌ Erro completo:', error);
-
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Erro ao buscar CEP'
-        });
+      error: () => {
+        this.errorModalService.show('Erro ao buscar CEP');
+        this.cepErrorMessage.set('Por favor, digite um CEP válido');
         this.loadingCep.set(false);
-        this.clientForm.get('cep')?.enable();
       }
     });
   }
@@ -226,14 +265,10 @@ export class ClientFormComponent implements OnInit {
 
   private loadClient(id: string): void {
     this.loading.set(true);
-    this.isLoadingClientData = true; // Bloqueia busca automática de CEP
+    this.isLoadingClientData.set(true);
 
     this.clientService.getById(id).subscribe({
       next: (client) => {
-        console.log('📋 Cliente carregado:', client);
-        console.log('📅 Data de nascimento do backend:', client.birth);
-
-        // Formatar dados para o formulário
         this.clientForm.patchValue({
           name: client.name,
           gender: client.gender,
@@ -250,28 +285,30 @@ export class ClientFormComponent implements OnInit {
           complement: client.address.complement
         });
 
-        console.log('📅 Data formatada para o formulário:', this.clientForm.get('birth')?.value);
+        // Armazenar valores originais para comparação
+        this.originalFormValue = { ...this.clientForm.value };
+        this.formModified.set(false);
+
         this.loading.set(false);
 
-        // Libera busca de CEP após carregar os dados
         setTimeout(() => {
-          this.isLoadingClientData = false;
-          console.log('✅ Busca de CEP liberada - usuário pode editar o CEP agora');
-        }, 1000);
+          this.isLoadingClientData.set(false);
+        }, CLIENT_DATA_LOAD_DELAY);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar cliente'
-        });
-        this.isLoadingClientData = false;
-        this.router.navigate(['/clients']);
+        this.errorModalService.show('Falha ao carregar cliente');
+        this.isLoadingClientData.set(false);
+        this.loading.set(false);
+        setTimeout(() => {
+          this.router.navigate(['/clients']);
+        }, 2000);
       }
     });
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.clientForm.invalid) {
       this.markFormGroupTouched();
       return;
@@ -284,13 +321,11 @@ export class ClientFormComponent implements OnInit {
     this.confirmationLoading.set(true);
 
     const formValue = this.clientForm.value;
-    console.log('📋 Valores do formulário:', formValue);
-    console.log('📅 Valor da data de nascimento:', formValue.birth, typeof formValue.birth);
 
     const formData: ClientFormData = {
       name: formValue.name,
-      gender: formValue.gender,
-      cpf: formValue.cpf.replace(/\D/g, ''), // Remove formatação
+      gender: formValue.gender || 3,
+      cpf: formValue.cpf.replace(/\D/g, ''),
       phone: formValue.phone,
       email: formValue.email,
       birth: this.formatDateToISO(formValue.birth),
@@ -326,16 +361,12 @@ export class ClientFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/clients']);
-        }, 2500);
+        }, SUCCESS_REDIRECT_DELAY);
       },
       error: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar cliente'
-        });
+        this.errorModalService.show('Falha ao salvar cliente');
       }
     });
   }
@@ -361,9 +392,7 @@ export class ClientFormComponent implements OnInit {
 
       if (match) {
         const [, day, month, year] = match;
-        // Converte para formato ISO: YYYY-MM-DDTHH:mm:ss
         const isoDate = `${year}-${month}-${day}T00:00:00`;
-        console.log('📅 Convertendo data de', date, 'para', isoDate);
         return isoDate;
       }
 
@@ -373,11 +402,9 @@ export class ClientFormComponent implements OnInit {
 
     // Se for um objeto Date válido
     if (date instanceof Date && !isNaN(date.getTime())) {
-      // Retorna no formato "1990-05-15T00:00:00"
       return date.toISOString().split('.')[0];
     }
 
-    console.error('❌ Data inválida recebida:', date, typeof date);
     return '';
   }
 
@@ -388,16 +415,13 @@ export class ClientFormComponent implements OnInit {
 
     let dateObj: Date;
 
-    // Se for string, converte para Date
     if (typeof date === 'string') {
       dateObj = new Date(date);
     } else {
       dateObj = date;
     }
 
-    // Verifica se é uma data válida
     if (isNaN(dateObj.getTime())) {
-      console.error('❌ Data inválida ao formatar para DD/MM/YYYY:', date);
       return '';
     }
 
@@ -415,12 +439,75 @@ export class ClientFormComponent implements OnInit {
     });
   }
 
-  searchCep(): void {
-    const cep = this.clientForm.get('cep')?.value?.replace(/\D/g, '');
-    if (cep && cep.length === 8) {
-      // Aqui você pode integrar com uma API de CEP
-      // Exemplo: https://viacep.com.br/ws/${cep}/json/
-      console.log('Buscando CEP:', cep);
-    }
+  onCepFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onCepClick(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onCpfFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onCpfClick(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onPhoneFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onPhoneClick(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onBirthFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onBirthClick(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
   }
 }

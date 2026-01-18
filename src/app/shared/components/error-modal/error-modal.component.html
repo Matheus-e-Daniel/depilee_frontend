@@ -1,0 +1,26 @@
+<!-- src/app/shared/components/error-modal/error-modal.component.html -->
+<div class="modal-backdrop" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
+  <div class="error-modal-card" @cardAnimation>
+    <!-- Error Icon -->
+    <div class="icon-container">
+      <div class="error-icon">
+        <svg viewBox="0 0 52 52">
+          <circle class="error-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="error-cross" fill="none" d="M16 16 36 36 M36 16 16 36"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <h3 class="error-title">Erro</h3>
+    <p class="error-message">{{ message }}</p>
+
+    <!-- Button -->
+    <button
+      pButton
+      label="Fechar"
+      class="p-button-danger close-button"
+      (click)="onClose()">
+    </button>
+  </div>
+</div>

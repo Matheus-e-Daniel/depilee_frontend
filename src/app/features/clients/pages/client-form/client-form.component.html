@@ -33,7 +33,7 @@
               placeholder="Digite o nome completo" />
 
             <small
-              *ngIf="clientForm.get('name')?.invalid && clientForm.get('name')?.touched"
+              *ngIf="clientForm.get('name')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="clientForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
               <span *ngIf="clientForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
@@ -63,12 +63,17 @@
               formControlName="birth"
               mask="99/99/9999"
               placeholder="dd/mm/aaaa"
-              class="w-full">
+              class="w-full"
+              (onFocus)="onBirthFocus($event)"
+              (click)="onBirthClick($event)">
             </p-inputMask>
             <small
-              *ngIf="clientForm.get('birth')?.invalid && clientForm.get('birth')?.touched"
+              *ngIf="clientForm.get('birth')?.invalid && formSubmitted()"
               class="p-error block mt-1">
-              Data de nascimento é obrigatória
+              <span *ngIf="clientForm.get('birth')?.errors?.['required']">Data de nascimento é obrigatória</span>
+              <span *ngIf="clientForm.get('birth')?.errors?.['futureDate']">A data de nascimento não pode ser no futuro</span>
+              <span *ngIf="clientForm.get('birth')?.errors?.['invalidMonth']">Mês inválido (deve ser entre 1 e 12)</span>
+              <span *ngIf="clientForm.get('birth')?.errors?.['invalidDay']">Dia inválido</span>
             </small>
           </div>
 
@@ -79,7 +84,9 @@
               formControlName="cpf"
               mask="999.999.999-99"
               placeholder="000.000.000-00"
-              class="w-full">
+              class="w-full"
+              (onFocus)="onCpfFocus($event)"
+              (click)="onCpfClick($event)">
             </p-inputMask>
             <small
               *ngIf="clientForm.get('cpf')?.invalid && clientForm.get('cpf')?.touched"
@@ -95,7 +102,9 @@
               formControlName="phone"
               mask="(99) 99999-9999"
               placeholder="(00) 00000-0000"
-              class="w-full">
+              class="w-full"
+              (onFocus)="onPhoneFocus($event)"
+              (click)="onPhoneClick($event)">
             </p-inputMask>
             <small
               *ngIf="clientForm.get('phone')?.invalid && clientForm.get('phone')?.touched"
@@ -134,7 +143,9 @@
               formControlName="cep"
               mask="99999-999"
               placeholder="00000-000"
-              class="w-full">
+              class="w-full"
+              (onFocus)="onCepFocus($event)"
+              (click)="onCepClick($event)">
               <ng-template pTemplate="suffix">
                 <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
               </ng-template>
@@ -143,6 +154,11 @@
               *ngIf="clientForm.get('cep')?.invalid && clientForm.get('cep')?.touched"
               class="p-error block mt-1">
               CEP no formato 00000-000
+            </small>
+            <small
+              *ngIf="cepErrorMessage()"
+              class="p-error block mt-1">
+              {{ cepErrorMessage() }}
             </small>
           </div>
 
@@ -257,7 +273,7 @@
             type="submit"
             [label]="isEditMode() ? 'Atualizar' : 'Criar'"
             class="p-button-primary"
-            [disabled]="clientForm.invalid || loading()">
+            [disabled]="loading() || (isEditMode() && !formModified())">
 
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>
@@ -267,8 +283,9 @@
   </div>
 </div>
 
-<p-toast></p-toast>
 <app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-error-modal [visible]="errorModalService.visible()" [message]="errorModalService.message()" (visibleChange)="errorModalService.hide()"></app-error-modal>
 
 <app-confirmation-modal
   [visible]="showConfirmation()"
