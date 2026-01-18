@@ -28,7 +28,7 @@
               placeholder="Digite o nome do produto" />
 
             <small
-              *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+              *ngIf="productForm.get('name')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
               <span *ngIf="productForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
@@ -60,7 +60,7 @@
               (blur)="formatCurrencyOnBlur($event, 'cost')" />
 
             <small
-              *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched"
+              *ngIf="productForm.get('cost')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('cost')?.errors?.['required']">Custo é obrigatório</span>
               <span *ngIf="productForm.get('cost')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
@@ -81,7 +81,7 @@
               (blur)="formatCurrencyOnBlur($event, 'salePrice')" />
 
             <small
-              *ngIf="productForm.get('salePrice')?.invalid && productForm.get('salePrice')?.touched"
+              *ngIf="productForm.get('salePrice')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('salePrice')?.errors?.['required']">Preço de venda é obrigatório</span>
               <span *ngIf="productForm.get('salePrice')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
@@ -100,7 +100,7 @@
               (blur)="formatNumberOnBlur($event, 'stock')" />
 
             <small
-              *ngIf="productForm.get('stock')?.invalid && productForm.get('stock')?.touched"
+              *ngIf="productForm.get('stock')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('stock')?.errors?.['required']">Estoque é obrigatório</span>
               <span *ngIf="productForm.get('stock')?.errors?.['min']">Valor mínimo: 0</span>
@@ -124,7 +124,7 @@
             </p-dropdown>
 
             <small
-              *ngIf="productForm.get('brandId')?.invalid && productForm.get('brandId')?.touched"
+              *ngIf="productForm.get('brandId')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('brandId')?.errors?.['required']">Marca é obrigatória</span>
             </small>
@@ -147,7 +147,7 @@
             </p-dropdown>
 
             <small
-              *ngIf="productForm.get('categoryId')?.invalid && productForm.get('categoryId')?.touched"
+              *ngIf="productForm.get('categoryId')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="productForm.get('categoryId')?.errors?.['required']">Categoria é obrigatória</span>
             </small>
@@ -169,7 +169,7 @@
             type="submit"
             [label]="isEditMode() ? 'Atualizar' : 'Criar'"
             class="p-button-primary"
-            [disabled]="productForm.invalid || loading()">
+            [disabled]="loading() || (isEditMode() && !formModified())">
 
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>

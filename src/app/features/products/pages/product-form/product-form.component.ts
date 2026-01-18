@@ -57,6 +57,9 @@ export class ProductFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   productId = signal<string | null>(null);
+  formSubmitted = signal(false);
+  originalFormValue: any = null;
+  formModified = signal(false);
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -84,6 +87,11 @@ export class ProductFormComponent implements OnInit {
       stock: ['', [Validators.required, Validators.min(0)]],
       brandId: ['', Validators.required],
       categoryId: ['', Validators.required]
+    });
+
+    // Listener para detectar mudanças no formulário
+    this.productForm.valueChanges.subscribe(() => {
+      this.checkFormModified();
     });
   }
 
@@ -174,6 +182,11 @@ export class ProductFormComponent implements OnInit {
           }
         }, 0);
 
+        // Armazena o valor original do formulário
+        setTimeout(() => {
+          this.originalFormValue = JSON.parse(JSON.stringify(this.productForm.value));
+        }, 100);
+
         this.loading.set(false);
       },
       error: () => {
@@ -188,6 +201,8 @@ export class ProductFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.productForm.invalid) {
       this.markFormGroupTouched();
       return;
@@ -248,6 +263,16 @@ export class ProductFormComponent implements OnInit {
     Object.values(this.productForm.controls).forEach(control => {
       control.markAsTouched();
     });
+  }
+
+  private checkFormModified(): void {
+    if (!this.isEditMode() || !this.originalFormValue) {
+      return;
+    }
+
+    const currentValue = this.productForm.value;
+    const isModified = JSON.stringify(currentValue) !== JSON.stringify(this.originalFormValue);
+    this.formModified.set(isModified);
   }
 
   onCurrencyFocus(event: any): void {
