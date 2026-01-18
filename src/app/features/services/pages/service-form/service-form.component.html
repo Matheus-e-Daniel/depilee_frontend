@@ -28,7 +28,7 @@
               placeholder="Digite o nome do serviço" />
 
             <small
-              *ngIf="serviceForm.get('name')?.invalid && serviceForm.get('name')?.touched"
+              *ngIf="serviceForm.get('name')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="serviceForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
               <span *ngIf="serviceForm.get('name')?.errors?.['minlength']">Mínimo 3 caracteres</span>
@@ -48,22 +48,22 @@
 
           <div class="field col-12 md:col-6">
             <label for="price" class="block font-medium mb-2">Preço *</label>
-            <p-inputNumber
+            <input
+              pInputText
+              type="text"
               id="price"
               formControlName="price"
-              mode="currency"
-              currency="BRL"
-              locale="pt-BR"
+              (focus)="onCurrencyFocus($event)"
+              (input)="onCurrencyInput($event)"
+              (blur)="formatCurrencyOnBlur($event, 'price')"
               class="w-full"
-              [showButtons]="false"
-              [minFractionDigits]="2">
-            </p-inputNumber>
+              placeholder="R$ 0,00"
+            />
 
             <small
-              *ngIf="serviceForm.get('price')?.invalid && serviceForm.get('price')?.touched"
+              *ngIf="serviceForm.get('price')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="serviceForm.get('price')?.errors?.['required']">Preço é obrigatório</span>
-              <span *ngIf="serviceForm.get('price')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
             </small>
           </div>
 
@@ -84,7 +84,7 @@
             </p-dropdown>
 
             <small
-              *ngIf="serviceForm.get('categoryId')?.invalid && serviceForm.get('categoryId')?.touched"
+              *ngIf="serviceForm.get('categoryId')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               Categoria é obrigatória
             </small>
@@ -106,7 +106,7 @@
             type="submit"
             [label]="isEditMode() ? 'Atualizar' : 'Criar'"
             class="p-button-primary"
-            [disabled]="serviceForm.invalid || loading()">
+            [disabled]="isEditMode() && !formModified()">
 
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>

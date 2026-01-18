@@ -5,7 +5,6 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -28,7 +27,6 @@ import { Category } from '../../../categories/models/category.model';
     ReactiveFormsModule,
     InputTextModule,
     InputTextareaModule,
-    InputNumberModule,
     DropdownModule,
     ButtonModule,
     CardModule,
@@ -56,6 +54,9 @@ export class ServiceFormComponent implements OnInit {
   serviceId = signal<string | null>(null);
   categories = signal<Category[]>([]);
   categoriesLoading = signal(true);
+  formSubmitted = signal(false);
+  formModified = signal(false);
+  originalFormValue: any = null;
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -71,9 +72,16 @@ export class ServiceFormComponent implements OnInit {
     this.serviceForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      price: [0, [Validators.required, Validators.min(0.01)]],
+      price: ['', [Validators.required]],
       categoryId: ['', Validators.required],
       active: [true]
+    });
+
+    // Track form modifications
+    this.serviceForm.valueChanges.subscribe(() => {
+      if (this.isEditMode() && this.originalFormValue) {
+        this.checkFormModified();
+      }
     });
   }
 
@@ -109,13 +117,23 @@ export class ServiceFormComponent implements OnInit {
     this.loading.set(true);
     this.serviceService.getById(id).subscribe({
       next: (service) => {
+        // Format the price for display
+        const formattedPrice = service.price.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          minimumFractionDigits: 2
+        });
+
         this.serviceForm.patchValue({
           name: service.name,
           description: service.description,
-          price: service.price,
+          price: formattedPrice,
           categoryId: service.categoryId,
           active: service.active
         });
+
+        // Store original values for comparison
+        this.originalFormValue = JSON.stringify(this.serviceForm.value);
         this.loading.set(false);
       },
       error: () => {
@@ -130,8 +148,9 @@ export class ServiceFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.serviceForm.invalid) {
-      this.markFormGroupTouched();
       return;
     }
 
@@ -140,7 +159,15 @@ export class ServiceFormComponent implements OnInit {
 
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
-    const formData: ServiceFormData = this.serviceForm.value;
+    const formValue = this.serviceForm.value;
+
+    // Parse price back to number
+    const priceValue = this.parseCurrency(formValue.price);
+
+    const formData: ServiceFormData = {
+      ...formValue,
+      price: priceValue
+    };
 
     const payload = this.isEditMode()
       ? { id: parseInt(this.serviceId()!), ...formData }
@@ -185,9 +212,56 @@ export class ServiceFormComponent implements OnInit {
     this.router.navigate(['/services']);
   }
 
-  private markFormGroupTouched(): void {
-    Object.values(this.serviceForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
+  onCurrencyFocus(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value || input.value.trim() === '') {
+      input.value = 'R$ ';
+    }
+  }
+
+  onCurrencyInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value.startsWith('R$ ')) {
+      input.value = 'R$ ' + input.value.replace(/^R\$\s*/, '');
+    }
+  }
+
+  formatCurrencyOnBlur(event: FocusEvent, controlName: string): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Remove R$ and spaces
+    value = value.replace(/R\$\s*/g, '').trim();
+
+    if (!value || value === '') {
+      this.serviceForm.get(controlName)?.setValue('');
+      return;
+    }
+
+    // Replace comma with dot for parsing
+    value = value.replace(/\./g, '').replace(',', '.');
+
+    const numericValue = parseFloat(value);
+
+    if (!isNaN(numericValue)) {
+      const formatted = numericValue.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2
+      });
+      this.serviceForm.get(controlName)?.setValue(formatted);
+    }
+  }
+
+  private parseCurrency(value: string): number {
+    if (!value) return 0;
+    // Remove R$, spaces, and thousand separators, then replace comma with dot
+    const cleaned = value.replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
+  }
+
+  private checkFormModified(): void {
+    const currentValue = JSON.stringify(this.serviceForm.value);
+    this.formModified.set(currentValue !== this.originalFormValue);
   }
 }
