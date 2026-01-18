@@ -45,6 +45,9 @@ export class BrandFormComponent implements OnInit {
   loading = signal(false);
   isEditMode = signal(false);
   brandId = signal<string | null>(null);
+  formSubmitted = signal(false);
+  formModified = signal(false);
+  originalFormValue: any = null;
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -58,6 +61,13 @@ export class BrandFormComponent implements OnInit {
   private initForm(): void {
     this.brandForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]]
+    });
+
+    // Track form modifications
+    this.brandForm.valueChanges.subscribe(() => {
+      if (this.isEditMode() && this.originalFormValue) {
+        this.checkFormModified();
+      }
     });
   }
 
@@ -78,6 +88,9 @@ export class BrandFormComponent implements OnInit {
         this.brandForm.patchValue({
           name: brand.name
         });
+
+        // Store original values for comparison
+        this.originalFormValue = JSON.stringify(this.brandForm.value);
         this.loading.set(false);
       },
       error: () => {
@@ -92,8 +105,9 @@ export class BrandFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.brandForm.invalid) {
-      this.markFormGroupTouched();
       return;
     }
 
@@ -146,10 +160,9 @@ export class BrandFormComponent implements OnInit {
     this.router.navigate(['/brands']);
   }
 
-  private markFormGroupTouched(): void {
-    Object.values(this.brandForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
+  private checkFormModified(): void {
+    const currentValue = JSON.stringify(this.brandForm.value);
+    this.formModified.set(currentValue !== this.originalFormValue);
   }
 }
 

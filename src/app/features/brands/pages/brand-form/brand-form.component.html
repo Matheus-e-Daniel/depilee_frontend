@@ -28,7 +28,7 @@
               placeholder="Digite o nome da marca" />
 
             <small
-              *ngIf="brandForm.get('name')?.invalid && brandForm.get('name')?.touched"
+              *ngIf="brandForm.get('name')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="brandForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
               <span *ngIf="brandForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
@@ -51,7 +51,7 @@
             type="submit"
             [label]="isEditMode() ? 'Atualizar' : 'Criar'"
             class="p-button-primary"
-            [disabled]="brandForm.invalid || confirmationLoading()">
+            [disabled]="isEditMode() && !formModified()">
           </button>
         </div>
       </form>
