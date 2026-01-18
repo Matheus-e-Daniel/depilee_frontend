@@ -81,7 +81,7 @@ export class ProductFormComponent implements OnInit {
       description: [''],
       cost: ['', [Validators.required, Validators.min(0.01)]],
       salePrice: ['', [Validators.required, Validators.min(0.01)]],
-      stock: [0, [Validators.required, Validators.min(0)]],
+      stock: ['', [Validators.required, Validators.min(0)]],
       brandId: ['', Validators.required],
       categoryId: ['', Validators.required]
     });
@@ -146,6 +146,34 @@ export class ProductFormComponent implements OnInit {
           brandId: product.brandId,
           categoryId: product.categoryId
         });
+
+        // Formata os valores nos inputs
+        setTimeout(() => {
+          const costInput = document.getElementById('cost') as HTMLInputElement;
+          const salePriceInput = document.getElementById('salePrice') as HTMLInputElement;
+          const stockInput = document.getElementById('stock') as HTMLInputElement;
+
+          if (costInput && product.cost) {
+            costInput.value = product.cost.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+              minimumFractionDigits: 2
+            });
+          }
+
+          if (salePriceInput && product.salePrice) {
+            salePriceInput.value = product.salePrice.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+              minimumFractionDigits: 2
+            });
+          }
+
+          if (stockInput && product.stock !== undefined) {
+            stockInput.value = product.stock.toLocaleString('pt-BR');
+          }
+        }, 0);
+
         this.loading.set(false);
       },
       error: () => {
@@ -220,5 +248,104 @@ export class ProductFormComponent implements OnInit {
     Object.values(this.productForm.controls).forEach(control => {
       control.markAsTouched();
     });
+  }
+
+  onCurrencyFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.value || input.value.trim() === '') {
+      input.value = 'R$ ';
+      // Posiciona o cursor após o R$
+      setTimeout(() => {
+        input.setSelectionRange(3, 3);
+      }, 0);
+    }
+  }
+
+  onCurrencyInput(event: any): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
+
+    // Se o usuário apagar o "R$ ", recoloca
+    if (!value.startsWith('R$ ')) {
+      // Remove qualquer R$ ou espaço solto
+      value = value.replace(/R\$?\s*/g, '');
+      input.value = 'R$ ' + value;
+      // Reposiciona o cursor
+      const cursorPos = input.value.length;
+      input.setSelectionRange(cursorPos, cursorPos);
+    }
+  }
+
+  formatCurrencyOnBlur(event: any, fieldName: string): void {
+    let value = event.target.value;
+
+    // Remove o "R$ " para processar
+    value = value.replace(/R\$\s*/g, '');
+
+    // Remove tudo exceto números, vírgula e ponto
+    value = value.replace(/[^\d.,]/g, '');
+
+    // Se não houver valor, limpa o campo
+    if (!value) {
+      this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
+      event.target.value = '';
+      return;
+    }
+
+    // Substitui vírgula por ponto para conversão
+    const normalizedValue = value.replace(/\./g, '').replace(',', '.');
+    const numericValue = parseFloat(normalizedValue);
+
+    // Se não for um número válido, limpa
+    if (isNaN(numericValue)) {
+      this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
+      event.target.value = '';
+      return;
+    }
+
+    // Formata como moeda brasileira
+    const formatted = numericValue.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2
+    });
+
+    // Atualiza o valor visual
+    event.target.value = formatted;
+
+    // Atualiza o valor do formulário com o número
+    this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
+  }
+
+  formatNumberOnBlur(event: any, fieldName: string): void {
+    let value = event.target.value;
+
+    // Remove tudo exceto números
+    value = value.replace(/\D/g, '');
+
+    // Se não houver valor, define como 0 no formulário mas deixa o campo vazio
+    if (!value) {
+      this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
+      event.target.value = '';
+      return;
+    }
+
+    const numericValue = parseInt(value);
+
+    // Se não for um número válido, define como 0 no formulário mas deixa o campo vazio
+    if (isNaN(numericValue)) {
+      this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
+      event.target.value = '';
+      return;
+    }
+
+    // Formata com separador de milhar
+    const formatted = numericValue.toLocaleString('pt-BR');
+
+    // Atualiza o valor visual
+    event.target.value = formatted;
+
+    // Atualiza o valor do formulário com o número
+    this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
   }
 }

@@ -48,16 +48,16 @@
 
           <div class="field col-6">
             <label for="cost" class="block font-medium mb-2">Custo *</label>
-            <p-inputNumber
+            <input
               id="cost"
+              type="text"
+              pInputText
               formControlName="cost"
-              mode="currency"
-              currency="BRL"
-              locale="pt-BR"
               class="w-full"
-              [showButtons]="false"
-              [minFractionDigits]="2">
-            </p-inputNumber>
+              placeholder="R$ 0,00"
+              (focus)="onCurrencyFocus($event)"
+              (input)="onCurrencyInput($event)"
+              (blur)="formatCurrencyOnBlur($event, 'cost')" />
 
             <small
               *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched"
@@ -69,16 +69,16 @@
 
           <div class="field col-6">
             <label for="salePrice" class="block font-medium mb-2">Preço de Venda *</label>
-            <p-inputNumber
+            <input
               id="salePrice"
+              type="text"
+              pInputText
               formControlName="salePrice"
-              mode="currency"
-              currency="BRL"
-              locale="pt-BR"
               class="w-full"
-              [showButtons]="false"
-              [minFractionDigits]="2">
-            </p-inputNumber>
+              placeholder="R$ 0,00"
+              (focus)="onCurrencyFocus($event)"
+              (input)="onCurrencyInput($event)"
+              (blur)="formatCurrencyOnBlur($event, 'salePrice')" />
 
             <small
               *ngIf="productForm.get('salePrice')?.invalid && productForm.get('salePrice')?.touched"
@@ -92,12 +92,12 @@
             <label for="stock" class="block font-medium mb-2">Estoque *</label>
             <input
               id="stock"
-              type="number"
+              type="text"
               pInputText
               formControlName="stock"
               class="w-full"
               placeholder="Ex: 10"
-              min="0" />
+              (blur)="formatNumberOnBlur($event, 'stock')" />
 
             <small
               *ngIf="productForm.get('stock')?.invalid && productForm.get('stock')?.touched"
