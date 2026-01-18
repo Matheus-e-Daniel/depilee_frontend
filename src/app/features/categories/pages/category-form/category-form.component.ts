@@ -43,10 +43,14 @@ export class CategoryFormComponent implements OnInit {
   private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
+
   categoryForm!: FormGroup;
   loading = signal(false);
   isEditMode = signal(false);
   categoryId = signal<string | null>(null);
+  formSubmitted = signal(false);
+  formModified = signal(false);
+  originalFormValue: any = null;
 
   // Confirmation modal
   showConfirmation = signal(false);
@@ -61,6 +65,13 @@ export class CategoryFormComponent implements OnInit {
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: ['']
+    });
+
+    // Track form modifications
+    this.categoryForm.valueChanges.subscribe(() => {
+      if (this.isEditMode() && this.originalFormValue) {
+        this.checkFormModified();
+      }
     });
   }
 
@@ -82,6 +93,8 @@ export class CategoryFormComponent implements OnInit {
           name: category.name,
           description: category.description
         });
+        // Store original values for comparison
+        this.originalFormValue = JSON.stringify(this.categoryForm.value);
         this.loading.set(false);
       },
       error: () => {
@@ -96,8 +109,9 @@ export class CategoryFormComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.formSubmitted.set(true);
+
     if (this.categoryForm.invalid) {
-      this.markFormGroupTouched();
       return;
     }
 
@@ -150,10 +164,9 @@ export class CategoryFormComponent implements OnInit {
     this.router.navigate(['/categories']);
   }
 
-  private markFormGroupTouched(): void {
-    Object.values(this.categoryForm.controls).forEach(control => {
-      control.markAsTouched();
-    });
+  private checkFormModified(): void {
+    const currentValue = JSON.stringify(this.categoryForm.value);
+    this.formModified.set(currentValue !== this.originalFormValue);
   }
 }
 

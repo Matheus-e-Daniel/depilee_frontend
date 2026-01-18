@@ -28,7 +28,7 @@
               placeholder="Digite o nome da categoria" />
 
             <small
-              *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+              *ngIf="categoryForm.get('name')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               <span *ngIf="categoryForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
               <span *ngIf="categoryForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
@@ -62,7 +62,7 @@
             type="submit"
             [label]="isEditMode() ? 'Atualizar' : 'Criar'"
             class="p-button-primary"
-            [disabled]="categoryForm.invalid || loading()">
+            [disabled]="isEditMode() && !formModified()">
 
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>
