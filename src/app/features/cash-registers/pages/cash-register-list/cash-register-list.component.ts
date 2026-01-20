@@ -65,9 +65,9 @@ export class CashRegisterListComponent implements OnInit {
       list = list.filter(c => (c.notes || '').toLowerCase().includes(search));
     }
     if (this.sortOrder() === 'desc') {
-      list = [...list].sort((a, b) => b.id.localeCompare(a.id));
+      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
     } else {
-      list = [...list].sort((a, b) => a.id.localeCompare(b.id));
+      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
     return list;
   });

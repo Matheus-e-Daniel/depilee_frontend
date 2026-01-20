@@ -64,9 +64,9 @@ export class CategoryListComponent implements OnInit {
       list = list.filter(c => c.name.toLowerCase().includes(search));
     }
     if (this.sortOrder() === 'desc') {
-      list = [...list].sort((a, b) => b.id.localeCompare(a.id));
+      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
     } else {
-      list = [...list].sort((a, b) => a.id.localeCompare(b.id));
+      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
     return list;
   });

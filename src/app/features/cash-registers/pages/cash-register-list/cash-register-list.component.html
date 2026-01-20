@@ -86,17 +86,13 @@
               <button
                 pButton
                 icon="pi pi-pencil"
-                pTooltip="Editar"
-                tooltipPosition="top"
-                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                class="p-button-sm p-button-primary mr-2"
                 (click)="editCashRegister(cashRegister.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-lock"
-                pTooltip="Fechar Caixa"
-                tooltipPosition="top"
-                class="p-button-rounded p-button-text p-button-sm p-button-warning"
+                class="p-button-sm p-button-warning"
                 (click)="openCloseCashRegisterModal(cashRegister.id, cashRegister.notes)">
               </button>
             </div>

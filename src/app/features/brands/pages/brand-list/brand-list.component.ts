@@ -66,9 +66,9 @@ export class BrandListComponent implements OnInit {
     }
     if (this.sortOrder() === 'desc') {
       // Supondo que id seja sequencial, do contrário, adicione um campo de data
-      list = [...list].sort((a, b) => b.id.localeCompare(a.id));
+      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
     } else {
-      list = [...list].sort((a, b) => a.id.localeCompare(b.id));
+      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
     return list;
   });
