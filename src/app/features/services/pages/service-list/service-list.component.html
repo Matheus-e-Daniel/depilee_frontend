@@ -73,7 +73,6 @@
           <th>Nome</th>
           <th>Descrição</th>
           <th>Preço</th>
-          <th>Categoria</th>
           <th>Status</th>
           <th>Ações</th>
         </tr>
@@ -84,7 +83,6 @@
           <td data-label="Nome">{{ service.name }}</td>
           <td data-label="Descrição">{{ service.description || '-' }}</td>
           <td data-label="Preço">{{ service.price | currency:'BRL' }}</td>
-          <td data-label="Categoria">{{ service.categoryName || service.categoryId }}</td>
           <td data-label="Status">
             <p-tag
               [value]="service.active ? 'Ativo' : 'Inativo'"
@@ -96,17 +94,13 @@
               <button
                 pButton
                 icon="pi pi-pencil"
-                pTooltip="Editar"
-                tooltipPosition="top"
-                class="p-button-rounded p-button-text p-button-sm p-button-primary mr-2"
+                class="p-button-sm p-button-primary mr-2"
                 (click)="editService(service.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
-                pTooltip="Excluir"
-                tooltipPosition="top"
-                class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                class="p-button-sm p-button-danger"
                 (click)="deleteService(service.id, service.name)">
               </button>
             </div>
@@ -116,7 +110,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center py-5">
+          <td colspan="5" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum serviço encontrado</h3>

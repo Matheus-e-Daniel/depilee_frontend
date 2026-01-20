@@ -345,11 +345,6 @@
             .action-buttons {
               display: flex;
               gap: 0.5rem;
-              opacity: 0;
-              transition: opacity 0.2s ease;
-            }
-
-            &:hover .action-buttons {
               opacity: 1;
             }
           }
