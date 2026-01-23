@@ -40,7 +40,15 @@
           </div>
           <div class="field col-12 md:col-6">
             <label for="cpf">CPF *</label>
-            <input id="cpf" formControlName="cpf" type="text" class="p-inputtext" placeholder="Digite o CPF" />
+            <p-inputMask
+              id="cpf"
+              formControlName="cpf"
+              mask="999.999.999-99"
+              placeholder="000.000.000-00"
+              class="w-full"
+              (onFocus)="onCpfFocus($event)"
+              (click)="onCpfClick($event)">
+            </p-inputMask>
             <small *ngIf="userForm.get('cpf')?.invalid && formSubmitted()" class="p-error block mt-1">
               CPF é obrigatório
             </small>

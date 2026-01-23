@@ -334,6 +334,49 @@
   .p-dialog-footer {
     padding: 1.5rem;
     border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    ::ng-deep .p-button {
+      padding: 0.875rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 120px;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    ::ng-deep .p-button.p-button-text {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+    }
+
+    ::ng-deep .p-button.p-button-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+    }
+
+    ::ng-deep .p-button.p-button-text:disabled,
+    ::ng-deep .p-button.p-button-primary:disabled {
+      background: #cbd5e1;
+      color: #fff;
+      transform: none;
+      box-shadow: none;
+    }
+
+    ::ng-deep .p-button.p-button-text:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    ::ng-deep .p-button.p-button-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
   }
 }
 

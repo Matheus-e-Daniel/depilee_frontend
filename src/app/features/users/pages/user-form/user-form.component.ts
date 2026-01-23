@@ -260,6 +260,24 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
+  onCpfFocus(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
+  onCpfClick(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '');
+    const firstEmptyPosition = value.length;
+    setTimeout(() => {
+      input.setSelectionRange(firstEmptyPosition, firstEmptyPosition);
+    }, 0);
+  }
+
   onBirthFocus(event: any): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
