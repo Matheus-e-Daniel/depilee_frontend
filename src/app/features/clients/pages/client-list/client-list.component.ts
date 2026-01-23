@@ -73,6 +73,7 @@ export class ClientListComponent implements OnInit {
         return nameMatch || cpfMatch;
       });
     }
+    // Não filtrar por status, todos os clientes (ativos e inativos) devem aparecer
 
     // Ordenação
     const sorted = [...filtered];
@@ -97,10 +98,12 @@ export class ClientListComponent implements OnInit {
       case 'status':
         // Ativos primeiro, depois inativos, e dentro de cada grupo, ordem alfabética
         sorted.sort((a, b) => {
-          if (a.active === b.active) {
+          const aStatus = Number((a as any).status);
+          const bStatus = Number((b as any).status);
+          if (aStatus === bStatus) {
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
           }
-          return a.active ? -1 : 1;
+          return aStatus === 1 ? -1 : 1;
         });
         break;
     }
@@ -120,6 +123,7 @@ export class ClientListComponent implements OnInit {
     this.loading.set(true);
     this.clientService.getAll().subscribe({
       next: (response) => {
+        console.log('[CLIENTES][API]', response.data);
         this.allClients.set(response.data);
         this.loading.set(false);
       },

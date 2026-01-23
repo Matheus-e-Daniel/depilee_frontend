@@ -87,8 +87,8 @@
           <td data-label="Telefone">{{ formatPhone(client.phone) }}</td>
           <td data-label="Status">
             <p-tag
-              [value]="client.active ? 'Ativo' : 'Inativo'"
-              [severity]="client.active ? 'success' : 'danger'"
+              [value]="client.status == 1 ? 'Ativo' : 'Inativo'"
+              [severity]="client.status == 1 ? 'success' : 'danger'"
               class="mr-1">
             </p-tag>
           </td>

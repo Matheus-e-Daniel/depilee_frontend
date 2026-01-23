@@ -85,8 +85,8 @@
           <td data-label="Preço">{{ service.price | currency:'BRL' }}</td>
           <td data-label="Status">
             <p-tag
-              [value]="service.active ? 'Ativo' : 'Inativo'"
-              [severity]="service.active ? 'success' : 'danger'">
+              [value]="service.status == 1 ? 'Ativo' : 'Inativo'"
+              [severity]="service.status == 1 ? 'success' : 'danger'">
             </p-tag>
           </td>
           <td data-label="Ações">

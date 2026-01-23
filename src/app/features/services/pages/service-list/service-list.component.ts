@@ -85,10 +85,12 @@ export class ServiceListComponent implements OnInit {
         break;
       case 'status':
         sorted.sort((a, b) => {
-          if (a.active === b.active) {
+          const aStatus = Number((a as any).status);
+          const bStatus = Number((b as any).status);
+          if (aStatus === bStatus) {
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
           }
-          return a.active ? -1 : 1;
+          return aStatus === 1 ? -1 : 1;
         });
         break;
     }
