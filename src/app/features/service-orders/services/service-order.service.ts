@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/service-orders/services/service-order.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -10,7 +11,7 @@ import { ServiceOrder, ServiceOrderFormData, PagedResponse, Client, CashRegister
 })
 export class ServiceOrderService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/service-orders';
+  private apiUrl = environment.apiBaseUrl + 'service-orders';
 
   getAll(): Observable<PagedResponse<ServiceOrder>> {
     return this.http.get<PagedResponse<ServiceOrder>>(this.apiUrl).pipe(
@@ -37,13 +38,13 @@ export class ServiceOrderService {
   }
 
   getClients(): Observable<PagedResponse<Client>> {
-    return this.http.get<PagedResponse<Client>>('http://localhost:5093/v1/clients').pipe(
+    return this.http.get<PagedResponse<Client>>(environment.apiBaseUrl + 'clients').pipe(
       tap(result => console.log('getClients:', result))
     );
   }
 
   getCashRegisters(): Observable<PagedResponse<CashRegister>> {
-    return this.http.get<PagedResponse<CashRegister>>('http://localhost:5093/v1/cash-registers').pipe(
+    return this.http.get<PagedResponse<CashRegister>>(environment.apiBaseUrl + 'cash-registers').pipe(
       tap(result => console.log('getCashRegisters:', result))
     );
   }

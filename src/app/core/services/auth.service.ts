@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 // src/app/core/services/auth.service.ts (SIMPLIFICADO)
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -26,14 +27,14 @@ export class AuthService {
     console.log('🔄 Enviando login:', credentials.email);
 
     return this.http.post<LoginResponse>(
-      'http://localhost:5093/v1/identity/login',
+      environment.apiBaseUrl + 'identity/login',
       credentials,
       { withCredentials: true }
     );
   }
 
   logout(): void {
-    this.http.post('http://localhost:5093/v1/identity/logout', {}, {
+    this.http.post(environment.apiBaseUrl + 'identity/logout', {}, {
       withCredentials: true
     }).subscribe({
       next: () => {

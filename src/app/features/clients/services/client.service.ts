@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/clients/services/client.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -9,7 +10,7 @@ import { Client, ClientFormData, PagedResponse } from '../models/client.model';
 })
 export class ClientService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/clients';
+  private apiUrl = environment.apiBaseUrl + 'clients';
 
   getAll(): Observable<PagedResponse<Client>> {
     return this.http.get<PagedResponse<Client>>(this.apiUrl);

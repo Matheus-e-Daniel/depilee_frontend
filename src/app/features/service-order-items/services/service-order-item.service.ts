@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/service-order-items/services/service-order-item.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -9,7 +10,7 @@ import { ServiceOrderItem, ServiceOrderItemFormData, PagedResponse, ServiceOrder
 })
 export class ServiceOrderItemService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/service-order-items';
+  private apiUrl = environment.apiBaseUrl + 'service-order-items';
 
   getAll(): Observable<PagedResponse<ServiceOrderItem>> {
     return this.http.get<PagedResponse<ServiceOrderItem>>(this.apiUrl);
@@ -32,14 +33,14 @@ export class ServiceOrderItemService {
   }
 
   getServiceOrders(): Observable<PagedResponse<ServiceOrder>> {
-    return this.http.get<PagedResponse<ServiceOrder>>('http://localhost:5093/v1/service-orders');
+    return this.http.get<PagedResponse<ServiceOrder>>(environment.apiBaseUrl + 'service-orders');
   }
 
   getProducts(): Observable<PagedResponse<ProductOption>> {
-    return this.http.get<PagedResponse<ProductOption>>('http://localhost:5093/v1/products');
+    return this.http.get<PagedResponse<ProductOption>>(environment.apiBaseUrl + 'products');
   }
 
   getServices(): Observable<PagedResponse<ServiceOption>> {
-    return this.http.get<PagedResponse<ServiceOption>>('http://localhost:5093/v1/services');
+    return this.http.get<PagedResponse<ServiceOption>>(environment.apiBaseUrl + 'services');
   }
 }

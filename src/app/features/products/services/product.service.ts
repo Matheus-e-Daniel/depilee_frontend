@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/products/services/product.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -9,7 +10,7 @@ import { PagedResponse, Product, ProductFormData } from '../models/product.model
 })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/products';
+  private apiUrl = environment.apiBaseUrl + 'products';
 
   getAll(): Observable<PagedResponse<Product>> {
   return this.http.get<PagedResponse<Product>>(this.apiUrl);

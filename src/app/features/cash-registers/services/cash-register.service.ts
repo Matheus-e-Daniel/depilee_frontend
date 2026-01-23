@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,7 +9,7 @@ import { PagedResponse, CashRegister, CashRegisterFormData } from '../models/cas
 })
 export class CashRegisterService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/cash-registers';
+  private apiUrl = environment.apiBaseUrl + 'cash-registers';
 
   getAll(): Observable<PagedResponse<CashRegister>> {
     return this.http.get<PagedResponse<CashRegister>>(this.apiUrl);

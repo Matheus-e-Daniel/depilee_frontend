@@ -3,13 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PagedResponse, Category, CategoryFormData } from '../models/category.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/categories';
+  private apiUrl = environment.apiBaseUrl + 'categories';
 
   getAll(): Observable<PagedResponse<Category>> {
     return this.http.get<PagedResponse<Category>>(this.apiUrl);

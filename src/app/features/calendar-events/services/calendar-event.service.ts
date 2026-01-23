@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/calendar-events/services/calendar-event.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -19,7 +20,7 @@ interface PaginatedResponse<T> {
 })
 export class CalendarEventService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/events';
+  private apiUrl = environment.apiBaseUrl + 'events';
 
   getAll(): Observable<CalendarEvent[]> {
     return this.http.get<PaginatedResponse<CalendarEvent>>(this.apiUrl).pipe(

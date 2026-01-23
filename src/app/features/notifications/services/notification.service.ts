@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 // src/app/features/notifications/services/notification.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -22,7 +23,7 @@ export interface PagedResponse<T> {
 })
 export class NotificationService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5093/v1/notifications';
+  private apiUrl = environment.apiBaseUrl + 'notifications';
 
   getAll(): Observable<PagedResponse<Notification>> {
     return this.http.get<PagedResponse<Notification>>(this.apiUrl).pipe(
