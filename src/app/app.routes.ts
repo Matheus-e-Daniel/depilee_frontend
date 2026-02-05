@@ -165,6 +165,25 @@ export const routes: Routes = [
           import('./features/users/pages/user-list/user-list.component')
             .then(m => m.UserListComponent)
       },
+      // Rotas de métodos de pagamento
+      {
+        path: 'payment-methods',
+        loadComponent: () =>
+          import('./features/payment-methods/pages/payment-method-list/payment-method-list.component')
+            .then(m => m.PaymentMethodListComponent)
+      },
+      {
+        path: 'payment-methods/new',
+        loadComponent: () =>
+          import('./features/payment-methods/pages/payment-method-form/payment-method-form.component')
+            .then(m => m.PaymentMethodFormComponent)
+      },
+      {
+        path: 'payment-methods/edit/:id',
+        loadComponent: () =>
+          import('./features/payment-methods/pages/payment-method-form/payment-method-form.component')
+            .then(m => m.PaymentMethodFormComponent)
+      },
       // Rota de calendário de eventos
       {
         path: 'calendar-events',
