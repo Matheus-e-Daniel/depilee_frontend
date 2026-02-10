@@ -26,5 +26,6 @@ export class SidebarComponent {
     { label: 'Ordens de Serviço', icon: 'pi pi-file-edit', route: '/service-orders' },
     { label: 'Caixas', icon: 'pi pi-wallet', route: '/cash-registers' },
     { label: 'Métodos de Pagamento', icon: 'pi pi-credit-card', route: '/payment-methods' },
+      { label: 'Cargos', icon: 'pi pi-id-card', route: '/roles' },
   ];
 }

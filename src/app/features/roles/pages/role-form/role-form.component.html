@@ -1,0 +1,156 @@
+<!-- src/app/features/roles/pages/role-form/role-form.component.html -->
+<div class="role-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="onCancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Cargo' : 'Novo Cargo' }}</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" class="role-form">
+        <div class="form-grid">
+          <div class="field col-12">
+            <label for="roleName" class="block font-medium mb-2">Nome do Cargo *</label>
+            <input
+              id="roleName"
+              type="text"
+              pInputText
+              formControlName="roleName"
+              class="w-full"
+              placeholder="Digite o nome do cargo" />
+
+            <small
+              *ngIf="roleForm.get('roleName')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              <span *ngIf="roleForm.get('roleName')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="roleForm.get('roleName')?.errors?.['minlength']">Mínimo 2 caracteres</span>
+            </small>
+          </div>
+
+          <!-- Tabela de Permissões -->
+          <div class="field col-12">
+            <label class="block font-medium mb-2">Permissões</label>
+
+            <div class="permissions-table-container">
+              <table class="permissions-table">
+                <thead>
+                  <tr>
+                    <th class="module-header">
+                      <div class="header-content">
+                        <p-checkbox
+                          [binary]="true"
+                          [ngModel]="isAllSelected()"
+                          [ngModelOptions]="{standalone: true}"
+                          (onChange)="toggleAll()"
+                          pTooltip="Selecionar Todas"
+                          tooltipPosition="top">
+                        </p-checkbox>
+                        <span>Módulo</span>
+                      </div>
+                    </th>
+                    <th *ngFor="let action of actions" class="action-header">
+                      <div class="header-content">
+                        <p-checkbox
+                          [binary]="true"
+                          [ngModel]="isActionFullySelected(action)"
+                          [ngModelOptions]="{standalone: true}"
+                          (onChange)="toggleActionAll(action)"
+                          [pTooltip]="'Selecionar todos ' + actionLabels[action]"
+                          tooltipPosition="top">
+                        </p-checkbox>
+                        <span>{{ actionLabels[action] }}</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let module of permissionModules()">
+                    <td class="module-cell">
+                      <div class="module-content">
+                        <p-checkbox
+                          [binary]="true"
+                          [ngModel]="isModuleFullySelected(module)"
+                          [ngModelOptions]="{standalone: true}"
+                          (onChange)="toggleModuleAll(module)"
+                          [pTooltip]="'Selecionar todas permissões de ' + module.displayName"
+                          tooltipPosition="right">
+                        </p-checkbox>
+                        <span>{{ module.displayName }}</span>
+                      </div>
+                    </td>
+                    <td *ngFor="let action of actions" class="permission-cell">
+                      <div class="permission-content">
+                        <p-checkbox
+                          *ngIf="module.permissions[action]"
+                          [binary]="true"
+                          [ngModel]="isPermissionSelected(module.permissions[action]!.id)"
+                          [ngModelOptions]="{standalone: true}"
+                          (onChange)="togglePermission(module.permissions[action])">
+                        </p-checkbox>
+                        <span *ngIf="!module.permissions[action]" class="no-permission">-</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="permissions-summary">
+              <span class="selected-count">
+                {{ selectedPermissionIds().size }} permissão(ões) selecionada(s)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-text"
+            [disabled]="confirmationLoading()"
+            (click)="onCancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary"
+            [disabled]="isEditMode() && !formModified()">
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<p-toast></p-toast>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  [type]="isEditMode() ? 'update' : 'create'"
+  [message]="isEditMode()
+    ? 'Tem certeza que deseja atualizar este cargo?'
+    : 'Tem certeza que deseja cadastrar este cargo?'"
+  [confirmLabel]="isEditMode() ? 'Atualizar' : 'Cadastrar'"
+  cancelLabel="Cancelar"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmSubmit()"
+  (cancel)="cancelSubmit()">
+</app-confirmation-modal>
+
+<app-success-modal
+  [visible]="successModalService.visible()"
+  [message]="successModalService.message()"
+  (visibleChange)="successModalService.hide()">
+</app-success-modal>

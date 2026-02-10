@@ -197,6 +197,25 @@ export const routes: Routes = [
           import('./features/calendar-events/calendar-events.component')
             .then(m => m.CalendarEventsComponent)
       },
+      // Rotas de roles
+      {
+        path: 'roles',
+        loadComponent: () =>
+          import('./features/roles/pages/role-list/role-list.component')
+            .then(m => m.RoleListComponent)
+      },
+      {
+        path: 'roles/new',
+        loadComponent: () =>
+          import('./features/roles/pages/role-form/role-form.component')
+            .then(m => m.RoleFormComponent)
+      },
+      {
+        path: 'roles/:id/edit',
+        loadComponent: () =>
+          import('./features/roles/pages/role-form/role-form.component')
+            .then(m => m.RoleFormComponent)
+      },
       {
         path: '',
         redirectTo: '/dashboard',

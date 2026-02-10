@@ -1,0 +1,352 @@
+// src/app/features/roles/pages/role-form/role-form.component.ts
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TableModule } from 'primeng/table';
+import { RoleService } from '../../services/role.service';
+import { RoleFormData, Permission } from '../../models/role.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+
+interface PermissionModule {
+  name: string;
+  displayName: string;
+  permissions: { [action: string]: Permission | null };
+}
+
+@Component({
+  selector: 'app-role-form',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    InputTextModule,
+    ButtonModule,
+    CardModule,
+    ToastModule,
+    TooltipModule,
+    CheckboxModule,
+    TableModule,
+    SuccessModalComponent,
+    ConfirmationModalComponent
+  ],
+  providers: [MessageService],
+  templateUrl: './role-form.component.html',
+  styleUrls: ['./role-form.component.scss']
+})
+export class RoleFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private roleService = inject(RoleService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
+
+  roleForm!: FormGroup;
+  loading = signal(false);
+  isEditMode = signal(false);
+  roleId = signal<string | null>(null);
+  formSubmitted = signal(false);
+  formModified = signal(false);
+  originalFormValue: any = null;
+
+  // Permissions
+  availablePermissions = signal<Permission[]>([]);
+  selectedPermissionIds = signal<Set<number>>(new Set());
+
+  // Actions disponíveis
+  actions = ['Create', 'Edit', 'Get', 'Delete'];
+  actionLabels: { [key: string]: string } = {
+    'Create': 'Criar',
+    'Edit': 'Editar',
+    'Get': 'Visualizar',
+    'Delete': 'Excluir'
+  };
+
+  // Módulos agrupados
+  permissionModules = computed<PermissionModule[]>(() => {
+    const permissions = this.availablePermissions();
+    const modulesMap = new Map<string, PermissionModule>();
+
+    const moduleDisplayNames: { [key: string]: string } = {
+      'Brand': 'Marcas',
+      'CashFlow': 'Fluxo de Caixa',
+      'CashRegister': 'Caixas',
+      'Category': 'Categorias',
+      'Client': 'Clientes',
+      'Event': 'Eventos',
+      'Notification': 'Notificações',
+      'Payment': 'Pagamentos',
+      'PaymentMethod': 'Métodos de Pagamento',
+      'Product': 'Produtos',
+      'Service': 'Serviços',
+      'ServiceOrder': 'Ordens de Serviço',
+      'ServiceOrderItem': 'Itens de OS',
+      'StockMovement': 'Movimentação de Estoque'
+    };
+
+    permissions.forEach(permission => {
+      const [moduleName, action] = permission.name.split('.');
+
+      if (!modulesMap.has(moduleName)) {
+        modulesMap.set(moduleName, {
+          name: moduleName,
+          displayName: moduleDisplayNames[moduleName] || moduleName,
+          permissions: { Create: null, Edit: null, Get: null, Delete: null }
+        });
+      }
+
+      const module = modulesMap.get(moduleName)!;
+      module.permissions[action] = permission;
+    });
+
+    return Array.from(modulesMap.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+  });
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
+
+  ngOnInit(): void {
+    this.initForm();
+    this.loadPermissions();
+    this.checkEditMode();
+  }
+
+  private initForm(): void {
+    this.roleForm = this.fb.group({
+      roleName: ['', [Validators.required, Validators.minLength(2)]]
+    });
+
+    // Track form modifications
+    this.roleForm.valueChanges.subscribe(() => {
+      if (this.isEditMode() && this.originalFormValue) {
+        this.checkFormModified();
+      }
+    });
+  }
+
+  private loadPermissions(): void {
+    this.roleService.getAllPermissions().subscribe({
+      next: (permissions) => {
+        console.log('Permissões do backend:', permissions);
+        this.availablePermissions.set(permissions);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar permissões'
+        });
+      }
+    });
+  }
+
+  // Métodos de seleção de permissões
+  isPermissionSelected(permissionId: number): boolean {
+    return this.selectedPermissionIds().has(permissionId);
+  }
+
+  togglePermission(permission: Permission | null): void {
+    if (!permission) return;
+
+    const selected = new Set(this.selectedPermissionIds());
+    if (selected.has(permission.id)) {
+      selected.delete(permission.id);
+    } else {
+      selected.add(permission.id);
+    }
+    this.selectedPermissionIds.set(selected);
+    this.formModified.set(true);
+  }
+
+  isModuleFullySelected(module: PermissionModule): boolean {
+    return this.actions.every(action => {
+      const perm = module.permissions[action];
+      return !perm || this.selectedPermissionIds().has(perm.id);
+    });
+  }
+
+  toggleModuleAll(module: PermissionModule): void {
+    const selected = new Set(this.selectedPermissionIds());
+    const isFullySelected = this.isModuleFullySelected(module);
+
+    this.actions.forEach(action => {
+      const perm = module.permissions[action];
+      if (perm) {
+        if (isFullySelected) {
+          selected.delete(perm.id);
+        } else {
+          selected.add(perm.id);
+        }
+      }
+    });
+
+    this.selectedPermissionIds.set(selected);
+    this.formModified.set(true);
+  }
+
+  isActionFullySelected(action: string): boolean {
+    const modules = this.permissionModules();
+    return modules.every(module => {
+      const perm = module.permissions[action];
+      return !perm || this.selectedPermissionIds().has(perm.id);
+    });
+  }
+
+  toggleActionAll(action: string): void {
+    const selected = new Set(this.selectedPermissionIds());
+    const isFullySelected = this.isActionFullySelected(action);
+
+    this.permissionModules().forEach(module => {
+      const perm = module.permissions[action];
+      if (perm) {
+        if (isFullySelected) {
+          selected.delete(perm.id);
+        } else {
+          selected.add(perm.id);
+        }
+      }
+    });
+
+    this.selectedPermissionIds.set(selected);
+    this.formModified.set(true);
+  }
+
+  isAllSelected(): boolean {
+    const permissions = this.availablePermissions();
+    return permissions.length > 0 && permissions.every(p => this.selectedPermissionIds().has(p.id));
+  }
+
+  toggleAll(): void {
+    const selected = new Set(this.selectedPermissionIds());
+    const isAllSelected = this.isAllSelected();
+
+    this.availablePermissions().forEach(perm => {
+      if (isAllSelected) {
+        selected.delete(perm.id);
+      } else {
+        selected.add(perm.id);
+      }
+    });
+
+    this.selectedPermissionIds.set(selected);
+    this.formModified.set(true);
+  }
+
+  private checkEditMode(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (id) {
+      this.isEditMode.set(true);
+      this.roleId.set(id);
+      this.loadRole(id);
+    }
+  }
+
+  private loadRole(id: string): void {
+    this.loading.set(true);
+    this.roleService.getById(id).subscribe({
+      next: (role) => {
+        this.roleForm.patchValue({
+          roleName: role.roleName
+        });
+
+        // Store original values for comparison
+        this.originalFormValue = JSON.stringify(this.roleForm.value);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar role'
+        });
+        this.router.navigate(['/roles']);
+      }
+    });
+  }
+
+  onSubmit(): void {
+    this.formSubmitted.set(true);
+
+    if (this.roleForm.invalid) {
+      return;
+    }
+
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
+    const formData = this.roleForm.value;
+    const roleName = formData.roleName;
+    const permissionIds: number[] = Array.from(this.selectedPermissionIds());
+
+    const rolePayload: RoleFormData = { roleName };
+
+    const createOrUpdateRole = this.isEditMode()
+      ? this.roleService.update({ id: this.roleId(), ...rolePayload })
+      : this.roleService.create(rolePayload);
+
+    // Primeiro cria/atualiza a role, depois envia as permissões
+    createOrUpdateRole.pipe(
+      switchMap(() => {
+        if (permissionIds.length > 0) {
+          return this.roleService.assignPermissions({ roleName, permissionIds });
+        }
+        return of(null);
+      })
+    ).subscribe({
+      next: () => {
+        this.confirmationLoading.set(false);
+        this.showConfirmation.set(false);
+        this.successModalService.show(
+          this.isEditMode()
+            ? 'Cargo atualizado com sucesso!'
+            : 'Cargo criado com sucesso!'
+        );
+
+        setTimeout(() => {
+          this.successModalService.hide();
+          this.router.navigate(['/roles']);
+        }, 2500);
+      },
+      error: () => {
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao salvar cargo'
+        });
+      }
+    });
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/roles']);
+  }
+
+  private checkFormModified(): void {
+    const currentValue = JSON.stringify(this.roleForm.value);
+    this.formModified.set(currentValue !== this.originalFormValue);
+  }
+}
