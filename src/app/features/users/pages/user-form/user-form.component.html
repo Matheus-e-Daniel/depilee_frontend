@@ -170,9 +170,12 @@
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
           </button>
         </div>
-        <div *ngIf="success()" class="success-message">
-          Usuário cadastrado com sucesso!
-        </div>
+        <!-- Modal de sucesso -->
+        <app-success-modal
+          [visible]="successModalService.visible()"
+          [message]="successModalService.message()"
+          (visibleChange)="successModalService.hide()">
+        </app-success-modal>
       </form>
     </p-card>
   </div>

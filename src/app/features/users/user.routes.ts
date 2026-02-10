@@ -1,8 +1,27 @@
+// src/app/features/users/user.routes.ts
 import { Routes } from '@angular/router';
-import { UserFormComponent } from './pages/user-form/user-form.component';
-import { UserListComponent } from './pages/user-list/user-list.component';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const USER_ROUTES: Routes = [
-  { path: 'register', component: UserFormComponent },
-  { path: 'users', component: UserListComponent },
+  {
+    path: '',
+    loadComponent: () => import('./pages/user-list/user-list.component').then(m => m.UserListComponent)
+  },
+  {
+    path: 'new',
+    loadComponent: () => import('./pages/user-form/user-form.component').then(m => m.UserFormComponent)
+  },
+  {
+    path: 'edit/:id',
+    loadComponent: () => import('./pages/user-form/user-form.component').then(m => m.UserFormComponent)
+  }
 ];
+
+// Para uso no app.routes.ts
+export default [
+  {
+    path: 'users',
+    canActivate: [authGuard],
+    children: USER_ROUTES
+  }
+] satisfies Routes;

@@ -8,14 +8,15 @@ import { environment } from '../../../../environments/environment';
 export class UserService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'identity/register';
+  private apiListUrl = environment.apiBaseUrl + 'identity/users/all';
 
   getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+    return this.http.get<User[]>(this.apiListUrl);
   }
 
-  getById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
-  }
+    getById(id: string): Observable<User> {
+      return this.http.get<User>(`${environment.apiBaseUrl}identity/users/${id}`);
+    }
 
   create(user: any): Observable<User> {
     console.log('[UserService][create] Enviando:', user);

@@ -154,16 +154,22 @@ export const routes: Routes = [
       },
       // Rotas de usuários
       {
-        path: 'register',
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/pages/user-list/user-list.component')
+            .then(m => m.UserListComponent)
+      },
+      {
+        path: 'users/new',
         loadComponent: () =>
           import('./features/users/pages/user-form/user-form.component')
             .then(m => m.UserFormComponent)
       },
       {
-        path: 'users',
+        path: 'users/edit/:id',
         loadComponent: () =>
-          import('./features/users/pages/user-list/user-list.component')
-            .then(m => m.UserListComponent)
+          import('./features/users/pages/user-form/user-form.component')
+            .then(m => m.UserFormComponent)
       },
       // Rotas de métodos de pagamento
       {

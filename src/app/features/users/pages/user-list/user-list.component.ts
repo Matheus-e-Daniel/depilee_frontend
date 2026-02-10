@@ -1,3 +1,4 @@
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +9,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { User } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
@@ -21,6 +23,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     TableModule,
     TagModule,
     ToastModule,
+    ConfirmationModalComponent,
     SuccessModalComponent,
   ],
   providers: [MessageService],
@@ -29,14 +32,16 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
 })
 export class UserListComponent implements OnInit {
   private userService = inject(UserService);
+  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
   users = signal<User[]>([]);
   loading = signal(true);
 
-  errorModalVisible = signal(false);
-  errorMessage = signal('');
+  // Delete confirmation
+  userToDelete: { id: string; name: string } | null = null;
+  confirmationLoading = signal(false);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -46,26 +51,68 @@ export class UserListComponent implements OnInit {
     this.loading.set(true);
     this.userService.getAll().subscribe({
       next: (response: any) => {
+        console.log('[UserListComponent][loadUsers] Dados recebidos da API:', response);
         // Suporte para API que retorna array direto ou {data: array}
         const data = Array.isArray(response) ? response : response?.data ?? [];
         this.users.set(data);
         this.loading.set(false);
       },
       error: () => {
-        this.errorMessage.set('Falha ao carregar usuários');
-        this.errorModalVisible.set(true);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar usuários'
+        });
         this.loading.set(false);
       }
     });
   }
 
   newUser(): void {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/users/new']);
   }
 
-  onErrorModalClose() {
-    this.errorModalVisible.set(false);
+  editUser(id: string): void {
+    this.router.navigate(['/users/edit', id]);
   }
 
-  // Métodos para editar/deletar podem ser adicionados aqui futuramente
+  deleteUser(id: string, name: string): void {
+    this.userToDelete = { id, name };
+  }
+
+  getDeleteMessage(): string {
+    return this.userToDelete ? `Tem certeza que deseja excluir "${this.userToDelete.name}"?` : '';
+  }
+
+  confirmDelete(): void {
+    if (!this.userToDelete) return;
+
+    this.confirmationLoading.set(true);
+    this.userService.delete(this.userToDelete.id).subscribe({
+      next: () => {
+        this.userToDelete = null;
+        this.confirmationLoading.set(false);
+        this.successModalService.show('Usuário excluído com sucesso!');
+
+        setTimeout(() => {
+          this.successModalService.hide();
+        }, 2500);
+
+        this.loadUsers();
+      },
+      error: () => {
+        this.userToDelete = null;
+        this.confirmationLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao excluir usuário'
+        });
+      }
+    });
+  }
+
+  cancelDelete(): void {
+    this.userToDelete = null;
+  }
 }

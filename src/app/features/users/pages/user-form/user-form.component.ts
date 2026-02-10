@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
@@ -13,11 +13,14 @@ import { MessageService } from 'primeng/api';
 import { User, Gender } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 // Constantes
 const CEP_DEBOUNCE_TIME = 800;
 const FOCUS_NUMBER_DELAY = 100;
+const USER_DATA_LOAD_DELAY = 1000;
 
 @Component({
   selector: 'app-user-form',
@@ -31,7 +34,8 @@ const FOCUS_NUMBER_DELAY = 100;
     DropdownModule,
     InputMaskModule,
     ToastModule,
-    ErrorModalComponent
+    ErrorModalComponent,
+    SuccessModalComponent
   ],
   providers: [MessageService],
   templateUrl: './user-form.component.html',
@@ -40,10 +44,12 @@ const FOCUS_NUMBER_DELAY = 100;
 export class UserFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
   private http = inject(HttpClient);
   errorModalService = inject(ErrorModalService);
+  successModalService = inject(SuccessModalService);
 
   userForm: FormGroup = this.fb.group({
     email: ['', [Validators.email]],
@@ -73,6 +79,11 @@ export class UserFormComponent implements OnInit {
   formSubmitted = signal(false);
   loadingCep = signal(false);
   cepErrorMessage = signal('');
+  isEditMode = signal(false);
+  userId = signal<string | null>(null);
+  isLoadingUserData = signal(false);
+  originalFormValue: any = null;
+  formModified = signal(false);
 
   ngOnInit(): void {
     // Listener para buscar endereço quando o CEP for preenchido
@@ -88,6 +99,88 @@ export class UserFormComponent implements OnInit {
     ).subscribe(cep => {
       this.buscarCep(cep);
     });
+
+    // Listener para detectar mudanças no formulário
+    this.userForm.valueChanges.subscribe(() => {
+      this.checkFormModified();
+    });
+
+    // Verificar se está em modo de edição
+    this.checkEditMode();
+  }
+
+  private checkEditMode(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (id) {
+      this.isEditMode.set(true);
+      this.userId.set(id);
+      this.loadUser(id);
+    }
+  }
+
+  private loadUser(id: string): void {
+    this.loading.set(true);
+    this.isLoadingUserData.set(true);
+
+    this.userService.getById(id).subscribe({
+      next: (user: any) => {
+        this.userForm.patchValue({
+          email: user.email,
+          fullName: user.fullName,
+          cpf: user.cpf,
+          birth: this.formatDateToDDMMYYYY(user.birth),
+          gender: user.gender,
+          address: {
+            cep: user.address?.cep || '',
+            state: user.address?.state || '',
+            city: user.address?.city || '',
+            neighborhood: user.address?.neighborhood || '',
+            street: user.address?.street || '',
+            number: user.address?.number || '',
+            complement: user.address?.complement || ''
+          }
+        });
+
+        // Armazenar valores originais para comparação
+        this.originalFormValue = { ...this.userForm.value };
+        this.formModified.set(false);
+
+        this.loading.set(false);
+
+        setTimeout(() => {
+          this.isLoadingUserData.set(false);
+        }, USER_DATA_LOAD_DELAY);
+      },
+      error: () => {
+        this.errorModalService.show('Falha ao carregar usuário');
+        this.isLoadingUserData.set(false);
+        this.loading.set(false);
+        setTimeout(() => {
+          this.router.navigate(['/users']);
+        }, 2000);
+      }
+    });
+  }
+
+  private formatDateToDDMMYYYY(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private checkFormModified(): void {
+    if (!this.isEditMode() || !this.originalFormValue) {
+      this.formModified.set(true);
+      return;
+    }
+
+    const currentValue = this.userForm.value;
+    const hasChanges = JSON.stringify(currentValue) !== JSON.stringify(this.originalFormValue);
+    this.formModified.set(hasChanges);
   }
 
   private birthDateValidator(control: any): { [key: string]: boolean } | null {
@@ -157,30 +250,70 @@ export class UserFormComponent implements OnInit {
       Number: address.number,
       Complement: address.complement
     };
+
+    // Converter data de DD/MM/YYYY para ISO
+    let birthISO = null;
+    if (formValue.birth) {
+      const parts = formValue.birth.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        birthISO = new Date(year, month, day).toISOString();
+      }
+    }
+
     // Montar objeto final
-    const userPayload = {
+    const userPayload: any = {
       Email: formValue.email,
       FullName: formValue.fullName,
-      Password: formValue.password,
       Cpf: formValue.cpf,
-      Birth: formValue.birth ? new Date(formValue.birth).toISOString() : null,
+      Birth: birthISO,
       Gender: formValue.gender || 3,
       Address: mappedAddress
     };
-    this.userService.create(userPayload).subscribe({
+
+    // Adicionar password apenas se não estiver em modo de edição ou se foi preenchido
+    if (!this.isEditMode() || formValue.password) {
+      userPayload.Password = formValue.password;
+    }
+
+    // Adicionar ID se estiver em modo de edição
+    if (this.isEditMode()) {
+      userPayload.Id = this.userId();
+    }
+
+    const operation = this.isEditMode()
+      ? this.userService.update(userPayload)
+      : this.userService.create(userPayload);
+
+    const successMessage = this.isEditMode()
+      ? 'Usuário atualizado com sucesso!'
+      : 'Usuário cadastrado com sucesso!';
+
+    const errorMessage = this.isEditMode()
+      ? 'Falha ao atualizar usuário'
+      : 'Falha ao cadastrar usuário';
+
+    operation.subscribe({
       next: (response) => {
-        console.log('[UserFormComponent][create] Resposta recebida:', response);
-        this.success.set(true);
-        this.userForm.reset();
+        console.log('[UserFormComponent] Resposta recebida:', response);
+        if (!this.isEditMode()) {
+          this.userForm.reset();
+        }
         this.loading.set(false);
-        setTimeout(() => this.success.set(false), 2000);
+        this.successModalService.show(successMessage);
+        setTimeout(() => {
+          this.successModalService.hide();
+          this.router.navigate(['/users']);
+        }, 2000);
       },
       error: (err) => {
-        console.log('[UserFormComponent][create] Erro recebido:', err);
+        console.log('[UserFormComponent] Erro recebido:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Falha ao cadastrar usuário'
+          detail: errorMessage
         });
         this.loading.set(false);
       }
@@ -203,6 +336,10 @@ export class UserFormComponent implements OnInit {
 
   buscarCep(cep: string): void {
     const cepLimpo = cep.replace(/\D/g, '');
+
+    if (this.isLoadingUserData()) {
+      return;
+    }
 
     if (cepLimpo.length !== 8 || this.loadingCep()) {
       return;
