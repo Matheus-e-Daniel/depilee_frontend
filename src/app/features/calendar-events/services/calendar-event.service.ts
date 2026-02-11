@@ -32,11 +32,19 @@ export class CalendarEventService {
   }
 
   create(event: CalendarEventFormData): Observable<CalendarEvent> {
-    return this.http.post<CalendarEvent>(this.apiUrl, event);
+    const payload = {
+      ...event,
+      type: Number(event.type) // Ensure type is sent as a number, not a string
+    };
+    return this.http.post<CalendarEvent>(this.apiUrl, payload);
   }
 
   update(event: CalendarEvent): Observable<CalendarEvent> {
-    return this.http.put<CalendarEvent>(this.apiUrl, event);
+    const payload = {
+      ...event,
+      type: Number(event.type) // Ensure type is sent as a number, not a string
+    };
+    return this.http.put<CalendarEvent>(this.apiUrl, payload);
   }
 
   delete(id: string): Observable<void> {
