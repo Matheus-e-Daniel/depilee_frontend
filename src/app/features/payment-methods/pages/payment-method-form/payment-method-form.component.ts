@@ -1,33 +1,196 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
+// src/app/features/payment-methods/pages/payment-method-form/payment-method-form.component.ts
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
+import { DropdownModule } from 'primeng/dropdown';
+import { MessageService } from 'primeng/api';
+import { PaymentMethodService } from '../../services/payment-method.service';
+import { PaymentMethodFormData, PaymentMethod } from '../../models/payment-method.model';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
   selector: 'app-payment-method-form',
   templateUrl: './payment-method-form.component.html',
   styleUrls: ['./payment-method-form.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    InputTextareaModule,
+    InputNumberModule,
+    ButtonModule,
+    CardModule,
+    ToastModule,
+    DropdownModule,
+    SuccessModalComponent,
+    ConfirmationModalComponent
+  ],
+  providers: [MessageService]
 })
-export class PaymentMethodFormComponent {
-  paymentMethodForm: FormGroup;
+export class PaymentMethodFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private paymentMethodService = inject(PaymentMethodService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private messageService = inject(MessageService);
+  successModalService = inject(SuccessModalService);
 
-  constructor(private fb: FormBuilder) {
+  paymentMethodForm!: FormGroup;
+  loading = signal(false);
+  isEditMode = signal(false);
+  paymentMethodId = signal<string | null>(null);
+  formSubmitted = signal(false);
+
+  // Opções de tipo de pagamento
+  paymentTypes = [
+    { label: 'Dinheiro', value: 0 },
+    { label: 'Cartão de Crédito', value: 1 },
+    { label: 'Cartão de Débito', value: 2 },
+    { label: 'PIX', value: 3 },
+    { label: 'Boleto', value: 4 },
+    { label: 'Transferência', value: 5 }
+  ];
+
+  // Confirmation modal
+  showConfirmation = signal(false);
+  confirmationLoading = signal(false);
+
+  ngOnInit(): void {
+    this.initForm();
+    this.checkEditMode();
+  }
+
+  private initForm(): void {
     this.paymentMethodForm = this.fb.group({
-      name: ['Cartão de Crédito', Validators.required],
-      type: ['CreditCard', Validators.required],
-      allowInstallments: [true],
-      maxInstallments: [3, [Validators.required, Validators.min(1)]],
-      interestRatePerInstallment: [0.05, [Validators.required, Validators.min(0)]],
-      feePercentage: [2.5, [Validators.required, Validators.min(0)]],
-      description: ['Aceita Visa e Mastercard']
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      type: [0, [Validators.required]],
+      installments: [1, [Validators.required, Validators.min(1)]],
+      interestRatePerInstallment: [0, [Validators.required, Validators.min(0)]],
+      feePercentage: [0, [Validators.required, Validators.min(0)]],
+      description: ['']
     });
   }
 
-  onSubmit() {
-    if (this.paymentMethodForm.valid) {
-      // Lógica para salvar o método de pagamento
-      console.log(this.paymentMethodForm.value);
+  private checkEditMode(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (id) {
+      this.isEditMode.set(true);
+      this.paymentMethodId.set(id);
+      this.loadPaymentMethod(id);
     }
+  }
+
+  private loadPaymentMethod(id: string): void {
+    this.loading.set(true);
+    this.paymentMethodService.getById(id).subscribe({
+      next: (paymentMethod) => {
+        this.paymentMethodForm.patchValue({
+          name: paymentMethod.name,
+          type: paymentMethod.type,
+          installments: paymentMethod.installments,
+          interestRatePerInstallment: paymentMethod.interestRatePerInstallment,
+          feePercentage: paymentMethod.feePercentage,
+          description: paymentMethod.description
+        });
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar método de pagamento'
+        });
+        this.router.navigate(['/payment-methods']);
+      }
+    });
+  }
+
+  onSubmit(): void {
+    this.formSubmitted.set(true);
+
+    if (this.paymentMethodForm.invalid) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Preencha todos os campos obrigatórios'
+      });
+      return;
+    }
+
+    this.showConfirmation.set(true);
+  }
+
+  confirmSubmit(): void {
+    this.confirmationLoading.set(true);
+    const formData: PaymentMethodFormData = this.paymentMethodForm.value;
+
+    if (this.isEditMode() && this.paymentMethodId()) {
+      const updatedPaymentMethod: PaymentMethod = {
+        id: this.paymentMethodId()!,
+        ...formData
+      };
+
+      this.paymentMethodService.update(updatedPaymentMethod).subscribe({
+        next: () => {
+          this.confirmationLoading.set(false);
+          this.showConfirmation.set(false);
+          this.successModalService.show('Método de pagamento atualizado com sucesso!');
+          setTimeout(() => {
+            this.router.navigate(['/payment-methods']);
+          }, 1500);
+        },
+        error: () => {
+          this.confirmationLoading.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao atualizar método de pagamento'
+          });
+        }
+      });
+    } else {
+      this.paymentMethodService.create(formData).subscribe({
+        next: () => {
+          this.confirmationLoading.set(false);
+          this.showConfirmation.set(false);
+          this.successModalService.show('Método de pagamento criado com sucesso!');
+          setTimeout(() => {
+            this.router.navigate(['/payment-methods']);
+          }, 1500);
+        },
+        error: () => {
+          this.confirmationLoading.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Falha ao criar método de pagamento'
+          });
+        }
+      });
+    }
+  }
+
+  cancelSubmit(): void {
+    this.showConfirmation.set(false);
+  }
+
+  cancel(): void {
+    this.router.navigate(['/payment-methods']);
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.paymentMethodForm.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched || this.formSubmitted()));
   }
 }

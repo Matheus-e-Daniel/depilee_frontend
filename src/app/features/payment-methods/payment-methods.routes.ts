@@ -12,7 +12,7 @@ export const PAYMENT_METHOD_ROUTES: Routes = [
     loadComponent: () => import('./pages/payment-method-form/payment-method-form.component').then(m => m.PaymentMethodFormComponent)
   },
   {
-    path: 'edit/:id',
+    path: ':id/edit',
     loadComponent: () => import('./pages/payment-method-form/payment-method-form.component').then(m => m.PaymentMethodFormComponent)
   }
 ];

@@ -1,1 +1,144 @@
-<h2>Métodos de Pagamento</h2>
+<!-- src/app/features/payment-methods/pages/payment-method-list/payment-method-list.component.html -->
+<div class="payment-method-list-container w-full">
+
+  <div class="header">
+    <div class="title-section">
+      <h1>Métodos de Pagamento</h1>
+      <p>Gerencie os métodos de pagamento disponíveis</p>
+    </div>
+    <button
+      pButton
+      icon="pi pi-plus"
+      label="Novo Método"
+      class="p-button-primary"
+      (click)="newPaymentMethod()">
+    </button>
+  </div>
+
+  <div class="filters-card">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="pi pi-filter"></i>
+        <h3>Filtros</h3>
+      </div>
+      <button
+        pButton
+        icon="pi pi-times"
+        label="Limpar Filtros"
+        class="p-button-text p-button-sm clear-filters-btn"
+        (click)="clearFilters()">
+      </button>
+    </div>
+    <div class="filters-content">
+      <div class="filter-group">
+        <label for="searchTerm">Buscar por nome</label>
+        <span class="p-input-icon-right w-full">
+          <input
+            id="searchTerm"
+            type="text"
+            pInputText
+            placeholder="Digite o nome do método..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+            class="w-full payment-method-search-input" />
+        </span>
+      </div>
+      <div class="filter-group">
+        <label for="sortOrder">Ordenar por</label>
+        <p-dropdown
+          id="sortOrder"
+          [options]="sortOptions"
+          [ngModel]="sortOrder()"
+          (ngModelChange)="sortOrder.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione a ordenação"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="paymentMethods()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} métodos">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Parcelas</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-paymentMethod>
+        <tr>
+          <td data-label="Nome">{{ paymentMethod.name }}</td>
+          <td data-label="Tipo">{{ getPaymentTypeLabel(paymentMethod.type) }}</td>
+          <td data-label="Parcelas">{{ paymentMethod.installments }}x</td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-sm p-button-primary mr-2"
+                (click)="editPaymentMethod(paymentMethod)"
+                pTooltip="Editar">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-sm p-button-danger"
+                (click)="deletePaymentMethod(paymentMethod)"
+                pTooltip="Excluir">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-credit-card" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum método de pagamento encontrado</h3>
+              <p>Comece adicionando seu primeiro método de pagamento</p>
+              <button
+                pButton
+                icon="pi pi-plus"
+                label="Novo Método"
+                class="p-button-outlined mt-3"
+                (click)="newPaymentMethod()">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast></p-toast>
+
+<app-confirmation-modal
+  [visible]="!!paymentMethodToDelete"
+  [type]="'delete'"
+  [loading]="confirmationLoading()"
+  [message]="getDeleteMessage()"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-success-modal
+  [visible]="successModalService.visible()"
+  [message]="successModalService.message()"
+  (visibleChange)="successModalService.hide()">
+</app-success-modal>

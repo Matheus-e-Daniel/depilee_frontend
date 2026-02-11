@@ -5,14 +5,14 @@ export interface PagedResponse<T> {
   totalCount: number;
   totalPages: number;
   data: T[];
+  message: string | null;
 }
 
 export interface PaymentMethod {
-  id?: string;
+  id: string;
   name: string;
-  type: string;
-  allowInstallments: boolean;
-  maxInstallments: number;
+  type: number; // Enum EPaymentMethodType
+  installments: number;
   interestRatePerInstallment: number;
   feePercentage: number;
   description: string;
@@ -22,9 +22,8 @@ export interface PaymentMethod {
 
 export interface PaymentMethodFormData {
   name: string;
-  type: string;
-  allowInstallments: boolean;
-  maxInstallments: number;
+  type: number;
+  installments: number;
   interestRatePerInstallment: number;
   feePercentage: number;
   description: string;

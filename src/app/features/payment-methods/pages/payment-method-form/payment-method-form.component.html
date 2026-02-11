@@ -1,31 +1,165 @@
-<form [formGroup]="paymentMethodForm" (ngSubmit)="onSubmit()">
-  <div>
-    <label>Nome</label>
-    <input formControlName="name" />
+<!-- src/app/features/payment-methods/pages/payment-method-form/payment-method-form.component.html -->
+<div class="payment-method-form-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      (click)="cancel()">
+    </button>
+
+    <h1>{{ isEditMode() ? 'Editar Método de Pagamento' : 'Novo Método de Pagamento' }}</h1>
   </div>
-  <div>
-    <label>Tipo</label>
-    <input formControlName="type" />
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="paymentMethodForm" (ngSubmit)="onSubmit()" class="payment-method-form">
+        <div class="form-grid">
+
+          <div class="field col-12">
+            <label for="name" class="block font-medium mb-2">Nome *</label>
+            <input
+              id="name"
+              type="text"
+              pInputText
+              formControlName="name"
+              class="w-full"
+              placeholder="Ex: Cartão de Crédito" />
+
+            <small
+              *ngIf="paymentMethodForm.get('name')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              <span *ngIf="paymentMethodForm.get('name')?.errors?.['required']">Nome é obrigatório</span>
+              <span *ngIf="paymentMethodForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="type" class="block font-medium mb-2">Tipo *</label>
+            <p-dropdown
+              id="type"
+              formControlName="type"
+              [options]="paymentTypes"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione o tipo"
+              class="w-full">
+            </p-dropdown>
+
+            <small
+              *ngIf="paymentMethodForm.get('type')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Tipo é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="installments" class="block font-medium mb-2">Parcelas *</label>
+            <p-inputNumber
+              id="installments"
+              formControlName="installments"
+              [min]="1"
+              [showButtons]="true"
+              placeholder="1"
+              class="w-full">
+            </p-inputNumber>
+
+            <small
+              *ngIf="paymentMethodForm.get('installments')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Número de parcelas é obrigatório (mínimo 1)
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="interestRatePerInstallment" class="block font-medium mb-2">Taxa de Juros/Parcela *</label>
+            <p-inputNumber
+              id="interestRatePerInstallment"
+              formControlName="interestRatePerInstallment"
+              [min]="0"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [showButtons]="true"
+              [step]="0.01"
+              placeholder="0.00"
+              suffix="%"
+              class="w-full">
+            </p-inputNumber>
+
+            <small
+              *ngIf="paymentMethodForm.get('interestRatePerInstallment')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Taxa de juros é obrigatória (mínimo 0%)
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="feePercentage" class="block font-medium mb-2">Taxa (%)*</label>
+            <p-inputNumber
+              id="feePercentage"
+              formControlName="feePercentage"
+              [min]="0"
+              [minFractionDigits]="2"
+              [maxFractionDigits]="2"
+              [showButtons]="true"
+              [step]="0.01"
+              placeholder="0.00"
+              suffix="%"
+              class="w-full">
+            </p-inputNumber>
+
+            <small
+              *ngIf="paymentMethodForm.get('feePercentage')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Taxa é obrigatória (mínimo 0%)
+            </small>
+          </div>
+
+          <div class="field col-12">
+            <label for="description" class="block font-medium mb-2">Descrição</label>
+            <textarea
+              id="description"
+              pInputTextarea
+              formControlName="description"
+              rows="3"
+              class="w-full"
+              placeholder="Descrição adicional (opcional)"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-danger"
+            [disabled]="loading()"
+            (click)="cancel()">
+          </button>
+
+          <button
+            pButton
+            type="submit"
+            [label]="isEditMode() ? 'Atualizar' : 'Criar'"
+            class="p-button-primary">
+
+            <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </p-card>
   </div>
-  <div>
-    <label>Permite Parcelamento?</label>
-    <input type="checkbox" formControlName="allowInstallments" />
-  </div>
-  <div>
-    <label>Máximo de Parcelas</label>
-    <input type="number" formControlName="maxInstallments" />
-  </div>
-  <div>
-    <label>Taxa de Juros por Parcela (%)</label>
-    <input type="number" step="0.01" formControlName="interestRatePerInstallment" />
-  </div>
-  <div>
-    <label>Taxa (%)</label>
-    <input type="number" step="0.01" formControlName="feePercentage" />
-  </div>
-  <div>
-    <label>Descrição</label>
-    <input formControlName="description" />
-  </div>
-  <button type="submit">Salvar</button>
-</form>
+</div>
+
+<p-toast></p-toast>
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  [type]="isEditMode() ? 'update' : 'create'"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmSubmit()"
+  (cancel)="cancelSubmit()">
+</app-confirmation-modal>
