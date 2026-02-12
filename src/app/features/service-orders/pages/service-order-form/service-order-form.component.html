@@ -16,36 +16,43 @@
   <div class="card">
     <p-card>
       <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="service-order-form">
-        <div class="form-grid">
-          <!-- Cliente -->
-          <div class="field col-12 md:col-6">
-            <label for="clientId" class="block font-medium mb-2">Cliente (opcional)</label>
-            <p-dropdown
-              id="clientId"
-              formControlName="clientId"
-              [options]="clients()"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Selecione o cliente"
-              [loading]="clientsLoading()"
-              [showClear]="true"
-              class="w-full">
-              <ng-template pTemplate="empty">
-                <div class="p-2">Nenhum cliente encontrado</div>
-              </ng-template>
-            </p-dropdown>
+        <!-- Informações Básicas -->
+        <div class="section-card">
+          <div class="section-header">
+            <i class="pi pi-info-circle"></i>
+            <h2>Informações Básicas</h2>
           </div>
+          <div class="form-grid">
+            <!-- Cliente -->
+            <div class="field col-12 md:col-6">
+              <label for="clientId" class="block font-medium mb-2">Cliente (opcional)</label>
+              <p-dropdown
+                id="clientId"
+                formControlName="clientId"
+                [options]="clients()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione o cliente"
+                [loading]="clientsLoading()"
+                [showClear]="true"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhum cliente encontrado</div>
+                </ng-template>
+              </p-dropdown>
+            </div>
 
-          <!-- Observações -->
-          <div class="field col-12 md:col-6">
-            <label for="notes" class="block font-medium mb-2">Observações (opcional)</label>
-            <textarea
-              id="notes"
-              pInputTextarea
-              formControlName="notes"
-              rows="3"
-              class="w-full"
-              placeholder="Digite observações sobre a ordem de serviço..."></textarea>
+            <!-- Observações -->
+            <div class="field col-12 md:col-6">
+              <label for="notes" class="block font-medium mb-2">Observações (opcional)</label>
+              <textarea
+                id="notes"
+                pInputTextarea
+                formControlName="notes"
+                rows="3"
+                class="w-full"
+                placeholder="Digite observações sobre a ordem de serviço..."></textarea>
+            </div>
           </div>
         </div>
 
@@ -168,32 +175,64 @@
           </div>
         </div>
 
-        <!-- Seção de Resumo -->
-        <div class="mt-5">
-          <h2 class="text-xl font-semibold mb-4">Resumo da Ordem</h2>
+        <!-- Seção de Resumo e Pagamento -->
+        <div class="section-card">
+          <div class="section-header">
+            <i class="pi pi-calculator"></i>
+            <h2>Resumo e Pagamento</h2>
+          </div>
           <div class="form-grid">
-            <!-- Desconto -->
+            <!-- Forma de Pagamento -->
             <div class="field col-12 md:col-6">
-              <label for="discount" class="block font-medium mb-2">Desconto (%) (opcional)</label>
-              <p-inputNumber
-                id="discount"
-                formControlName="discount"
-                suffix="%"
-                class="w-full"
-                [showButtons]="false"
-                [min]="0"
-                [max]="100"
-                [minFractionDigits]="0"
-                [maxFractionDigits]="2"
-                placeholder="0%">
-              </p-inputNumber>
+              <label for="paymentMethodId" class="block font-medium mb-2">Forma de Pagamento *</label>
+              <p-dropdown
+                id="paymentMethodId"
+                formControlName="paymentMethodId"
+                [options]="paymentMethods()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione"
+                [loading]="paymentMethodsLoading()"
+                [showClear]="true"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhuma forma encontrada</div>
+                </ng-template>
+              </p-dropdown>
 
               <small
-                *ngIf="orderForm.get('discount')?.invalid && orderForm.get('discount')?.touched"
+                *ngIf="orderForm.get('paymentMethodId')?.invalid && orderForm.get('paymentMethodId')?.touched"
                 class="p-error block mt-1">
-                <span *ngIf="orderForm.get('discount')?.errors?.['min']">Valor mínimo: 0%</span>
-                <span *ngIf="orderForm.get('discount')?.errors?.['max']">Valor máximo: 100%</span>
+                <span *ngIf="orderForm.get('paymentMethodId')?.errors?.['required']">Campo obrigatório</span>
               </small>
+            </div>
+
+            <!-- Número de Parcelas -->
+            <div class="field col-12 md:col-6">
+              <label for="installments" class="block font-medium mb-2">Número de Parcelas</label>
+              <p-inputNumber
+                id="installments"
+                formControlName="installments"
+                class="w-full"
+                [showButtons]="false"
+                [min]="1"
+                [readonly]="true">
+              </p-inputNumber>
+              <small class="block mt-1 text-gray-600">
+                <i class="pi pi-info-circle mr-1"></i>Automático pela forma de pagamento
+              </small>
+            </div>
+
+            <!-- Botão Gerar Parcelas -->
+            <div class="field col-12 md:col-6 flex align-items-end">
+              <button
+                pButton
+                type="button"
+                label="Gerar Parcelas"
+                icon="pi pi-calculator"
+                class="p-button-success w-full"
+                (click)="generateInstallments()">
+              </button>
             </div>
 
             <!-- Total -->
@@ -218,15 +257,67 @@
                 <span *ngIf="orderForm.get('total')?.errors?.['required']">Total é obrigatório</span>
                 <span *ngIf="orderForm.get('total')?.errors?.['min']">Valor mínimo: R$ 0,01</span>
               </small>
+            </div>
 
+            <!-- Desconto -->
+            <div class="field col-12 md:col-6">
+              <label for="discount" class="block font-medium mb-2">Desconto (%)</label>
+              <p-inputNumber
+                id="discount"
+                formControlName="discount"
+                suffix="%"
+                class="w-full"
+                [showButtons]="false"
+                [min]="0"
+                [max]="100"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="2"
+                placeholder="0%">
+              </p-inputNumber>
+
+              <small
+                *ngIf="orderForm.get('discount')?.invalid && orderForm.get('discount')?.touched"
+                class="p-error block mt-1">
+                <span *ngIf="orderForm.get('discount')?.errors?.['min']">Valor mínimo: 0%</span>
+                <span *ngIf="orderForm.get('discount')?.errors?.['max']">Valor máximo: 100%</span>
+              </small>
+            </div>
+
+            <!-- Tabela de Parcelas -->
+            <div class="field col-12" *ngIf="installmentsList().length > 0">
+              <label class="block font-medium mb-3">
+                <i class="pi pi-list mr-2"></i>Parcelas Geradas ({{ installmentsList().length }})
+              </label>
+              <div class="installments-table">
+                <div class="installments-header">
+                  <div class="installment-col">Nº</div>
+                  <div class="installment-col">Valor</div>
+                  <div class="installment-col">Status</div>
+                </div>
+                <div class="installments-body">
+                  <div
+                    *ngFor="let installment of installmentsList(); let i = index"
+                    class="installment-row"
+                    [class.paid]="installment.paid">
+                    <div class="installment-col">
+                      <span class="installment-number">{{ i + 1 }}ª</span>
+                    </div>
+                    <div class="installment-col">
+                      <span class="installment-value">{{ installment.value | currency:'BRL':'symbol':'1.2-2' }}</span>
+                    </div>
+                    <div class="installment-col">
+                      <p-checkbox
+                        [(ngModel)]="installment.paid"
+                        [ngModelOptions]="{standalone: true}"
+                        [binary]="true"
+                        label="Paga">
+                      </p-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Seção de Pagamento -->
-        <div class="mt-5">
-          <h2 class="text-xl font-semibold mb-4">Pagamento</h2>
-          <app-service-order-payment [parentForm]="orderForm"></app-service-order-payment>
         </div>
 
         <div class="form-actions">

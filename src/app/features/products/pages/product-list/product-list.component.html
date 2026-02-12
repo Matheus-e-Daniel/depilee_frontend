@@ -72,7 +72,7 @@
         <tr>
           <th>Nome</th>
           <th>Custo</th>
-          <th>Preço Venda</th>
+          <th>Preço</th>
           <th>Estoque</th>
           <th>Status</th>
           <th>Ações</th>
@@ -83,7 +83,7 @@
         <tr>
           <td data-label="Nome">{{ product.name }}</td>
           <td data-label="Custo">{{ product.cost | currency:'BRL' }}</td>
-          <td data-label="Preço Venda">{{ product.salePrice | currency:'BRL' }}</td>
+          <td data-label="Preço">{{ product.price | currency:'BRL' }}</td>
           <td data-label="Estoque">
             <span [class]="product.stock === 0 ? 'text-red-500 font-semibold' : ''">
               {{ product.stock }}

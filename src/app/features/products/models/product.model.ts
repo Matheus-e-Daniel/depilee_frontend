@@ -19,8 +19,18 @@ export interface PagedResponse<T> {
 }
 
 
-export interface Product extends ProductFormData {
+export interface Product {
   id: string;
+  name: string;
+  description: string;
+  price: number;
+  cost: number;
+  stock: number;
+  brandId: number;
+  categoryId: number;
   registrationDate: string;
-  // Outras propriedades que seu produto possa ter
+  lastUpdate: string | null;
+  status: number;
+  createdByUser: string;
+  updatedByUser: string;
 }

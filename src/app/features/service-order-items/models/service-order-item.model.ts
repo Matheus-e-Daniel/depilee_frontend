@@ -42,7 +42,7 @@ export interface ServiceOrder {
 export interface ProductOption {
   id: number;
   name: string;
-  salePrice: number;
+  price: number;
 }
 
 export interface ServiceOption {

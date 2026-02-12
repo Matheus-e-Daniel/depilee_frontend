@@ -1,7 +1,7 @@
 // src/app/features/service-orders/pages/service-order-form/service-order-form.component.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -9,13 +9,21 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ServiceOrderService } from '../../services/service-order.service';
 import { Client } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
-import { ServiceOrderPaymentComponent } from '../../components/service-order-payment/service-order-payment.component';
-import { ServiceOrderPaymentService } from '../../components/service-order-payment/service-order-payment.service';
+import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
+import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
+
+interface Installment {
+  number: number;
+  value: number;
+  paid: boolean;
+}
 
 @Component({
   selector: 'app-service-order-form',
@@ -23,13 +31,15 @@ import { ServiceOrderPaymentService } from '../../components/service-order-payme
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     InputNumberModule,
     InputTextareaModule,
     DropdownModule,
     ButtonModule,
     CardModule,
     ToastModule,
-    ServiceOrderPaymentComponent
+    CheckboxModule,
+    TooltipModule
   ],
   providers: [MessageService],
   templateUrl: './service-order-form.component.html',
@@ -39,7 +49,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
-  private paymentService = inject(ServiceOrderPaymentService);
+  private paymentMethodService = inject(PaymentMethodService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -54,13 +64,17 @@ export class ServiceOrderFormComponent implements OnInit {
   services = signal<ServiceOption[]>([]);
   productsLoading = signal(true);
   servicesLoading = signal(true);
+  paymentMethods = signal<PaymentMethod[]>([]);
+  paymentMethodsLoading = signal(true);
   private isLoadingData = false;
+  installmentsList = signal<Installment[]>([]);
 
   ngOnInit(): void {
     this.initForm();
     this.loadClients();
     this.loadProducts();
     this.loadServices();
+    this.loadPaymentMethods();
     this.checkEditMode();
   }
 
@@ -70,11 +84,18 @@ export class ServiceOrderFormComponent implements OnInit {
       discount: [null, [Validators.min(0), Validators.max(100)]],
       total: [0, [Validators.required, Validators.min(0.01)]],
       notes: [''],
+      paymentMethodId: [null, Validators.required],
+      installments: [{ value: 1, disabled: true }],
       items: this.fb.array([this.createItemFormGroup()])
     });
 
     // Observar mudanças no desconto para recalcular o total
     this.orderForm.get('discount')?.valueChanges.subscribe(() => this.calculateTotal());
+
+    // Observar mudanças no método de pagamento
+    this.orderForm.get('paymentMethodId')?.valueChanges.subscribe(paymentMethodId => {
+      this.onPaymentMethodChange(paymentMethodId);
+    });
   }
 
   private createItemFormGroup(): FormGroup {
@@ -196,13 +217,85 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
+  private loadPaymentMethods(): void {
+    this.paymentMethodsLoading.set(true);
+    this.paymentMethodService.getAll().subscribe({
+      next: (methods) => {
+        this.paymentMethods.set(methods);
+        this.paymentMethodsLoading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar formas de pagamento'
+        });
+        this.paymentMethodsLoading.set(false);
+      }
+    });
+  }
+
+  onPaymentMethodChange(paymentMethodId: string | null): void {
+    if (!paymentMethodId) {
+      this.orderForm.get('installments')?.setValue(1);
+      this.orderForm.get('installments')?.disable();
+      return;
+    }
+
+    const selectedMethod = this.paymentMethods().find(pm => pm.id === paymentMethodId);
+
+    if (selectedMethod) {
+      const installments = selectedMethod.installments || 1;
+      this.orderForm.get('installments')?.setValue(installments);
+      this.orderForm.get('installments')?.disable();
+    }
+  }
+
+  generateInstallments(): void {
+    const total = this.orderForm.get('total')?.value || 0;
+    const installments = this.orderForm.get('installments')?.value || 1;
+
+    if (total <= 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'O total deve ser maior que zero'
+      });
+      return;
+    }
+
+    if (installments <= 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'O número de parcelas deve ser maior que zero'
+      });
+      return;
+    }
+
+    const installmentValue = total / installments;
+    const newInstallments = Array.from({ length: installments }, (_, i) => ({
+      number: i + 1,
+      value: installmentValue,
+      paid: false
+    }));
+
+    this.installmentsList.set(newInstallments);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: `${installments} parcela(s) gerada(s) com sucesso`
+    });
+  }
+
   onProductChange(productId: number, itemIndex: number): void {
     if (productId) {
       const itemControl = this.items.at(itemIndex);
       itemControl.patchValue({ serviceId: null });
       const product = this.products().find(p => p.id === productId);
       if (product) {
-        itemControl.patchValue({ unitPrice: product.salePrice });
+        itemControl.patchValue({ unitPrice: product.price });
       }
     }
   }
@@ -385,44 +478,16 @@ export class ServiceOrderFormComponent implements OnInit {
     console.log('========== PROCESSO COMPLETO! ==========');
     console.log(`Itens criados: ${itemsCreated}, Erros: ${itemsWithError}`);
 
-    // ETAPA 3: Criar pagamento (se preenchido)
-    const paymentData = this.orderForm.get('payment')?.value;
-    const serviceOrderId = this.orderId();
-
-    if (paymentData && serviceOrderId && paymentData.cashRegisterId && paymentData.paymentMethodId && paymentData.amount) {
-      console.log('========== ETAPA 3: CRIAR PAGAMENTO ==========');
-      const paymentPayload = {
-        ...paymentData,
-        serviceOrderId: serviceOrderId
-      };
-      console.log('Payload do pagamento:', paymentPayload);
-
-      this.paymentService.savePayment(serviceOrderId, paymentPayload).subscribe({
-        next: (paymentResponse) => {
-          console.log('Pagamento criado com sucesso:', paymentResponse);
-          this.finishWithMessage(itemsCreated, itemsWithError, true);
-        },
-        error: (paymentError) => {
-          console.error('Erro ao criar pagamento:', paymentError);
-          this.finishWithMessage(itemsCreated, itemsWithError, false);
-        }
-      });
-    } else {
-      this.finishWithMessage(itemsCreated, itemsWithError, null);
-    }
+    // Ordem de serviço criada com sucesso
+    this.finishWithMessage(itemsCreated, itemsWithError);
   }
 
-  private finishWithMessage(itemsCreated: number, itemsWithError: number, paymentCreated: boolean | null): void {
+  private finishWithMessage(itemsCreated: number, itemsWithError: number): void {
     this.loading.set(false);
 
     let detail = '';
     if (itemsWithError === 0) {
       detail = `Ordem de serviço e ${itemsCreated} item(ns) criados com sucesso!`;
-      if (paymentCreated === true) {
-        detail += ' Pagamento registrado.';
-      } else if (paymentCreated === false) {
-        detail += ' Erro ao registrar pagamento.';
-      }
     } else {
       detail = `Ordem criada. ${itemsCreated} item(ns) criado(s), ${itemsWithError} com erro.`;
     }
