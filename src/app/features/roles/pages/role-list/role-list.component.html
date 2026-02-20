@@ -79,20 +79,20 @@
 
       <ng-template pTemplate="body" let-role>
         <tr>
-          <td data-label="Cargo">{{ role }}</td>
+          <td data-label="Cargo">{{ role.name }}</td>
           <td data-label="Ações" style="text-align: right;">
             <div class="action-buttons">
               <button
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editRole(role)">
+                (click)="editRole(role.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteRole(role)">
+                (click)="deleteRole(role.id)">
               </button>
             </div>
           </td>

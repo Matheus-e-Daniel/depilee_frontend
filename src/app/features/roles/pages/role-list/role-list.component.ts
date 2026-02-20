@@ -60,15 +60,25 @@ export class RoleListComponent implements OnInit {
 
   filteredRoles = computed(() => {
     let list = this.roles();
+    console.log('🔍 Lista de roles no computed:', list);
     const search = this.search().toLowerCase().trim();
     if (search) {
-      list = list.filter(r => r.toLowerCase().includes(search));
+      list = list.filter(r => r?.name?.toLowerCase().includes(search));
     }
     if (this.sortOrder() === 'desc') {
-      list = [...list].sort((a, b) => b.localeCompare(a));
+      list = [...list].sort((a, b) => {
+        const nameA = a?.name || '';
+        const nameB = b?.name || '';
+        return nameB.localeCompare(nameA);
+      });
     } else {
-      list = [...list].sort((a, b) => a.localeCompare(b));
+      list = [...list].sort((a, b) => {
+        const nameA = a?.name || '';
+        const nameB = b?.name || '';
+        return nameA.localeCompare(nameB);
+      });
     }
+    console.log('🔍 Lista filtrada/ordenada:', list);
     return list;
   });
 
@@ -77,7 +87,7 @@ export class RoleListComponent implements OnInit {
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
-  roles = signal<string[]>([]);
+  roles = signal<Role[]>([]);
   loading = signal(true);
 
   // Confirmation modal
@@ -94,7 +104,13 @@ export class RoleListComponent implements OnInit {
 
     this.roleService.getAll().subscribe({
       next: (roles) => {
-        console.log('Resposta do backend:', roles);
+        console.log('📋 Resposta do backend (roles):', roles);
+        console.log('📋 Tipo da resposta:', typeof roles);
+        console.log('📋 É array?', Array.isArray(roles));
+        if (roles && roles.length > 0) {
+          console.log('📋 Primeiro item:', roles[0]);
+          console.log('📋 Estrutura do primeiro item:', JSON.stringify(roles[0], null, 2));
+        }
         this.roles.set(roles);
         this.loading.set(false);
       },

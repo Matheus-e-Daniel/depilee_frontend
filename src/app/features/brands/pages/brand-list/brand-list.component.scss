@@ -1,3 +1,8 @@
+// Torna o elemento visível mas não clicável
+.not-clickable {
+  pointer-events: none;
+  opacity: 0.5;
+}
 // Filtros visuais (igual clientes)
 .filters-card {
   background: white;

@@ -31,4 +31,9 @@ export class UserService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  assignRole(userId: string | number, roleName: string): Observable<any> {
+    console.log(`[UserService][assignRole] Atribuindo role "${roleName}" ao usuário ${userId}`);
+    return this.http.post(`${environment.apiBaseUrl}identity/user/${userId}/role`, { roleName });
+  }
 }

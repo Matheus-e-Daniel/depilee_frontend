@@ -12,10 +12,13 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { User, Gender } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
+import { RoleService } from '../../../roles/services/role.service';
+import { Role } from '../../../roles/models/role.model';
 import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { switchMap, tap } from 'rxjs/operators';
 
 // Constantes
 const CEP_DEBOUNCE_TIME = 800;
@@ -44,6 +47,7 @@ const USER_DATA_LOAD_DELAY = 1000;
 export class UserFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
+  private roleService = inject(RoleService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -58,6 +62,7 @@ export class UserFormComponent implements OnInit {
     cpf: ['', [Validators.required]],
     birth: ['', [Validators.required, this.birthDateValidator.bind(this)]],
     gender: ['', [Validators.required]],
+    roleId: [null, [Validators.required]],
     address: this.fb.group({
       cep: ['', [Validators.required]],
       state: ['', [Validators.required]],
@@ -74,6 +79,8 @@ export class UserFormComponent implements OnInit {
     { label: 'Feminino', value: 2 },
     { label: 'Outro', value: 3 }
   ];
+  roles = signal<Role[]>([]);
+  rolesLoading = signal(false);
   loading = signal(false);
   success = signal(false);
   formSubmitted = signal(false);
@@ -86,6 +93,9 @@ export class UserFormComponent implements OnInit {
   formModified = signal(false);
 
   ngOnInit(): void {
+    // Carrega roles
+    this.loadRoles();
+
     // Listener para buscar endereço quando o CEP for preenchido
     this.userForm.get('address.cep')?.valueChanges.pipe(
       debounceTime(CEP_DEBOUNCE_TIME),
@@ -117,6 +127,24 @@ export class UserFormComponent implements OnInit {
       this.userId.set(id);
       this.loadUser(id);
     }
+  }
+
+  private loadRoles(): void {
+    this.rolesLoading.set(true);
+    this.roleService.getAll().subscribe({
+      next: (roles) => {
+        this.roles.set(roles);
+        this.rolesLoading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Falha ao carregar cargos'
+        });
+        this.rolesLoading.set(false);
+      }
+    });
   }
 
   private loadUser(id: string): void {
@@ -295,9 +323,32 @@ export class UserFormComponent implements OnInit {
       ? 'Falha ao atualizar usuário'
       : 'Falha ao cadastrar usuário';
 
-    operation.subscribe({
-      next: (response) => {
-        console.log('[UserFormComponent] Resposta recebida:', response);
+    operation.pipe(
+      tap((response: any) => {
+        console.log('[UserFormComponent] Usuário salvo:', response);
+      }),
+      switchMap((response: any) => {
+        // Extrai o ID do usuário da resposta
+        const userId = this.isEditMode() ? this.userId() : response?.data?.id || response?.id;
+        console.log('[UserFormComponent] ID do usuário:', userId);
+
+        // Busca a role selecionada pelo ID
+        const selectedRoleId = formValue.roleId;
+        const selectedRole = this.roles().find(r => r.id === selectedRoleId);
+
+        if (!selectedRole) {
+          console.warn('[UserFormComponent] Role não encontrada');
+          return operation; // Retorna a operação original se não encontrar a role
+        }
+
+        console.log('[UserFormComponent] Atribuindo role:', selectedRole.name);
+
+        // Atribui a role ao usuário
+        return this.userService.assignRole(userId, selectedRole.name);
+      })
+    ).subscribe({
+      next: () => {
+        console.log('[UserFormComponent] Role atribuída com sucesso');
         if (!this.isEditMode()) {
           this.userForm.reset();
         }

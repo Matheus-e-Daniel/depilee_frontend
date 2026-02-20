@@ -15,6 +15,8 @@ import { Brand } from '../../models/brand.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-brand-list',
@@ -29,7 +31,8 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
-    SuccessModalComponent
+    SuccessModalComponent,
+    HasPermissionDirective
   ],
   providers: [MessageService],
   templateUrl: './brand-list.component.html',
@@ -76,6 +79,7 @@ export class BrandListComponent implements OnInit {
   private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  private authService = inject(AuthService);
 
   brands = signal<Brand[]>([]);
   loading = signal(true);
@@ -151,6 +155,12 @@ export class BrandListComponent implements OnInit {
 
   newBrand(): void {
     this.router.navigate(['/brands/new']);
+  }
+
+  hasPermission(permission: string): boolean {
+    const perms = this.authService.userPermissions();
+    console.log('[hasPermission]', { permission, perms });
+    return perms.includes(permission);
   }
 }
 

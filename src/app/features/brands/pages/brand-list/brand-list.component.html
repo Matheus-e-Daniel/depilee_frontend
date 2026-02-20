@@ -11,7 +11,9 @@
       icon="pi pi-plus"
       label="Nova Marca"
       class="p-button-primary"
-      (click)="newBrand()">
+      [class.not-clickable]="!hasPermission('Brand.Create')"
+      [attr.disabled]="!hasPermission('Brand.Create') ? true : null"
+      (click)="hasPermission('Brand.Create') && newBrand()"></button>
     </button>
   </div>
 
@@ -86,13 +88,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editBrand(brand.id)">
+                [class.not-clickable]="!hasPermission('Brand.Edit')"
+                [attr.disabled]="!hasPermission('Brand.Edit') ? true : null"
+                (click)="hasPermission('Brand.Edit') && editBrand(brand.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteBrand(brand.id, brand.name)">
+                [class.not-clickable]="!hasPermission('Brand.Delete')"
+                [attr.disabled]="!hasPermission('Brand.Delete') ? true : null"
+                (click)="hasPermission('Brand.Delete') && deleteBrand(brand.id, brand.name)">
               </button>
             </div>
           </td>
@@ -111,7 +117,9 @@
                 icon="pi pi-plus"
                 label="Nova Marca"
                 class="p-button-outlined mt-3"
-                (click)="newBrand()">
+                [class.not-clickable]="!hasPermission('Brand.Create')"
+                [attr.disabled]="!hasPermission('Brand.Create') ? true : null"
+                (click)="hasPermission('Brand.Create') && newBrand()">
               </button>
             </div>
           </td>

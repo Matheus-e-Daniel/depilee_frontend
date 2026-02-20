@@ -58,31 +58,38 @@ export class LoginComponent {
         next: (response) => {
           this.isLoading.set(false);
           console.log('✅ Login bem-sucedido:', response);
+          console.log('👤 Dados do usuário:', response?.data);
+          console.log('🎭 Roles do usuário:', response?.data?.roles);
 
           // ATUALIZA O ESTADO PARA TRUE
           this.authService.setAuthenticated(true);
 
-        // REDIRECIONA DIRETAMENTE para dashboard
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.authService.setAuthenticated(false);
+          // Salva usuário e permissões
+          if (response?.data) {
+            this.authService.setUserData(response.data);
+          }
 
-        if (error.status === 0) {
-          this.errorMessage.set('Servidor indisponível');
-        } else if (error.status === 401) {
-          this.errorMessage.set('Email ou senha incorretos');
-        } else {
-          this.errorMessage.set('Erro ao fazer login');
+          // REDIRECIONA DIRETAMENTE para dashboard
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          this.authService.setAuthenticated(false);
+
+          if (error.status === 0) {
+            this.errorMessage.set('Servidor indisponível');
+          } else if (error.status === 401) {
+            this.errorMessage.set('Email ou senha incorretos');
+          } else {
+            this.errorMessage.set('Erro ao fazer login');
+          }
+          console.error('Login error:', error);
         }
-        console.error('Login error:', error);
-      }
-    });
-  } else {
-    this.markFormGroupTouched();
+      });
+    } else {
+      this.markFormGroupTouched();
+    }
   }
-}
 
   private markFormGroupTouched(): void {
     Object.keys(this.loginForm.controls).forEach(key => {

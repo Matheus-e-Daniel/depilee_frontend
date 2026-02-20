@@ -12,8 +12,9 @@ export interface PagedResponse<T> {
   message: string | null;
 }
 
-export interface Role extends RoleFormData {
-  id: string;
+export interface Role {
+  id: number;
+  name: string;
 }
 
 export interface Permission {

@@ -1,18 +1,35 @@
 import { environment } from '../../../environments/environment';
-// src/app/core/services/auth.service.ts (SIMPLIFICADO)
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
+export interface Permission {
+  id: number;
+  name: string;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+}
+
+export interface UserData {
+  id: number;
+  userName: string;
+  email: string;
+  roles: Role[];
+  permissions: Permission[];
+}
+
 export interface LoginResponse {
-  message: string;
-  success: boolean;
+  code: number;
+  data: UserData;
 }
 
 @Injectable({
@@ -22,15 +39,61 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private readonly AUTH_KEY = 'isAuthenticated';
+  private readonly USER_KEY = 'userData';
+
+  private _permissions: Permission[] = [];
+  private _user: UserData | null = null;
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    console.log('🔄 Enviando login:', credentials.email);
-
     return this.http.post<LoginResponse>(
       environment.apiBaseUrl + 'identity/login',
       credentials,
       { withCredentials: true }
     );
+  }
+
+  setUserData(user: UserData): void {
+    this._user = user;
+    this._permissions = user.permissions || [];
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+  }
+
+  getUserData(): UserData | null {
+    if (this._user) return this._user;
+    const stored = localStorage.getItem(this.USER_KEY);
+    if (stored) {
+      this._user = JSON.parse(stored);
+      this._permissions = this._user?.permissions ?? [];
+      return this._user;
+    }
+    return null;
+  }
+
+  getPermissions(): Permission[] {
+    return this._permissions;
+  }
+
+  /**
+   * Retorna as permissões do usuário logado como array de string.
+   */
+  userPermissions(): string[] {
+    return this.getPermissions().map((p: Permission) => p.name);
+  }
+
+  /**
+   * Verifica se o usuário possui pelo menos uma das permissões informadas.
+   */
+  hasAnyPermission(permissions: string[]): boolean {
+    const userPerms = this.userPermissions();
+    return permissions.some(p => userPerms.includes(p));
+  }
+
+  /**
+   * Verifica se o usuário possui todas as permissões informadas.
+   */
+  hasAllPermissions(permissions: string[]): boolean {
+    const userPerms = this.userPermissions();
+    return permissions.every(p => userPerms.includes(p));
   }
 
   logout(): void {
@@ -39,21 +102,25 @@ export class AuthService {
     }).subscribe({
       next: () => {
         this.setAuthenticated(false);
+        localStorage.removeItem(this.USER_KEY);
+        this._user = null;
+        this._permissions = [];
         this.router.navigate(['/login']);
       },
       error: () => {
         this.setAuthenticated(false);
+        localStorage.removeItem(this.USER_KEY);
+        this._user = null;
+        this._permissions = [];
         this.router.navigate(['/login']);
       }
     });
   }
 
-  // Método SIMPLES - verifica localStorage
   isAuthenticatedUser(): boolean {
     return localStorage.getItem(this.AUTH_KEY) === 'true';
   }
 
-  // Método para setar estado após login bem-sucedido
   setAuthenticated(value: boolean): void {
     if (value) {
       localStorage.setItem(this.AUTH_KEY, 'true');

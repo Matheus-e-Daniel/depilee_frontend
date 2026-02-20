@@ -260,21 +260,46 @@ export class RoleFormComponent implements OnInit {
 
   private loadRole(id: string): void {
     this.loading.set(true);
-    this.roleService.getById(id).subscribe({
-      next: (role) => {
-        this.roleForm.patchValue({
-          roleName: role.roleName
-        });
 
-        // Store original values for comparison
-        this.originalFormValue = JSON.stringify(this.roleForm.value);
-        this.loading.set(false);
+    // Busca as permissões da role
+    this.roleService.getRolePermissionsById(id).subscribe({
+      next: (permissions) => {
+        console.log('🔑 Permissões da role carregadas:', permissions);
+
+        // Marca as permissões selecionadas
+        const selectedIds = new Set(permissions.map((p: any) => p.id));
+        this.selectedPermissionIds.set(selectedIds);
+
+        // Busca o nome da role do endpoint all
+        this.roleService.getAll().subscribe({
+          next: (roles) => {
+            const role = roles.find(r => r.id.toString() === id);
+            if (role) {
+              this.roleForm.patchValue({
+                roleName: role.name
+              });
+
+              // Store original values for comparison
+              this.originalFormValue = JSON.stringify(this.roleForm.value);
+            }
+            this.loading.set(false);
+          },
+          error: () => {
+            this.loading.set(false);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Falha ao carregar dados da role'
+            });
+          }
+        });
       },
       error: () => {
+        this.loading.set(false);
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Falha ao carregar role'
+          detail: 'Falha ao carregar permissões da role'
         });
         this.router.navigate(['/roles']);
       }

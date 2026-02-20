@@ -3,6 +3,7 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { PagedResponse, Role, RoleFormData, Permission, RolePermissions } from '../models/role.model';
 
 @Injectable({
@@ -13,12 +14,22 @@ export class RoleService {
   private apiUrl = environment.apiBaseUrl + 'identity/roles';
   private permissionsUrl = environment.apiBaseUrl + 'identity/permissions';
 
-  getAll(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/all`);
+  getAll(): Observable<Role[]> {
+    return this.http.get<any>(`${this.apiUrl}/all`).pipe(
+      map(response => response.data || [])
+    );
   }
 
-  getById(id: string): Observable<Role> {
-    return this.http.get<Role>(`${this.apiUrl}/${id}`);
+  getById(id: string | number): Observable<Role> {
+    return this.http.get<any>(`${this.permissionsUrl}/role/${id}`).pipe(
+      map(response => response.data || {})
+    );
+  }
+
+  getRolePermissionsById(id: string | number): Observable<Permission[]> {
+    return this.http.get<any>(`${this.permissionsUrl}/role/${id}`).pipe(
+      map(response => response.data || [])
+    );
   }
 
   create(role: RoleFormData): Observable<Role> {
@@ -35,7 +46,9 @@ export class RoleService {
 
   // Permissions
   getAllPermissions(): Observable<Permission[]> {
-    return this.http.get<Permission[]>(this.permissionsUrl);
+    return this.http.get<any>(this.permissionsUrl).pipe(
+      map(response => response.data || [])
+    );
   }
 
   assignPermissions(rolePermissions: RolePermissions): Observable<void> {

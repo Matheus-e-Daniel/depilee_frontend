@@ -84,6 +84,25 @@
               Gênero é obrigatório
             </small>
           </div>
+          <div class="field col-12 md:col-6">
+            <label for="roleId">Cargo *</label>
+            <p-dropdown
+              id="roleId"
+              formControlName="roleId"
+              [options]="roles()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione um cargo"
+              [loading]="rolesLoading()"
+              class="w-full">
+              <ng-template pTemplate="empty">
+                <div class="p-2">Nenhum cargo encontrado</div>
+              </ng-template>
+            </p-dropdown>
+            <small *ngIf="userForm.get('roleId')?.invalid && formSubmitted()" class="p-error block mt-1">
+              Cargo é obrigatório
+            </small>
+          </div>
         </div>
         <fieldset formGroupName="address" class="address-fieldset">
           <legend>Endereço</legend>
