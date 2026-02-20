@@ -209,30 +209,29 @@
 
             <!-- Número de Parcelas -->
             <div class="field col-12 md:col-6">
-              <label for="installments" class="block font-medium mb-2">Número de Parcelas</label>
-              <p-inputNumber
-                id="installments"
-                formControlName="installments"
-                class="w-full"
-                [showButtons]="false"
-                [min]="1"
-                [readonly]="true">
-              </p-inputNumber>
-              <small class="block mt-1 text-gray-600">
-                <i class="pi pi-info-circle mr-1"></i>Automático pela forma de pagamento
-              </small>
-            </div>
-
-            <!-- Botão Gerar Parcelas -->
-            <div class="field col-12 md:col-6 flex align-items-end">
-              <button
-                pButton
-                type="button"
-                label="Gerar Parcelas"
-                icon="pi pi-calculator"
-                class="p-button-success w-full"
-                (click)="generateInstallments()">
-              </button>
+              <div style="display: flex; align-items: end; gap: 0.75rem;">
+                <div style="flex: 1 0 1;">
+                  <label for="installments" class="block font-medium mb-2">Número de Parcelas</label>
+                  <p-inputNumber
+                    id="installments"
+                    formControlName="installments"
+                    class="w-full"
+                    [showButtons]="false"
+                    [min]="1"
+                    [readonly]="true"
+                    pTooltip="Número de parcelas gerado automaticamente pela forma de pagamento"
+                    tooltipPosition="top">
+                  </p-inputNumber>
+                </div>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-calculator"
+                  label="Gerar Parcelas"
+                  class="add-item-btn"
+                  (click)="generateInstallments()">
+                </button>
+              </div>
             </div>
 
             <!-- Total -->
