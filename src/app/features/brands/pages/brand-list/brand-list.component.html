@@ -13,7 +13,7 @@
       class="p-button-primary"
       [class.not-clickable]="!hasPermission('Brand.Create')"
       [attr.disabled]="!hasPermission('Brand.Create') ? true : null"
-      (click)="hasPermission('Brand.Create') && newBrand()"></button>
+      (click)="hasPermission('Brand.Create') && newBrand()">
     </button>
   </div>
 
