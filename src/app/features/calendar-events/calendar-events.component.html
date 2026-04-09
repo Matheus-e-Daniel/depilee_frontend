@@ -118,19 +118,16 @@
 
     <div class="form-row">
       <div class="form-field">
-        <label for="type">Tipo *</label>
+        <label for="status">Status *</label>
         <select
-          id="type"
-          [(ngModel)]="newEvent.type"
+          id="status"
+          [(ngModel)]="newEvent.status"
           class="w-full">
-          <option [value]="1">Tipo 1</option>
-          <option [value]="2">Tipo 2</option>
-          <option [value]="3">Tipo 3</option>
-          <option [value]="4">Tipo 4</option>
+          <option *ngFor="let opt of statusOptions" [ngValue]="opt.value">{{ opt.label }}</option>
         </select>
       </div>
 
-      <div class="form-field">
+      <div class="form-field" style="display:flex; flex-direction:column; justify-content:flex-end;">
         <label for="allDay" class="checkbox-label">
           <input
             id="allDay"

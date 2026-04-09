@@ -11,7 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { CalendarEventService } from './services/calendar-event.service';
-import { CalendarEvent } from './models/calendar-event.model';
+import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS } from './models/calendar-event.model';
 
 interface TimeSlot {
   hour: string;
@@ -55,6 +55,10 @@ export class CalendarEventsComponent implements OnInit {
   // Slots de horário (6h às 22h)
   timeSlots: TimeSlot[] = [];
 
+  // Status options
+  statusOptions = EVENT_STATUS_OPTIONS;
+  EEventStatus = EEventStatus;
+
   // Dialog de novo evento
   showEventDialog = signal(false);
   isEditingEvent = signal(false);
@@ -63,6 +67,7 @@ export class CalendarEventsComponent implements OnInit {
     subject: '',
     description: '',
     type: 1,
+    status: EEventStatus.Pending,
     startDate: '',
     endDate: '',
     allDay: false,
@@ -197,6 +202,7 @@ export class CalendarEventsComponent implements OnInit {
       subject: '',
       description: '',
       type: 1,
+      status: EEventStatus.Pending,
       startDate: startDateTime,
       endDate: endDateTime,
       allDay: false,
@@ -221,6 +227,7 @@ export class CalendarEventsComponent implements OnInit {
       subject: event.subject,
       description: event.description || '',
       type: event.type,
+      status: event.status ?? EEventStatus.Pending,
       startDate: event.startDate || '',
       endDate: event.endDate || '',
       allDay: event.allDay,
