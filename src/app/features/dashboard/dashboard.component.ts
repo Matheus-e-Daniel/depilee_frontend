@@ -31,7 +31,6 @@ export class DashboardComponent implements OnInit {
 
   loading = signal(true);
 
-  // Cards
   totalClientes = 0;
   crescimentoClientes = '0%';
 
@@ -44,7 +43,6 @@ export class DashboardComponent implements OnInit {
   cancelamentos = 0;
   variacaoCancelamentos = '-10%';
 
-  // Chart
   selectedPeriod = '30d';
   chartPeriods = [
     { label: '7 dias', value: '7d' },
@@ -64,12 +62,10 @@ export class DashboardComponent implements OnInit {
   loadData() {
     this.loading.set(true);
 
-    // Buscar total de clientes do endpoint real
     this.clientService.getAll().subscribe({
       next: (response) => {
         this.totalClientes = response.totalCount;
 
-        // Calcular crescimento: comparar total de clientes agora vs total que existia no fim do mês passado
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
@@ -82,13 +78,10 @@ export class DashboardComponent implements OnInit {
         console.log('Mês atual:', currentMonth, '/', currentYear, '(0=Jan, 11=Dez)');
         console.log('Mês anterior:', lastMonth, '/', lastMonthYear);
 
-        // Total de clientes AGORA (todos cadastrados até hoje)
         const totalAtual = response.totalCount;
 
-        // Total de clientes que EXISTIAM até o final do mês passado
         const totalMesPassado = response.data.filter(client => {
           const regDate = new Date(client.registrationDate);
-          // Conta se foi cadastrado ANTES do início deste mês
           const inicioMesAtual = new Date(currentYear, currentMonth, 1);
           return regDate < inicioMesAtual;
         }).length;
@@ -96,7 +89,6 @@ export class DashboardComponent implements OnInit {
         console.log('Total de clientes AGORA:', totalAtual);
         console.log('Total que existia no fim do mês passado:', totalMesPassado);
 
-        // Calcular porcentagem de crescimento
         if (totalMesPassado === 0) {
           this.crescimentoClientes = totalAtual > 0 ? '+100%' : '0%';
           console.log('Mês passado = 0, resultado:', this.crescimentoClientes);

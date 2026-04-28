@@ -1,4 +1,3 @@
-// src/app/features/auth/login/login.component.ts
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -61,15 +60,12 @@ export class LoginComponent {
           console.log('👤 Dados do usuário:', response?.data);
           console.log('🎭 Roles do usuário:', response?.data?.roles);
 
-          // ATUALIZA O ESTADO PARA TRUE
           this.authService.setAuthenticated(true);
 
-          // Salva usuário e permissões
           if (response?.data) {
             this.authService.setUserData(response.data);
           }
-
-          // REDIRECIONA DIRETAMENTE para dashboard
+         
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {

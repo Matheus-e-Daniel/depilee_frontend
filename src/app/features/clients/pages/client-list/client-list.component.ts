@@ -1,4 +1,3 @@
-// src/app/features/clients/pages/client-list/client-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -45,7 +44,6 @@ export class ClientListComponent implements OnInit {
   allClients = signal<Client[]>([]);
   loading = signal(true);
 
-  // Filtros
   searchTerm = signal('');
   sortOrder = signal<string>('newest');
 
@@ -56,11 +54,9 @@ export class ClientListComponent implements OnInit {
     { label: 'Status (Ativo primeiro)', value: 'status' }
   ];
 
-  // Clientes filtrados e ordenados
   clients = computed(() => {
     let filtered = this.allClients();
 
-    // Filtro por nome (case insensitive) ou CPF (ignorando máscara)
     const searchFilter = this.searchTerm().toLowerCase().trim();
     if (searchFilter) {
       filtered = filtered.filter(client => {
@@ -73,9 +69,7 @@ export class ClientListComponent implements OnInit {
         return nameMatch || cpfMatch;
       });
     }
-    // Não filtrar por status, todos os clientes (ativos e inativos) devem aparecer
 
-    // Ordenação
     const sorted = [...filtered];
     switch (this.sortOrder()) {
       case 'newest':
@@ -96,7 +90,6 @@ export class ClientListComponent implements OnInit {
         sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
         break;
       case 'status':
-        // Ativos primeiro, depois inativos, e dentro de cada grupo, ordem alfabética
         sorted.sort((a, b) => {
           const aStatus = Number((a as any).status);
           const bStatus = Number((b as any).status);
@@ -111,7 +104,6 @@ export class ClientListComponent implements OnInit {
     return sorted;
   });
 
-  // Delete confirmation
   clientToDelete: { id: string; name: string } | null = null;
   confirmationLoading = signal(false);
 
@@ -201,7 +193,6 @@ export class ClientListComponent implements OnInit {
   }
 
   formatPhone(phone: string): string {
-    // Formatação básica: (11) 99999-9999
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `(${cleaned.substring(0,2)}) ${cleaned.substring(2,7)}-${cleaned.substring(7)}`;
@@ -210,7 +201,6 @@ export class ClientListComponent implements OnInit {
   }
 
   formatCPF(cpf: string): string {
-    // Formatação: 000.000.000-00
     const cleaned = cpf.replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `${cleaned.substring(0,3)}.${cleaned.substring(3,6)}.${cleaned.substring(6,9)}-${cleaned.substring(9)}`;

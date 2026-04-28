@@ -1,4 +1,3 @@
-// src/app/features/clients/models/client.model.ts
 export interface PagedResponse<T> {
   currentPage: number;
   pageSize: number;
@@ -10,11 +9,11 @@ export interface PagedResponse<T> {
 export interface Client {
   id: string;
   name: string;
-  gender: number; // 1: Masculino, 2: Feminino, 3: Outro
+  gender: number;
   cpf: string;
   phone: string;
   email: string;
-  birth: string; // ISO date string
+  birth: string;
   address: {
     cep: string;
     state: string;
@@ -32,11 +31,11 @@ export interface Client {
 
 export interface ClientFormData {
   name: string;
-  gender: number; // 1: Masculino, 2: Feminino, 3: Outro
+  gender: number;
   cpf: string;
   phone: string;
   email: string;
-  birth: string; // ISO format: "1990-05-15T00:00:00"
+  birth: string;
   address: {
     cep: string;
     state: string;

@@ -1,4 +1,3 @@
-// src/app/features/categories/pages/category-form/category-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -52,7 +51,6 @@ export class CategoryFormComponent implements OnInit {
   formModified = signal(false);
   originalFormValue: any = null;
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -67,7 +65,6 @@ export class CategoryFormComponent implements OnInit {
       description: ['']
     });
 
-    // Track form modifications
     this.categoryForm.valueChanges.subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
@@ -93,7 +90,6 @@ export class CategoryFormComponent implements OnInit {
           name: category.name,
           description: category.description
         });
-        // Store original values for comparison
         this.originalFormValue = JSON.stringify(this.categoryForm.value);
         this.loading.set(false);
       },

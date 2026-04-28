@@ -1,4 +1,3 @@
-// src/app/core/guards/permission.guard.ts
 import { inject } from '@angular/core';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -16,7 +15,6 @@ export const permissionGuard = (route: ActivatedRouteSnapshot) => {
     return true;
   }
 
-  // Permissões já são carregadas automaticamente pelo AuthService
 
   console.log(`🛡️ [Guard] Permissões do usuário:`, authService.userPermissions());
   const hasPermission = authService.hasAnyPermission(requiredPermissions);

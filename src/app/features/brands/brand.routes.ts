@@ -1,4 +1,3 @@
-// src/app/features/brands/brand.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 import { permissionGuard } from '../../core/guards/permission.guard';

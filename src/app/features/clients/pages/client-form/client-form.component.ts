@@ -14,7 +14,6 @@ import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ClientService } from '../../services/client.service';
 
-// Constantes
 const CEP_DEBOUNCE_TIME = 800;
 const FOCUS_NUMBER_DELAY = 100;
 const CLIENT_DATA_LOAD_DELAY = 1000;
@@ -47,6 +46,7 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
   templateUrl: './client-form.component.html',
   styleUrls: ['./client-form.component.scss']
 })
+
 export class ClientFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private clientService = inject(ClientService);
@@ -68,7 +68,6 @@ export class ClientFormComponent implements OnInit {
   cepErrorMessage = signal('');
   formSubmitted = signal(false);
 
-  // Modals
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -131,12 +130,10 @@ export class ClientFormComponent implements OnInit {
       active: [true]
     });
 
-    // Listener para buscar endereço quando o CEP for preenchido
     this.clientForm.get('cep')?.valueChanges.pipe(
       debounceTime(CEP_DEBOUNCE_TIME),
       distinctUntilChanged(),
       filter(cep => {
-        // Limpa mensagem de erro quando o usuário começa a digitar
         this.cepErrorMessage.set('');
         const cepLimpo = cep?.replace(/\D/g, '') || '';
         return cepLimpo.length === 8;
@@ -145,7 +142,6 @@ export class ClientFormComponent implements OnInit {
       this.buscarCep(cep);
     });
 
-    // Listener para detectar mudanças no formulário
     this.clientForm.valueChanges.subscribe(() => {
       this.checkFormModified();
     });
@@ -161,7 +157,6 @@ export class ClientFormComponent implements OnInit {
     let month: number;
     let day: number;
 
-    // Se for string no formato DD/MM/YYYY
     if (typeof value === 'string' && value.includes('/')) {
       const parts = value.split('/');
       if (parts.length === 3) {
@@ -179,17 +174,14 @@ export class ClientFormComponent implements OnInit {
       return null;
     }
 
-    // Valida mês
     if (month > 12 || month < 1) {
       return { invalidMonth: true };
     }
 
-    // Valida dia
     if (day < 1 || day > 31) {
       return { invalidDay: true };
     }
 
-    // Valida ano futuro
     const currentYear = new Date().getFullYear();
     if (year > currentYear) {
       return { futureDate: true };
@@ -285,7 +277,6 @@ export class ClientFormComponent implements OnInit {
           complement: client.address.complement
         });
 
-        // Armazenar valores originais para comparação
         this.originalFormValue = { ...this.clientForm.value };
         this.formModified.set(false);
 
@@ -384,9 +375,7 @@ export class ClientFormComponent implements OnInit {
       return '';
     }
 
-    // Se for uma string no formato DD/MM/YYYY (vindo do InputMask)
     if (typeof date === 'string') {
-      // Verifica se está no formato DD/MM/YYYY
       const ddmmyyyyPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
       const match = date.match(ddmmyyyyPattern);
 
@@ -396,11 +385,9 @@ export class ClientFormComponent implements OnInit {
         return isoDate;
       }
 
-      // Se já estiver em formato ISO ou outro formato, retorna como está
       return date;
     }
 
-    // Se for um objeto Date válido
     if (date instanceof Date && !isNaN(date.getTime())) {
       return date.toISOString().split('.')[0];
     }
@@ -425,7 +412,6 @@ export class ClientFormComponent implements OnInit {
       return '';
     }
 
-    // Formata para DD/MM/YYYY
     const day = String(dateObj.getDate()).padStart(2, '0');
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
     const year = dateObj.getFullYear();

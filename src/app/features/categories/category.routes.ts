@@ -1,4 +1,3 @@
-// src/app/features/categories/category.routes.ts
 import { Routes } from '@angular/router';
 
 export const CATEGORY_ROUTES: Routes = [

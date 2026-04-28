@@ -1,4 +1,3 @@
-// src/app/features/categories/models/category.model.ts
 export interface CategoryFormData {
   name: string;
   description: string;

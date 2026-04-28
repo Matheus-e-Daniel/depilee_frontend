@@ -1,4 +1,3 @@
-// src/app/features/calendar-events/models/calendar-event.model.ts
 export enum EEventStatus {
   Done = 0,
   Pending = 1,
@@ -18,12 +17,12 @@ export interface CalendarEvent {
   subject: string;
   description?: string | null;
   type: number; // 1, 2, 3 ou 4
-  startDate?: string | null; // formato ISO: YYYY-MM-DDTHH:mm:ss
-  endDate?: string | null; // formato ISO: YYYY-MM-DDTHH:mm:ss
+  startDate?: string | null; 
+  endDate?: string | null;
   allDay: boolean;
   categoryColor: string;
   status?: EEventStatus;
-  displayOrder?: number; // ordem de exibição para eventos no mesmo horário
+  displayOrder?: number;
 }
 
 export interface CalendarEventFormData {

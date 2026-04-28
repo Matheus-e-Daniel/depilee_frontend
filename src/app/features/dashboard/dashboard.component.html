@@ -1,7 +1,5 @@
-<!-- dashboard.component.html -->
 <div class="dashboard">
 
-  <!-- HEADER -->
   <div class="dashboard-header">
     <div class="header-left">
       <div class="header-icon-wrapper">
@@ -28,10 +26,8 @@
     </div>
   </div>
 
-  <!-- CARDS -->
   <section class="cards">
 
-    <!-- Clientes -->
     <p-card class="card card-clientes">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
@@ -60,7 +56,6 @@
       </ng-container>
     </p-card>
 
-    <!-- Caixa -->
     <p-card class="card card-caixa">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
@@ -89,7 +84,6 @@
       </ng-container>
     </p-card>
 
-    <!-- Agendamentos -->
     <p-card class="card card-agendamentos">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
@@ -118,7 +112,6 @@
       </ng-container>
     </p-card>
 
-    <!-- Cancelamentos -->
     <p-card class="card card-cancelamentos">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
@@ -149,10 +142,8 @@
 
   </section>
 
-  <!-- CHART + LIST -->
   <section class="lower">
 
-    <!-- Chart -->
     <p-card class="chart-card">
       <ng-container *ngIf="!loading(); else chartSkeleton">
         <div class="chart-content">
@@ -181,7 +172,6 @@
       </ng-container>
     </p-card>
 
-    <!-- List -->
     <p-card class="list-card">
       <div class="list-header">
         <div>
@@ -234,7 +224,6 @@
 
   </section>
 
-  <!-- Skeletons -->
   <ng-template #cardSkeleton>
     <div class="skeleton-card">
       <p-skeleton width="100%" height="100%" styleClass="card-skeleton"></p-skeleton>

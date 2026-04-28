@@ -48,7 +48,7 @@ export class CashRegisterFormComponent implements OnInit {
   formModified = signal(false);
   originalFormValue: any = null;
 
-  // Confirmation modal
+  
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -63,7 +63,6 @@ export class CashRegisterFormComponent implements OnInit {
       notes: ['']
     });
 
-    // Track form modifications
     this.cashRegisterForm.valueChanges.subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
@@ -85,7 +84,7 @@ export class CashRegisterFormComponent implements OnInit {
     this.loading.set(true);
     this.cashRegisterService.getById(id).subscribe({
       next: (cashRegister) => {
-        // Formatar saldo inicial para exibição
+        
         const formattedBalance = cashRegister.initialBalance.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
@@ -95,7 +94,7 @@ export class CashRegisterFormComponent implements OnInit {
           initialBalance: formattedBalance,
           notes: cashRegister.notes || ''
         });
-        // Store original values for comparison
+        
         this.originalFormValue = JSON.stringify(this.cashRegisterForm.value);
         this.loading.set(false);
       },
@@ -122,8 +121,7 @@ export class CashRegisterFormComponent implements OnInit {
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
     const formValue = this.cashRegisterForm.value;
-
-    // Parse saldo inicial para número
+ 
     const initialBalanceValue = this.parseCurrency(formValue.initialBalance);
 
     const formData: CashRegisterFormData = {
@@ -189,16 +187,14 @@ export class CashRegisterFormComponent implements OnInit {
   formatCurrencyOnBlur(event: FocusEvent, controlName: string): void {
     const input = event.target as HTMLInputElement;
     let value = input.value;
-
-    // Remove R$ e espaços
+    
     value = value.replace(/R\$\s*/g, '').trim();
 
     if (!value || value === '') {
       this.cashRegisterForm.get(controlName)?.setValue('');
       return;
     }
-
-    // Troca ponto por nada e vírgula por ponto
+ 
     value = value.replace(/\./g, '').replace(',', '.');
 
     const numericValue = parseFloat(value);
@@ -214,8 +210,7 @@ export class CashRegisterFormComponent implements OnInit {
   }
 
   private parseCurrency(value: string): number {
-    if (!value) return 0;
-    // Remove R$, espaços e separadores de milhar, troca vírgula por ponto
+    if (!value) return 0;    
     const cleaned = value.replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
     return parseFloat(cleaned) || 0;
   }

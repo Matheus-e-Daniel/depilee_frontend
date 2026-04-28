@@ -35,8 +35,7 @@ import { CashRegisterCloseFormComponent } from '../cash-register-close-form/cash
   templateUrl: './cash-register-list.component.html',
   styleUrls: ['./cash-register-list.component.scss']
 })
-export class CashRegisterListComponent implements OnInit {
-  // Filtro e ordenação
+export class CashRegisterListComponent implements OnInit {  
   search = signal('');
   sortOrder = signal<'desc' | 'asc'>('desc');
   sortOptions = [
@@ -78,8 +77,7 @@ export class CashRegisterListComponent implements OnInit {
 
   cashRegisters = signal<CashRegister[]>([]);
   loading = signal(true);
-
-  // Close cash register modal
+ 
   showCloseModal = signal(false);
   closeLoading = signal(false);
   cashRegisterToClose: { id: string; notes: string } | null = null;

@@ -73,24 +73,15 @@ export class AuthService {
     return this._permissions;
   }
 
-  /**
-   * Retorna as permissões do usuário logado como array de string.
-   */
   userPermissions(): string[] {
     return this.getPermissions().map((p: Permission) => p.name);
   }
 
-  /**
-   * Verifica se o usuário possui pelo menos uma das permissões informadas.
-   */
   hasAnyPermission(permissions: string[]): boolean {
     const userPerms = this.userPermissions();
     return permissions.some(p => userPerms.includes(p));
   }
 
-  /**
-   * Verifica se o usuário possui todas as permissões informadas.
-   */
   hasAllPermissions(permissions: string[]): boolean {
     const userPerms = this.userPermissions();
     return permissions.every(p => userPerms.includes(p));

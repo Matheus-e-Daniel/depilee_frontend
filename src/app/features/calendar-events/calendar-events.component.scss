@@ -1,4 +1,3 @@
-// src/app/features/calendar-events/calendar-events.component.scss
 .calendar-events-container {
   padding: 2rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -206,7 +205,6 @@
               border: 2px solid #f59e42;
               font-weight: bold;
               font-size: 1rem;
-              /* Por padrão, altura automática */
               min-height: 40px;
               height: auto;
               margin-bottom: 0.5rem;
@@ -216,7 +214,6 @@
               align-items: center;
             }
             &.all-day-event.all-day-alone {
-              /* Se for o único evento do slot, ocupa toda a célula */
               min-height: 70px;
               height: 100%;
               margin-bottom: 0;
@@ -313,7 +310,6 @@
   }
 }
 
-// Dialog customizado
 ::ng-deep .event-dialog {
   .p-dialog-header {
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -481,7 +477,6 @@
   }
 }
 
-// Responsividade
 @media (max-width: 1200px) {
   .calendar-events-container {
     padding: 1rem;
@@ -525,7 +520,6 @@
   }
 }
 
-// Animações
 @keyframes fadeIn {
   from {
     opacity: 0;

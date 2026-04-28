@@ -1,4 +1,3 @@
-// src/app/features/brands/pages/brand-form/brand-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -49,7 +48,6 @@ export class BrandFormComponent implements OnInit {
   formModified = signal(false);
   originalFormValue: any = null;
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -63,7 +61,6 @@ export class BrandFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]]
     });
 
-    // Track form modifications
     this.brandForm.valueChanges.subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
@@ -88,8 +85,7 @@ export class BrandFormComponent implements OnInit {
         this.brandForm.patchValue({
           name: brand.name
         });
-
-        // Store original values for comparison
+       
         this.originalFormValue = JSON.stringify(this.brandForm.value);
         this.loading.set(false);
       },

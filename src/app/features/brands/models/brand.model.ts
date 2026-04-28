@@ -1,4 +1,3 @@
-// src/app/features/brands/models/brand.model.ts
 export interface BrandFormData {
   name: string;
 }

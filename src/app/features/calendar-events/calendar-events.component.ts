@@ -1,4 +1,3 @@
-// src/app/features/calendar-events/calendar-events.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
@@ -48,18 +47,14 @@ export class CalendarEventsComponent implements OnInit {
   private calendarEventService = inject(CalendarEventService);
   private messageService = inject(MessageService);
 
-  // Calendário e datas
   selectedDate = signal<Date>(new Date());
   weekDays = signal<DayColumn[]>([]);
-
-  // Slots de horário (6h às 22h)
+ 
   timeSlots: TimeSlot[] = [];
 
-  // Status options
   statusOptions = EVENT_STATUS_OPTIONS;
   EEventStatus = EEventStatus;
-
-  // Dialog de novo evento
+ 
   showEventDialog = signal(false);
   isEditingEvent = signal(false);
   editingEventId: string | null = null;
@@ -74,16 +69,13 @@ export class CalendarEventsComponent implements OnInit {
     categoryColor: '#3b82f6'
   };
 
-  // Campos auxiliares para o formulário
   eventDate: Date = new Date();
   eventStartTime: string = '09:00';
   eventEndTime: string = '10:00';
 
-  // Drag and drop
   draggedEvent: CalendarEvent | null = null;
   dragOverEvent: CalendarEvent | null = null;
 
-  // Loading
   loading = signal(false);
 
   ngOnInit(): void {
@@ -167,7 +159,7 @@ export class CalendarEventsComponent implements OnInit {
 
     events.forEach(event => {
       if (event.startDate) {
-        // Parse da data mantendo o fuso horário local (sem conversão UTC)
+        
         const eventDate = this.parseLocalDate(event.startDate);
         console.log('Evento:', event.subject, 'Data do evento:', eventDate.toDateString());
 
@@ -250,7 +242,7 @@ export class CalendarEventsComponent implements OnInit {
     const day = date.getDate().toString().padStart(2, '0');
     const hourStr = hour.toString().padStart(2, '0');
     const minuteStr = (minute || 0).toString().padStart(2, '0');
-    // Retorna no formato ISO sem conversão de timezone
+    
     return `${year}-${month}-${day}T${hourStr}:${minuteStr}:00`;
   }
 
@@ -264,14 +256,12 @@ export class CalendarEventsComponent implements OnInit {
       return;
     }
 
-    // Atualiza as datas com base nos campos de data e hora
     this.newEvent.startDate = this.combineDateAndTime(this.eventDate, this.eventStartTime);
     this.newEvent.endDate = this.combineDateAndTime(this.eventDate, this.eventEndTime);
 
     this.loading.set(true);
 
-    if (this.isEditingEvent() && this.editingEventId) {
-      // Atualizar evento existente
+    if (this.isEditingEvent() && this.editingEventId) {   
       const updatedEvent: CalendarEvent = {
         id: this.editingEventId,
         ...this.newEvent
@@ -298,7 +288,7 @@ export class CalendarEventsComponent implements OnInit {
         }
       });
     } else {
-      // Criar novo evento
+      
       this.calendarEventService.create(this.newEvent).subscribe({
         next: () => {
           this.messageService.add({
@@ -344,7 +334,6 @@ export class CalendarEventsComponent implements OnInit {
     });
   }
 
-  // Drag and Drop
   onDragStart(event: CalendarEvent): void {
     this.draggedEvent = event;
   }
@@ -367,20 +356,17 @@ export class CalendarEventsComponent implements OnInit {
       this.dragOverEvent = null;
       return;
     }
-
-    // Verificar se estão no mesmo horário
+ 
     const draggedStartDate = this.parseLocalDate(this.draggedEvent.startDate || '');
     const targetStartDate = this.parseLocalDate(targetEvent.startDate || '');
 
     if (!this.isSameDay(draggedStartDate, targetStartDate) ||
-        draggedStartDate.getHours() !== targetStartDate.getHours()) {
-      // Se não estão no mesmo horário, não faz nada
+        draggedStartDate.getHours() !== targetStartDate.getHours()) {   
       this.dragOverEvent = null;
       this.draggedEvent = null;
       return;
     }
-
-    // Trocar apenas a ordem de exibição (displayOrder)
+    
     const tempOrder = this.draggedEvent.displayOrder || 0;
 
     const updatedDraggedEvent: CalendarEvent = {
@@ -392,8 +378,7 @@ export class CalendarEventsComponent implements OnInit {
       ...targetEvent,
       displayOrder: tempOrder
     };
-
-    // Atualizar ambos os eventos
+    
     this.loading.set(true);
     this.calendarEventService.update(updatedDraggedEvent).subscribe({
       next: () => {
@@ -434,8 +419,7 @@ export class CalendarEventsComponent implements OnInit {
     $event.preventDefault();
 
     if (!this.draggedEvent) return;
-
-    // Se foi dropado sobre outro evento, não fazer nada (já foi tratado em onEventDrop)
+ 
     if (this.dragOverEvent) {
       this.dragOverEvent = null;
       return;
@@ -471,8 +455,7 @@ export class CalendarEventsComponent implements OnInit {
     this.draggedEvent = null;
   }
 
-  getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {
-    // Eventos normais para o horário
+  getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {   
     const normalEvents = day.events.filter(event => {
       if (!event.startDate) return false;
       if (event.allDay) return false;
@@ -480,11 +463,9 @@ export class CalendarEventsComponent implements OnInit {
       const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
       return eventHour === time;
     });
-
-    // Evento allDay do dia (se houver)
+  
     const allDayEvent = day.events.find(event => event.allDay);
-
-    // Retorna ambos, se existirem
+    
     const result: CalendarEvent[] = [];
     if (allDayEvent) result.push(allDayEvent);
     result.push(...normalEvents);
@@ -550,7 +531,7 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   private darkenColor(color: string): string {
-    // Simples escurecimento da cor
+    
     const hex = color.replace('#', '');
     const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 30);
     const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 30);
@@ -563,28 +544,24 @@ export class CalendarEventsComponent implements OnInit {
    * Evita conversão automática de UTC
    */
   private parseLocalDate(dateString: string): Date {
-    // Se a string já contém informação de timezone, remove
+    
     const cleanDate = dateString.replace('Z', '').split('+')[0].split('-').slice(0, 3).join('-') +
                       'T' + dateString.split('T')[1]?.split('+')[0].split('Z')[0];
-
-    // Parse manual para evitar conversão de timezone
+ 
     const parts = cleanDate.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
     if (parts) {
       return new Date(
-        parseInt(parts[1]), // year
-        parseInt(parts[2]) - 1, // month (0-indexed)
-        parseInt(parts[3]), // day
-        parseInt(parts[4]), // hour
-        parseInt(parts[5]), // minute
-        parseInt(parts[6])  // second
+        parseInt(parts[1]), 
+        parseInt(parts[2]) - 1, 
+        parseInt(parts[3]), 
+        parseInt(parts[4]), 
+        parseInt(parts[5]), 
+        parseInt(parts[6])  
       );
     }
     return new Date(dateString);
   }
 
-  /**
-   * Verifica se duas datas são do mesmo dia
-   */
   private isSameDay(date1: Date, date2: Date): boolean {
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&

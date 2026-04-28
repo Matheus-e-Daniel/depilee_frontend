@@ -1,4 +1,4 @@
-// src/app/features/brands/pages/brand-list/brand-list.component.ts
+
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -39,7 +39,6 @@ import { AuthService } from '../../../../core/services/auth.service';
   styleUrls: ['./brand-list.component.scss']
 })
 export class BrandListComponent implements OnInit {
-  // Filtro e ordenação
   search = signal('');
   sortOrder = signal<'desc' | 'asc'>('desc');
   sortOptions = [
@@ -67,8 +66,7 @@ export class BrandListComponent implements OnInit {
     if (search) {
       list = list.filter(b => b.name.toLowerCase().includes(search));
     }
-    if (this.sortOrder() === 'desc') {
-      // Supondo que id seja sequencial, do contrário, adicione um campo de data
+    if (this.sortOrder() === 'desc') {   
       list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
     } else {
       list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
@@ -83,8 +81,7 @@ export class BrandListComponent implements OnInit {
 
   brands = signal<Brand[]>([]);
   loading = signal(true);
-
-  // Confirmation modal
+  
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
   brandToDelete: { id: string; name: string } | null = null;

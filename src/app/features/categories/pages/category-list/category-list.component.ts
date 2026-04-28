@@ -1,4 +1,3 @@
-// src/app/features/categories/pages/category-list/category-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -35,7 +34,6 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent implements OnInit {
-  // Filtro e ordenação
   search = signal('');
   sortOrder = signal<'desc' | 'asc'>('desc');
   sortOptions = [
@@ -78,7 +76,6 @@ export class CategoryListComponent implements OnInit {
   categories = signal<Category[]>([]);
   loading = signal(true);
 
-  // Delete confirmation
   categoryToDelete: { id: string; name: string } | null = null;
   confirmationLoading = signal(false);
 

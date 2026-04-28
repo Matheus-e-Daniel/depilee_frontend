@@ -34,7 +34,7 @@ export class CalendarEventService {
   create(event: CalendarEventFormData): Observable<CalendarEvent> {
     const payload = {
       ...event,
-      type: Number(event.type) // Ensure type is sent as a number, not a string
+      type: Number(event.type)
     };
     return this.http.post<CalendarEvent>(this.apiUrl, payload);
   }
@@ -42,7 +42,7 @@ export class CalendarEventService {
   update(event: CalendarEvent): Observable<CalendarEvent> {
     const payload = {
       ...event,
-      type: Number(event.type) // Ensure type is sent as a number, not a string
+      type: Number(event.type)
     };
     return this.http.put<CalendarEvent>(this.apiUrl, payload);
   }
