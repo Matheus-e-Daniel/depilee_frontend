@@ -1,4 +1,3 @@
-// src/app/features/layout/sidebar/sidebar.component.ts
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -13,7 +12,6 @@ import { RouterModule } from '@angular/router';
 export class SidebarComponent {
   isCollapsed = input(false);
 
-  // Menu items - ajuste conforme suas rotas reais
   menuItems = [
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
     { label: 'Calendário', icon: 'pi pi-calendar', route: '/calendar-events' },

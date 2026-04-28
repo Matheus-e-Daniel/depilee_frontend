@@ -1,4 +1,3 @@
-// src/app/features/roles/models/role.model.ts
 export interface RoleFormData {
   roleName: string;
 }

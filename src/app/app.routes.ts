@@ -1,4 +1,3 @@
-// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
@@ -19,7 +18,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
-      // Rotas de produtos
       {
         path: 'products',
         loadComponent: () =>
@@ -38,7 +36,6 @@ export const routes: Routes = [
           import('./features/products/pages/product-form/product-form.component')
             .then(m => m.ProductFormComponent)
       },
-      // Rotas de clientes
       {
         path: 'clients',
         loadComponent: () =>
@@ -57,7 +54,6 @@ export const routes: Routes = [
           import('./features/clients/pages/client-form/client-form.component')
             .then(m => m.ClientFormComponent)
       },
-      // Rotas de serviços
       {
         path: 'services',
         loadComponent: () =>
@@ -76,7 +72,6 @@ export const routes: Routes = [
           import('./features/services/pages/service-form/service-form.component')
             .then(m => m.ServiceFormComponent)
       },
-      // Rotas de ordens de serviço
       {
         path: 'service-orders',
         loadComponent: () =>
@@ -95,7 +90,6 @@ export const routes: Routes = [
           import('./features/service-orders/pages/service-order-form/service-order-form.component')
             .then(m => m.ServiceOrderFormComponent)
       },
-      // Rotas de marcas
       {
         path: 'brands',
         loadComponent: () =>
@@ -114,7 +108,6 @@ export const routes: Routes = [
           import('./features/brands/pages/brand-form/brand-form.component')
             .then(m => m.BrandFormComponent)
       },
-      // Rotas de caixas
       {
         path: 'cash-registers',
         loadComponent: () =>
@@ -133,7 +126,6 @@ export const routes: Routes = [
           import('./features/cash-registers/pages/cash-register-form/cash-register-form.component')
             .then(m => m.CashRegisterFormComponent)
       },
-      // Rotas de categorias
       {
         path: 'categories',
         loadComponent: () =>
@@ -152,7 +144,6 @@ export const routes: Routes = [
           import('./features/categories/pages/category-form/category-form.component')
             .then(m => m.CategoryFormComponent)
       },
-      // Rotas de usuários
       {
         path: 'users',
         loadComponent: () =>
@@ -171,7 +162,6 @@ export const routes: Routes = [
           import('./features/users/pages/user-form/user-form.component')
             .then(m => m.UserFormComponent)
       },
-      // Rotas de métodos de pagamento
       {
         path: 'payment-methods',
         loadComponent: () =>
@@ -190,14 +180,12 @@ export const routes: Routes = [
           import('./features/payment-methods/pages/payment-method-form/payment-method-form.component')
             .then(m => m.PaymentMethodFormComponent)
       },
-      // Rota de calendário de eventos
       {
         path: 'calendar-events',
         loadComponent: () =>
           import('./features/calendar-events/calendar-events.component')
             .then(m => m.CalendarEventsComponent)
       },
-      // Rotas de roles
       {
         path: 'roles',
         loadComponent: () =>

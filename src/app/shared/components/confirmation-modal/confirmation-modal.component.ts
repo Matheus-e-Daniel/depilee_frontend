@@ -1,4 +1,3 @@
-// src/app/shared/components/confirmation-modal/confirmation-modal.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';

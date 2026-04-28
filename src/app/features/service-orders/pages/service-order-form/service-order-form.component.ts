@@ -1,4 +1,3 @@
-// src/app/features/service-orders/pages/service-order-form/service-order-form.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormsModule } from '@angular/forms';
@@ -109,10 +108,8 @@ export class ServiceOrderFormComponent implements OnInit {
       items: this.fb.array([this.createItemFormGroup()])
     });
 
-    // Observar mudanças no desconto para recalcular o total
     this.orderForm.get('discount')?.valueChanges.subscribe(() => this.calculateTotal());
 
-    // Observar mudanças no método de pagamento
     this.orderForm.get('paymentMethodId')?.valueChanges.subscribe(paymentMethodId => {
       this.onPaymentMethodChange(paymentMethodId);
     });
@@ -127,7 +124,6 @@ export class ServiceOrderFormComponent implements OnInit {
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
 
-    // Limpar responsibleUserId se não for serviço
     itemGroup.get('productId')?.valueChanges.subscribe(() => {
       if (itemGroup.get('productId')?.value) {
         itemGroup.patchValue({ responsibleUserId: null, serviceId: null });
@@ -141,7 +137,6 @@ export class ServiceOrderFormComponent implements OnInit {
       }
     });
 
-    // Observar mudanças nos campos do item para recalcular o total (exceto durante carregamento)
     itemGroup.get('quantity')?.valueChanges.subscribe(() => {
       if (!this.isLoadingData) {
         this.calculateTotal();
@@ -180,7 +175,6 @@ export class ServiceOrderFormComponent implements OnInit {
   private calculateTotal(): void {
     const discountPercent = this.orderForm.get('discount')?.value || 0;
 
-    // Calcular subtotal somando todos os itens
     let subtotal = 0;
     this.items.controls.forEach(item => {
       const quantity = item.get('quantity')?.value || 0;
@@ -188,13 +182,10 @@ export class ServiceOrderFormComponent implements OnInit {
       subtotal += quantity * unitPrice;
     });
 
-    // Calcular desconto em valor
     const discountValue = subtotal * (discountPercent / 100);
 
-    // Calcular total
     const total = subtotal - discountValue;
 
-    // Atualizar o campo total sem emitir evento (para evitar loop)
     this.orderForm.get('total')?.setValue(total, { emitEvent: false });
   }
 
@@ -357,7 +348,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadOrder(id: number): void {
     this.loading.set(true);
-    this.isLoadingData = true; // Desabilitar recálculo automático
+    this.isLoadingData = true;
 
     this.serviceOrderService.getById(id).subscribe({
       next: (order) => {
@@ -368,7 +359,6 @@ export class ServiceOrderFormComponent implements OnInit {
           notes: order.notes || ''
         });
 
-        // Carregar os itens da ordem de serviço
         this.loadOrderItems(id);
       },
       error: () => {
@@ -387,15 +377,12 @@ export class ServiceOrderFormComponent implements OnInit {
   private loadOrderItems(serviceOrderId: number): void {
     this.serviceOrderItemService.getAll().subscribe({
       next: (response) => {
-        // Filtrar apenas os itens desta ordem de serviço
         const items = response.data.filter(item => item.serviceOrderId === serviceOrderId);
 
-        // Limpar array de itens existente
         while (this.items.length > 0) {
           this.items.removeAt(0);
         }
 
-        // Adicionar cada item carregado
         if (items.length > 0) {
           items.forEach(item => {
             const itemGroup = this.createItemFormGroup();
@@ -408,12 +395,11 @@ export class ServiceOrderFormComponent implements OnInit {
             this.items.push(itemGroup);
           });
         } else {
-          // Se não houver itens, adicionar um vazio
           this.items.push(this.createItemFormGroup());
         }
 
         this.loading.set(false);
-        this.isLoadingData = false; // Reabilitar recálculo automático
+        this.isLoadingData = false;
       },
       error: () => {
         this.messageService.add({
@@ -436,11 +422,9 @@ export class ServiceOrderFormComponent implements OnInit {
     this.loading.set(true);
     const formValues = this.orderForm.value;
 
-    // ETAPA 1: Criar a ordem de serviço
     const serviceOrderPayload = {
       clientId: formValues.clientId || null,
       discount: formValues.discount || null,
-      // total removido do payload enviado ao backend
       notes: formValues.notes || null
     };
 
@@ -452,20 +436,16 @@ export class ServiceOrderFormComponent implements OnInit {
         console.log('Ordem de serviço criada com sucesso:', serviceOrderResponse);
         console.log('ID da ordem criada:', serviceOrderResponse.id);
 
-        // Armazenar o ID da ordem criada
         this.orderId.set(serviceOrderResponse.id);
 
-        // ETAPA 2: Criar todos os itens da ordem de serviço
         const items = formValues.items || [];
         console.log('========== ETAPA 2: CRIAR ITENS DA ORDEM DE SERVIÇO ==========');
         console.log(`Total de itens para criar: ${items.length}`);
 
-        // Criar cada item
         let itemsCreated = 0;
         let itemsWithError = 0;
 
         items.forEach((item: any, index: number) => {
-          // Montar payload conforme tipo
           let serviceOrderItemPayload: any = {
             serviceOrderId: serviceOrderResponse.id,
             productId: item.productId || null,
@@ -473,14 +453,12 @@ export class ServiceOrderFormComponent implements OnInit {
             quantity: item.quantity,
             unitPrice: item.unitPrice
           };
-          // Se for serviço, responsibleUserId é obrigatório
           if (item.serviceId) {
             serviceOrderItemPayload.responsibleUserId = item.responsibleUserId;
           } else {
             delete serviceOrderItemPayload.responsibleUserId;
           }
 
-          // Não enviar responsibleUserId para produto
           if (item.productId) {
             delete serviceOrderItemPayload.responsibleUserId;
           }
@@ -492,7 +470,6 @@ export class ServiceOrderFormComponent implements OnInit {
               itemsCreated++;
               console.log(`Item ${index + 1} criado com sucesso:`, itemResponse);
 
-              // Verificar se todos os itens foram processados
               if (itemsCreated + itemsWithError === items.length) {
                 this.finishSubmit(itemsCreated, itemsWithError);
               }
@@ -501,7 +478,6 @@ export class ServiceOrderFormComponent implements OnInit {
               itemsWithError++;
               console.error(`Erro ao criar item ${index + 1}:`, itemError);
 
-              // Verificar se todos os itens foram processados
               if (itemsCreated + itemsWithError === items.length) {
                 this.finishSubmit(itemsCreated, itemsWithError);
               }
@@ -526,7 +502,6 @@ export class ServiceOrderFormComponent implements OnInit {
     console.log('========== PROCESSO COMPLETO! ==========');
     console.log(`Itens criados: ${itemsCreated}, Erros: ${itemsWithError}`);
 
-    // Ordem de serviço criada com sucesso
     this.finishWithMessage(itemsCreated, itemsWithError);
   }
 

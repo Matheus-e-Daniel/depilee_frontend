@@ -1,4 +1,3 @@
-// src/app/features/payment-methods/pages/payment-method-form/payment-method-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -51,7 +50,6 @@ export class PaymentMethodFormComponent implements OnInit {
   paymentMethodId = signal<string | null>(null);
   formSubmitted = signal(false);
 
-  // Opções de tipo de pagamento
   paymentTypes = [
     { label: 'Dinheiro', value: 0 },
     { label: 'Cartão de Crédito', value: 1 },
@@ -61,7 +59,6 @@ export class PaymentMethodFormComponent implements OnInit {
     { label: 'Transferência', value: 5 }
   ];
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 

@@ -1,4 +1,3 @@
-// src/app/features/products/pages/product-form/product-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -61,11 +60,9 @@ export class ProductFormComponent implements OnInit {
   originalFormValue: any = null;
   formModified = signal(false);
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
-  // Data from API
   brands = signal<Brand[]>([]);
   categories = signal<Category[]>([]);
   brandsLoading = signal(true);
@@ -89,7 +86,6 @@ export class ProductFormComponent implements OnInit {
       categoryId: ['', Validators.required]
     });
 
-    // Listener para detectar mudanças no formulário
     this.productForm.valueChanges.subscribe(() => {
       this.checkFormModified();
     });
@@ -155,7 +151,6 @@ export class ProductFormComponent implements OnInit {
           categoryId: product.categoryId
         });
 
-        // Formata os valores nos inputs
         setTimeout(() => {
           const salePriceInput = document.getElementById('salePrice') as HTMLInputElement;
           const stockInput = document.getElementById('stock') as HTMLInputElement;
@@ -173,7 +168,6 @@ export class ProductFormComponent implements OnInit {
           }
         }, 0);
 
-        // Armazena o valor original do formulário
         setTimeout(() => {
           this.originalFormValue = JSON.parse(JSON.stringify(this.productForm.value));
         }, 100);
@@ -270,7 +264,6 @@ export class ProductFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.value || input.value.trim() === '') {
       input.value = 'R$ ';
-      // Posiciona o cursor após o R$
       setTimeout(() => {
         input.setSelectionRange(3, 3);
       }, 0);
@@ -281,12 +274,9 @@ export class ProductFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     let value = input.value;
 
-    // Se o usuário apagar o "R$ ", recoloca
     if (!value.startsWith('R$ ')) {
-      // Remove qualquer R$ ou espaço solto
       value = value.replace(/R\$?\s*/g, '');
       input.value = 'R$ ' + value;
-      // Reposiciona o cursor
       const cursorPos = input.value.length;
       input.setSelectionRange(cursorPos, cursorPos);
     }
@@ -295,51 +285,41 @@ export class ProductFormComponent implements OnInit {
   formatCurrencyOnBlur(event: any, fieldName: string): void {
     let value = event.target.value;
 
-    // Remove o "R$ " para processar
     value = value.replace(/R\$\s*/g, '');
 
-    // Remove tudo exceto números, vírgula e ponto
     value = value.replace(/[^\d.,]/g, '');
 
-    // Se não houver valor, limpa o campo
     if (!value) {
       this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
       event.target.value = '';
       return;
     }
 
-    // Substitui vírgula por ponto para conversão
     const normalizedValue = value.replace(/\./g, '').replace(',', '.');
     const numericValue = parseFloat(normalizedValue);
 
-    // Se não for um número válido, limpa
     if (isNaN(numericValue)) {
       this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
       event.target.value = '';
       return;
     }
 
-    // Formata como moeda brasileira
     const formatted = numericValue.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
       minimumFractionDigits: 2
     });
 
-    // Atualiza o valor visual
     event.target.value = formatted;
 
-    // Atualiza o valor do formulário com o número
     this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
   }
 
   formatNumberOnBlur(event: any, fieldName: string): void {
     let value = event.target.value;
 
-    // Remove tudo exceto números
     value = value.replace(/\D/g, '');
 
-    // Se não houver valor, define como 0 no formulário mas deixa o campo vazio
     if (!value) {
       this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
       event.target.value = '';
@@ -348,20 +328,16 @@ export class ProductFormComponent implements OnInit {
 
     const numericValue = parseInt(value);
 
-    // Se não for um número válido, define como 0 no formulário mas deixa o campo vazio
     if (isNaN(numericValue)) {
       this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
       event.target.value = '';
       return;
     }
 
-    // Formata com separador de milhar
     const formatted = numericValue.toLocaleString('pt-BR');
 
-    // Atualiza o valor visual
     event.target.value = formatted;
 
-    // Atualiza o valor do formulário com o número
     this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
   }
 }

@@ -1,4 +1,3 @@
-// src/app/shared/directives/has-permission.directive.ts
 import { Directive, Input, TemplateRef, ViewContainerRef, inject, effect } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -18,10 +17,8 @@ export class HasPermissionDirective {
   @Input() appHasPermissionMode: 'any' | 'all' = 'any';
 
   constructor() {
-    // Reage a mudanças nas permissões
     effect(() => {
       const permissions = this.authService.userPermissions();
-      // Força reavaliação quando permissões mudam
     });
   }
 

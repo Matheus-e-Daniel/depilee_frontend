@@ -16,7 +16,6 @@ export const PRODUCT_ROUTES: Routes = [
   }
 ];
 
-// Exportamos também como rotas principais para incluir no app.routes.ts
 export default [
   {
     path: 'products',

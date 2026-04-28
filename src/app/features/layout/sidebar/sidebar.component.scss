@@ -1,13 +1,12 @@
-// src/app/features/layout/sidebar/sidebar.component.scss
 .sidebar {
   background: #f5f5f7;
   border-right: 1px solid #ddd;
-  height: calc(100vh - 60px); // Altura total menos header
+  height: calc(100vh - 60px);
   transition: width 0.3s ease;
   width: 250px;
-  overflow-y: auto; // Se precisar de rolagem interna na sidebar
-  position: fixed; // Agora é fixed em vez de absolute
-  top: 60px; // Abaixo do header
+  overflow-y: auto;
+  position: fixed;
+  top: 60px;
   left: 0;
   z-index: 99;
 
@@ -92,7 +91,6 @@
     }
   }
 
-  // Estilos para rolagem suave
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -111,12 +109,11 @@
   }
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
     top: 60px;
-    left: -250px; // Esconde fora da tela
+    left: -250px;
     width: 250px;
     height: calc(100vh - 60px);
     z-index: 1000;
@@ -124,16 +121,16 @@
     transition: left 0.3s ease;
 
     &.collapsed {
-      left: -250px; // Mantém escondido
-      width: 250px; // Mantém largura total
+      left: -250px;
+      width: 250px;
     }
 
     &:not(.collapsed) {
-      left: 0; // Mostra a sidebar
+      left: 0;
     }
 
     .sidebar-logo {
-      position: relative; // Remove sticky no mobile
+      position: relative;
     }
   }
 }

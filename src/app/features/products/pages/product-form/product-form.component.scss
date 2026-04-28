@@ -1,4 +1,3 @@
-// src/app/features/products/pages/product-form/product-form.component.scss
 .product-form-container {
   padding: 2rem;
   margin: 0 auto;
@@ -128,7 +127,6 @@
           }
         }
 
-        // Estilização dos inputs de texto
         ::ng-deep input.p-inputtext,
         ::ng-deep textarea.p-inputtextarea {
           width: 100%;
@@ -164,7 +162,6 @@
           }
         }
 
-        // Estilização do p-inputNumber (remover borda dupla)
         ::ng-deep .p-inputnumber {
           width: 100%;
 
@@ -215,14 +212,12 @@
           }
         }
 
-        // Estilização do textarea
         ::ng-deep textarea {
           min-height: 120px;
           resize: vertical;
           line-height: 1.5;
         }
 
-        // Estilização do dropdown
         ::ng-deep .p-dropdown {
           width: 100%;
           border: 2px solid #e2e8f0;
@@ -284,7 +279,6 @@
           }
         }
 
-        // Estilização das mensagens de erro
         .p-error {
           display: flex;
           align-items: center;
@@ -391,7 +385,6 @@
   }
 }
 
-// Animações
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -407,7 +400,6 @@
   animation: slideIn 0.4s ease-out;
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .product-form-container {
     padding: 1.25rem;
@@ -453,7 +445,6 @@
   }
 }
 
-// Esconder flechinhas do input number
 ::ng-deep {
   .p-inputnumber-button-group {
     display: none !important;
@@ -463,14 +454,12 @@
     width: 100%;
   }
 
-  // Remove setas nativas do input number (Chrome, Safari, Edge)
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
 
-  // Remove setas nativas do input number (Firefox)
   input[type="number"] {
     -moz-appearance: textfield;
   }

@@ -1,4 +1,3 @@
-// src/app/features/roles/role.routes.ts
 import { Routes } from '@angular/router';
 
 export const ROLE_ROUTES: Routes = [

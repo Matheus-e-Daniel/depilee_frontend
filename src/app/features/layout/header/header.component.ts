@@ -1,4 +1,3 @@
-// src/app/features/layout/header/header.component.ts
 import { Component, output, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -64,9 +63,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private fetchNotifications(): void {
     this.notificationService.getAll().subscribe({
       next: (response: any) => {
-        // O backend retorna { data: Notification[], ... }
         const allItems = response.data || [];
-        // Filtrar apenas notificações com notificationStatus === 0
         const items = allItems.filter((n: any) => n.notificationStatus === 0);
         this.notificationCount = items.length;
         this.notificationItems = [
@@ -99,13 +96,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private getNotificationIcon(n: any): string {
-    // Exemplo: pode customizar por tipo
     if (n.notificationType === 0) return 'pi pi-bell';
     return 'pi pi-info-circle';
   }
 
   private getNotificationBadge(n: any): string {
-    // Exemplo: pode customizar badge, aqui só mostra data/hora
     if (!n.createdAt) return '';
     const date = new Date(n.createdAt);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
@@ -129,12 +124,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private goToProfile(): void {
     console.log('Ir para perfil');
-    // this.router.navigate(['/profile']);
   }
 
   private goToSettings(): void {
     console.log('Ir para configurações');
-    // this.router.navigate(['/settings']);
   }
 
   viewNotification(id: number): void {

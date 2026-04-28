@@ -1,4 +1,3 @@
-// src/app/features/products/pages/product-list/product-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -43,7 +42,6 @@ export class ProductListComponent implements OnInit {
   allProducts = signal<Product[]>([]);
   loading = signal(true);
 
-  // Filtros
   searchTerm = signal('');
   sortOrder = signal<string>('newest');
 
@@ -54,11 +52,9 @@ export class ProductListComponent implements OnInit {
     { label: 'Status (Disponível primeiro)', value: 'status' }
   ];
 
-  // Produtos filtrados e ordenados
   products = computed(() => {
     let filtered = this.allProducts();
 
-    // Filtro por nome ou marca (case insensitive)
     const searchFilter = this.searchTerm().toLowerCase().trim();
     if (searchFilter) {
       filtered = filtered.filter(product => {
@@ -68,7 +64,6 @@ export class ProductListComponent implements OnInit {
       });
     }
 
-    // Ordenação
     const sorted = [...filtered];
     switch (this.sortOrder()) {
       case 'newest':
@@ -89,7 +84,6 @@ export class ProductListComponent implements OnInit {
         sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
         break;
       case 'status':
-        // Disponíveis primeiro, depois esgotados, e dentro de cada grupo, ordem alfabética
         sorted.sort((a, b) => {
           if ((a.stock > 0) === (b.stock > 0)) {
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -102,7 +96,6 @@ export class ProductListComponent implements OnInit {
     return sorted;
   });
 
-  // Delete confirmation
   productToDelete: { id: string; name: string } | null = null;
   confirmationLoading = signal(false);
 

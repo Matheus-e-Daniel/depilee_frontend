@@ -1,4 +1,3 @@
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -39,7 +38,6 @@ export class UserListComponent implements OnInit {
   users = signal<User[]>([]);
   loading = signal(true);
 
-  // Delete confirmation
   userToDelete: { id: string; name: string } | null = null;
   confirmationLoading = signal(false);
 
@@ -52,7 +50,6 @@ export class UserListComponent implements OnInit {
     this.userService.getAll().subscribe({
       next: (response: any) => {
         console.log('[UserListComponent][loadUsers] Dados recebidos da API:', response);
-        // Suporte para API que retorna array direto ou {data: array}
         const data = Array.isArray(response) ? response : response?.data ?? [];
         this.users.set(data);
         this.loading.set(false);

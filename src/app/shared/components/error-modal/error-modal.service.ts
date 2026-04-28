@@ -1,4 +1,3 @@
-// src/app/shared/components/error-modal/error-modal.service.ts
 import { Injectable, signal } from '@angular/core';
 
 export interface ErrorModalConfig {

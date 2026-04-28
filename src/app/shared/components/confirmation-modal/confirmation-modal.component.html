@@ -1,18 +1,13 @@
-<!-- src/app/shared/components/confirmation-modal/confirmation-modal.component.html -->
 <div class="modal-backdrop" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
   <div class="confirmation-modal-card" @cardAnimation>
-    <!-- Icon -->
     <div class="icon-container" [style.background]="getIconColor() + '15'">
       <i class="pi" [ngClass]="getIcon()" [style.color]="getIconColor()"></i>
     </div>
 
-    <!-- Title -->
     <h2 class="modal-title">{{ getTitle() }}</h2>
 
-    <!-- Message -->
     <p class="modal-message">{{ message }}</p>
 
-    <!-- Actions -->
     <div class="modal-actions">
       <button
         pButton

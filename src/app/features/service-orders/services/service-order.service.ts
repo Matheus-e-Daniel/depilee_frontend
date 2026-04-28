@@ -1,5 +1,4 @@
 import { environment } from '../../../../environments/environment';
-// src/app/features/service-orders/services/service-order.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

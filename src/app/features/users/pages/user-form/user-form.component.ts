@@ -20,7 +20,6 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { switchMap, tap } from 'rxjs/operators';
 
-// Constantes
 const CEP_DEBOUNCE_TIME = 800;
 const FOCUS_NUMBER_DELAY = 100;
 const USER_DATA_LOAD_DELAY = 1000;
@@ -93,15 +92,12 @@ export class UserFormComponent implements OnInit {
   formModified = signal(false);
 
   ngOnInit(): void {
-    // Carrega roles
     this.loadRoles();
 
-    // Listener para buscar endereço quando o CEP for preenchido
     this.userForm.get('address.cep')?.valueChanges.pipe(
       debounceTime(CEP_DEBOUNCE_TIME),
       distinctUntilChanged(),
       filter(cep => {
-        // Limpa mensagem de erro quando o usuário começa a digitar
         this.cepErrorMessage.set('');
         const cepLimpo = cep?.replace(/\D/g, '') || '';
         return cepLimpo.length === 8;
@@ -110,12 +106,10 @@ export class UserFormComponent implements OnInit {
       this.buscarCep(cep);
     });
 
-    // Listener para detectar mudanças no formulário
     this.userForm.valueChanges.subscribe(() => {
       this.checkFormModified();
     });
 
-    // Verificar se está em modo de edição
     this.checkEditMode();
   }
 
@@ -170,7 +164,6 @@ export class UserFormComponent implements OnInit {
           }
         });
 
-        // Armazenar valores originais para comparação
         this.originalFormValue = { ...this.userForm.value };
         this.formModified.set(false);
 
@@ -221,7 +214,6 @@ export class UserFormComponent implements OnInit {
     let month: number;
     let day: number;
 
-    // Se for string no formato DD/MM/YYYY (p-inputMask)
     if (typeof value === 'string' && value.includes('/')) {
       const parts = value.split('/');
       if (parts.length === 3) {
@@ -239,17 +231,14 @@ export class UserFormComponent implements OnInit {
       return null;
     }
 
-    // Valida mês
     if (month > 12 || month < 1) {
       return { invalidMonth: true };
     }
 
-    // Valida dia
     if (day < 1 || day > 31) {
       return { invalidDay: true };
     }
 
-    // Valida ano futuro
     const currentYear = new Date().getFullYear();
     if (year > currentYear) {
       return { futureDate: true };
@@ -267,7 +256,6 @@ export class UserFormComponent implements OnInit {
     }
     this.loading.set(true);
     const formValue = this.userForm.value;
-    // Mapear address para propriedades com maiúscula
     const address = formValue.address;
     const mappedAddress = {
       Cep: address.cep,
@@ -279,7 +267,6 @@ export class UserFormComponent implements OnInit {
       Complement: address.complement
     };
 
-    // Converter data de DD/MM/YYYY para ISO
     let birthISO = null;
     if (formValue.birth) {
       const parts = formValue.birth.split('/');
@@ -291,7 +278,6 @@ export class UserFormComponent implements OnInit {
       }
     }
 
-    // Montar objeto final
     const userPayload: any = {
       Email: formValue.email,
       FullName: formValue.fullName,
@@ -301,12 +287,10 @@ export class UserFormComponent implements OnInit {
       Address: mappedAddress
     };
 
-    // Adicionar password apenas se não estiver em modo de edição ou se foi preenchido
     if (!this.isEditMode() || formValue.password) {
       userPayload.Password = formValue.password;
     }
 
-    // Adicionar ID se estiver em modo de edição
     if (this.isEditMode()) {
       userPayload.Id = this.userId();
     }
@@ -328,22 +312,19 @@ export class UserFormComponent implements OnInit {
         console.log('[UserFormComponent] Usuário salvo:', response);
       }),
       switchMap((response: any) => {
-        // Extrai o ID do usuário da resposta
         const userId = this.isEditMode() ? this.userId() : response?.data?.id || response?.id;
         console.log('[UserFormComponent] ID do usuário:', userId);
 
-        // Busca a role selecionada pelo ID
         const selectedRoleId = formValue.roleId;
         const selectedRole = this.roles().find(r => r.id === selectedRoleId);
 
         if (!selectedRole) {
           console.warn('[UserFormComponent] Role não encontrada');
-          return operation; // Retorna a operação original se não encontrar a role
+          return operation;
         }
 
         console.log('[UserFormComponent] Atribuindo role:', selectedRole.name);
 
-        // Atribui a role ao usuário
         return this.userService.assignRole(userId, selectedRole.name);
       })
     ).subscribe({

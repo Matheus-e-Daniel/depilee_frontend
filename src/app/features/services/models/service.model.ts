@@ -1,4 +1,3 @@
-// src/app/features/services/models/service.model.ts
 export interface Service {
   id: string;
   name: string;

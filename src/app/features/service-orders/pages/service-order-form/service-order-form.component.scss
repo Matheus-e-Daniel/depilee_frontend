@@ -1,4 +1,3 @@
-// src/app/features/service-orders/pages/service-order-form/service-order-form.component.scss
 .service-order-form-container {
   padding: 2rem;
   margin: 0 auto;
@@ -93,7 +92,6 @@
   }
 
   .service-order-form {
-                            // Remove cor de fundo da coluna 'Nº'
                         .installments-table {
                           .installments-header {
                             .installment-col {
@@ -129,7 +127,6 @@
                             }
                           }
                         }
-                    // Tabela de Parcelas
                     .installments-table {
                       background: white;
                       border-radius: 12px;
@@ -232,7 +229,6 @@
                         }
                       }
                     }
-                // Garante que o botão de gerar parcelas tenha o mesmo estilo do botão adicionar item
                 .form-grid .add-item-btn {
                   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                   border: none;
@@ -257,25 +253,20 @@
                   font-size: 1.1rem;
                   font-weight: bold;
                 }
-            // Ajuste para o container de parcelas e botão
             .form-grid .field.col-12.md\:col-6 {
-              // Remove display/grid para o container flex interno
               > div {
                 display: flex !important;
                 align-items: flex-end !important;
                 gap: 0.75rem !important;
               }
-              // Garante que o botão não estique
               .add-item-btn {
                 flex-shrink: 0;
                 margin-bottom: 0 !important;
               }
-              // Garante que o input ocupe todo o espaço
               .w-full {
                 min-width: 0;
               }
             }
-        // Ajuste para botão de gerar parcelas na seção de pagamento
         .section-card .form-grid .field.col-12.md\:col-6.flex.align-items-end .add-item-btn {
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           border: none;
@@ -360,7 +351,6 @@
           gap: 0.25rem;
         }
 
-        // Estilização dos inputs de texto
         ::ng-deep input.p-inputtext {
           width: 100%;
           padding: 0.875rem 1rem;
@@ -395,7 +385,6 @@
           }
         }
 
-        // Estilização do textarea
         ::ng-deep textarea.p-inputtextarea {
           width: 100%;
           padding: 0.875rem 1rem;
@@ -424,7 +413,6 @@
           }
         }
 
-        // Estilização do dropdown
         ::ng-deep .p-dropdown {
           width: 100%;
           border: 2px solid #e2e8f0;
@@ -486,7 +474,6 @@
           }
         }
 
-        // Estilização do InputNumber
         ::ng-deep .p-inputnumber {
           width: 100%;
 
@@ -538,7 +525,6 @@
           }
         }
 
-        // Estilização das mensagens de erro
         .p-error {
           display: flex;
           align-items: center;
@@ -559,7 +545,6 @@
       }
     }
 
-    // Seção de Itens
     .items-section {
       margin-top: 3rem;
       padding-top: 2rem;
@@ -792,7 +777,6 @@
   }
 }
 
-// Animações
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -819,7 +803,6 @@
   animation: slideIn 0.4s ease-out;
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .service-order-form-container {
     padding: 1.25rem;
@@ -915,7 +898,6 @@
     }
   }
 
-  // Tabela de Parcelas
   .installments-table {
     background: white;
     border-radius: 12px;

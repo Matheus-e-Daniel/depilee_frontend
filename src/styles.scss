@@ -1,14 +1,11 @@
-// Corrige overlay do PrimeNG Dropdown globalmente
 ::ng-deep .p-dropdown-panel {
   z-index: 9999 !important;
   position: fixed !important;
 }
-// src/styles.scss
 @import "primeng/resources/themes/lara-light-blue/theme.css";
 @import "primeng/resources/primeng.css";
 @import "primeicons/primeicons.css";
 
-/* Variáveis CSS customizadas */
 :root {
   --primary-color: #667eea;
   --primary-color-rgb: 102, 126, 234;
@@ -16,7 +13,6 @@
   --surface-ground: #f8f9fa;
 }
 
-/* Reset moderno */
 * {
   margin: 0;
   padding: 0;
@@ -36,7 +32,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Utilitários globais */
 .text-500 {
   color: #6c757d !important;
 }
@@ -45,7 +40,6 @@ body {
   cursor: pointer;
 }
 
-/* Animações globais */
 .fade-in {
   animation: fadeIn 0.5s ease-in;
 }
@@ -55,7 +49,6 @@ body {
   to { opacity: 1; }
 }
 
-/* Estilos globais para menus dropdown */
 .p-menu {
   .p-menuitem {
     .p-menuitem-link {

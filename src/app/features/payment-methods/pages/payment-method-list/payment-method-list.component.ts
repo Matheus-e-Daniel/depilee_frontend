@@ -1,4 +1,3 @@
-// src/app/features/payment-methods/pages/payment-method-list/payment-method-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -43,7 +42,6 @@ export class PaymentMethodListComponent implements OnInit {
   allPaymentMethods = signal<PaymentMethod[]>([]);
   loading = signal(true);
 
-  // Filtros
   searchTerm = signal('');
   sortOrder = signal<string>('newest');
 
@@ -53,11 +51,9 @@ export class PaymentMethodListComponent implements OnInit {
     { label: 'Nome (A-Z)', value: 'alphabetical' }
   ];
 
-  // Payment methods filtrados e ordenados
   paymentMethods = computed(() => {
     let filtered = this.allPaymentMethods();
 
-    // Filtro por nome
     const searchFilter = this.searchTerm().toLowerCase().trim();
     if (searchFilter) {
       filtered = filtered.filter(pm =>
@@ -65,7 +61,6 @@ export class PaymentMethodListComponent implements OnInit {
       );
     }
 
-    // Ordenação
     const sorted = [...filtered];
     switch (this.sortOrder()) {
       case 'alphabetical':
@@ -83,7 +78,6 @@ export class PaymentMethodListComponent implements OnInit {
     return sorted;
   });
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
   paymentMethodToDelete: string | null = null;

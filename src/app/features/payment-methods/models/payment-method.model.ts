@@ -1,4 +1,3 @@
-// src/app/features/payment-methods/models/payment-method.model.ts
 export interface PagedResponse<T> {
   currentPage: number;
   pageSize: number;
@@ -11,7 +10,7 @@ export interface PagedResponse<T> {
 export interface PaymentMethod {
   id: string;
   name: string;
-  type: number; // Enum EPaymentMethodType
+  type: number;
   installments: number;
   interestRatePerInstallment: number;
   feePercentage: number;

@@ -1,4 +1,3 @@
-// src/app/features/services/pages/service-form/service-form.component.scss
 .service-form-container {
   padding: 2rem;
   margin: 0 auto;
@@ -128,7 +127,6 @@
           }
         }
 
-        // Estilização dos inputs de texto
         ::ng-deep input.p-inputtext,
         ::ng-deep textarea.p-inputtextarea {
           width: 100%;
@@ -164,14 +162,12 @@
           }
         }
 
-        // Estilização do textarea
         ::ng-deep textarea {
           min-height: 120px;
           resize: vertical;
           line-height: 1.5;
         }
 
-        // Estilização do p-inputNumber
         ::ng-deep .p-inputnumber {
           width: 100%;
 
@@ -222,7 +218,6 @@
           }
         }
 
-        // Estilização do dropdown
         ::ng-deep .p-dropdown {
           width: 100%;
           border: 2px solid #e2e8f0;
@@ -288,7 +283,6 @@
           }
         }
 
-        // Estilização das mensagens de erro
         .p-error {
           display: flex;
           align-items: center;
@@ -395,7 +389,6 @@
   }
 }
 
-// Animações
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -411,7 +404,6 @@
   animation: slideIn 0.4s ease-out;
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .service-form-container {
     padding: 1.25rem;

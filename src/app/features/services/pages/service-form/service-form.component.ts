@@ -1,4 +1,3 @@
-// src/app/features/services/pages/service-form/service-form.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -58,7 +57,6 @@ export class ServiceFormComponent implements OnInit {
   formModified = signal(false);
   originalFormValue: any = null;
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -77,7 +75,6 @@ export class ServiceFormComponent implements OnInit {
       active: [true]
     });
 
-    // Track form modifications
     this.serviceForm.valueChanges.subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
@@ -117,7 +114,6 @@ export class ServiceFormComponent implements OnInit {
     this.loading.set(true);
     this.serviceService.getById(id).subscribe({
       next: (service) => {
-        // Format the price for display
         const formattedPrice = service.price.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',
@@ -132,7 +128,6 @@ export class ServiceFormComponent implements OnInit {
           active: service.active
         });
 
-        // Store original values for comparison
         this.originalFormValue = JSON.stringify(this.serviceForm.value);
         this.loading.set(false);
       },
@@ -161,7 +156,6 @@ export class ServiceFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formValue = this.serviceForm.value;
 
-    // Parse price back to number
     const priceValue = this.parseCurrency(formValue.price);
 
     const formData: ServiceFormData = {
@@ -230,7 +224,6 @@ export class ServiceFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     let value = input.value;
 
-    // Remove R$ and spaces
     value = value.replace(/R\$\s*/g, '').trim();
 
     if (!value || value === '') {
@@ -238,7 +231,6 @@ export class ServiceFormComponent implements OnInit {
       return;
     }
 
-    // Replace comma with dot for parsing
     value = value.replace(/\./g, '').replace(',', '.');
 
     const numericValue = parseFloat(value);
@@ -255,7 +247,6 @@ export class ServiceFormComponent implements OnInit {
 
   private parseCurrency(value: string): number {
     if (!value) return 0;
-    // Remove R$, spaces, and thousand separators, then replace comma with dot
     const cleaned = value.replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
     return parseFloat(cleaned) || 0;
   }

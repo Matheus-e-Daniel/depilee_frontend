@@ -1,4 +1,3 @@
-// src/app/features/services/pages/service-list/service-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -43,7 +42,6 @@ export class ServiceListComponent implements OnInit {
   allServices = signal<Service[]>([]);
   loading = signal(true);
 
-  // Filtros
   searchTerm = signal('');
   sortOrder = signal<string>('newest');
 
@@ -97,7 +95,6 @@ export class ServiceListComponent implements OnInit {
     return sorted;
   });
 
-  // Delete confirmation
   serviceToDelete: { id: string; name: string } | null = null;
   confirmationLoading = signal(false);
 

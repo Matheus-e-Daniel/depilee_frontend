@@ -1,4 +1,3 @@
-// src/app/features/service-orders/service-order.routes.ts
 import { Routes } from '@angular/router';
 
 export const SERVICE_ORDER_ROUTES: Routes = [

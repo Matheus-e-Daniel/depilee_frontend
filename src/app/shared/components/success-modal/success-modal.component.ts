@@ -1,4 +1,3 @@
-// src/app/shared/components/success-modal/success-modal.component.ts
 import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -48,12 +47,10 @@ export class SuccessModalComponent {
     this.showLoader.set(true);
     this.showSuccess.set(false);
 
-    // Após 1000ms, transforma o loader em check
     setTimeout(() => {
       this.showLoader.set(false);
       this.showSuccess.set(true);
 
-      // Após 1500ms, fecha o modal automaticamente
       setTimeout(() => {
         this.close();
       }, 1500);

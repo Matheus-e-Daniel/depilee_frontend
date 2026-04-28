@@ -1,4 +1,3 @@
-// src/app/features/products/models/product.model.ts
 export interface ProductFormData {
   name: string;
   description: string;

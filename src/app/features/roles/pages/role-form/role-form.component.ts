@@ -1,4 +1,3 @@
-// src/app/features/roles/pages/role-form/role-form.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -62,11 +61,9 @@ export class RoleFormComponent implements OnInit {
   formModified = signal(false);
   originalFormValue: any = null;
 
-  // Permissions
   availablePermissions = signal<Permission[]>([]);
   selectedPermissionIds = signal<Set<number>>(new Set());
 
-  // Actions disponíveis
   actions = ['Create', 'Edit', 'Get', 'Delete'];
   actionLabels: { [key: string]: string } = {
     'Create': 'Criar',
@@ -75,7 +72,6 @@ export class RoleFormComponent implements OnInit {
     'Delete': 'Excluir'
   };
 
-  // Módulos agrupados
   permissionModules = computed<PermissionModule[]>(() => {
     const permissions = this.availablePermissions();
     const modulesMap = new Map<string, PermissionModule>();
@@ -117,7 +113,6 @@ export class RoleFormComponent implements OnInit {
     );
   });
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
 
@@ -132,7 +127,6 @@ export class RoleFormComponent implements OnInit {
       roleName: ['', [Validators.required, Validators.minLength(2)]]
     });
 
-    // Track form modifications
     this.roleForm.valueChanges.subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
@@ -156,7 +150,6 @@ export class RoleFormComponent implements OnInit {
     });
   }
 
-  // Métodos de seleção de permissões
   isPermissionSelected(permissionId: number): boolean {
     return this.selectedPermissionIds().has(permissionId);
   }
@@ -261,16 +254,13 @@ export class RoleFormComponent implements OnInit {
   private loadRole(id: string): void {
     this.loading.set(true);
 
-    // Busca as permissões da role
     this.roleService.getRolePermissionsById(id).subscribe({
       next: (permissions) => {
         console.log('🔑 Permissões da role carregadas:', permissions);
 
-        // Marca as permissões selecionadas
         const selectedIds = new Set(permissions.map((p: any) => p.id));
         this.selectedPermissionIds.set(selectedIds);
 
-        // Busca o nome da role do endpoint all
         this.roleService.getAll().subscribe({
           next: (roles) => {
             const role = roles.find(r => r.id.toString() === id);
@@ -279,7 +269,6 @@ export class RoleFormComponent implements OnInit {
                 roleName: role.name
               });
 
-              // Store original values for comparison
               this.originalFormValue = JSON.stringify(this.roleForm.value);
             }
             this.loading.set(false);
@@ -328,7 +317,6 @@ export class RoleFormComponent implements OnInit {
       ? this.roleService.update({ id: this.roleId(), ...rolePayload })
       : this.roleService.create(rolePayload);
 
-    // Primeiro cria/atualiza a role, depois envia as permissões
     createOrUpdateRole.pipe(
       switchMap(() => {
         if (permissionIds.length > 0) {

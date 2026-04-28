@@ -1,4 +1,3 @@
-// src/app/features/service-orders/pages/service-order-list/service-order-list.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -114,7 +113,6 @@ export class ServiceOrderListComponent implements OnInit {
   toggleRow(orderId: number): void {
     this.expandedRows[orderId] = !this.expandedRows[orderId];
 
-    // Carregar itens se estiver expandindo e ainda não foram carregados
     if (this.expandedRows[orderId] && !this.orderItems[orderId]) {
       this.loadOrderItems(orderId);
     }
@@ -127,7 +125,6 @@ export class ServiceOrderListComponent implements OnInit {
         console.log(`CARREGANDO ITENS PARA ORDEM ID: ${orderId}`);
         console.log('Todos os itens retornados da API:', response.data);
 
-        // Filtrar itens desta ordem
         const filteredItems = response.data.filter(
           item => item.serviceOrderId === orderId
         );
@@ -138,7 +135,6 @@ export class ServiceOrderListComponent implements OnInit {
 
         this.orderItems[orderId] = filteredItems;
 
-        // Carregar detalhes dos produtos/serviços se necessário
         this.loadItemDetails(filteredItems);
       },
       error: () => {
@@ -152,7 +148,6 @@ export class ServiceOrderListComponent implements OnInit {
   }
 
   private loadItemDetails(items: ServiceOrderItem[]): void {
-    // Carregar produtos se houver productIds
     const productIds = items.filter(i => i.productId).map(i => i.productId!);
     const serviceIds = items.filter(i => i.serviceId).map(i => i.serviceId!);
 
@@ -161,7 +156,6 @@ export class ServiceOrderListComponent implements OnInit {
   }
 
   getItemName(item: ServiceOrderItem): string {
-    // Tentar diferentes fontes para o nome
     if (item.productName) return item.productName;
     if (item.serviceName) return item.serviceName;
     if (item.productId) return `Produto ID: ${item.productId}`;

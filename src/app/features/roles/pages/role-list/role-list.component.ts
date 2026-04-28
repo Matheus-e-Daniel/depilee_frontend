@@ -1,4 +1,3 @@
-// src/app/features/roles/pages/role-list/role-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -36,7 +35,6 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./role-list.component.scss']
 })
 export class RoleListComponent implements OnInit {
-  // Filtro e ordenação
   search = signal('');
   sortOrder = signal<'desc' | 'asc'>('desc');
   sortOptions = [
@@ -90,7 +88,6 @@ export class RoleListComponent implements OnInit {
   roles = signal<Role[]>([]);
   loading = signal(true);
 
-  // Confirmation modal
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
   roleToDelete: string | null = null;

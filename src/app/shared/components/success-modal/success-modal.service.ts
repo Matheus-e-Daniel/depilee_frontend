@@ -1,4 +1,3 @@
-// src/app/shared/components/success-modal/success-modal.service.ts
 import { Injectable, signal } from '@angular/core';
 
 export interface SuccessModalConfig {

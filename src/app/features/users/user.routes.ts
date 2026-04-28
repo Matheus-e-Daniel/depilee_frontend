@@ -1,4 +1,3 @@
-// src/app/features/users/user.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 
@@ -17,7 +16,6 @@ export const USER_ROUTES: Routes = [
   }
 ];
 
-// Para uso no app.routes.ts
 export default [
   {
     path: 'users',

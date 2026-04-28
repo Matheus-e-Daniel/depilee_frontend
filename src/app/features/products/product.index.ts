@@ -1,4 +1,3 @@
-// src/app/features/products/products.index.ts
 export * from './models/product.model';
 export * from './services/product.service';
 export { ProductListComponent } from './pages/product-list/product-list.component';

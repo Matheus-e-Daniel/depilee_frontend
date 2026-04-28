@@ -1,4 +1,3 @@
-// Filtros - visual idêntico ao de clientes/produtos
 .filters-card {
   background: white;
   border-radius: 16px;
@@ -45,7 +44,7 @@
       gap: 0.5rem;
 
       &:hover {
-        color: #ef4444; /* vermelho claro */
+        color: #ef4444;
         background: none;
       }
 
@@ -81,7 +80,6 @@
 
         input {
           &.p-inputtext {
-            /* padding já ajustado abaixo */
           }
         }
       }
@@ -148,7 +146,6 @@
         }
       }
 
-      // Overlay do dropdown
       ::ng-deep .p-dropdown-panel {
         z-index: 1200 !important;
         border-radius: 12px !important;
@@ -175,14 +172,12 @@
         }
       }
 
-      // Corrige o overlay do dropdown para não ser ocultado
       ::ng-deep .p-dropdown-panel {
         z-index: 1200 !important;
       }
     }
   }
 }
-// src/app/features/services/pages/service-list/service-list.component.scss
 .service-list-container {
   padding: 2rem;
   margin: 0 auto;
@@ -400,7 +395,6 @@
       }
     }
 
-    // Estilização dos botões de ação
     ::ng-deep .action-buttons {
       .p-button {
         width: 36px;
@@ -443,7 +437,6 @@
       }
     }
 
-    // Estilização das tags de status
     ::ng-deep .p-tag {
       font-size: 0.75rem;
       font-weight: 600;
@@ -512,7 +505,6 @@
   }
 }
 
-// Animação de entrada
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -528,7 +520,6 @@
   animation: slideIn 0.4s ease-out;
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .service-list-container {
     padding: 1.25rem;

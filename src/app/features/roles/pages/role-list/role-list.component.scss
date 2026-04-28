@@ -1,4 +1,3 @@
-// Filtros visuais (igual brands)
 .filters-card {
   background: white;
   border-radius: 16px;
@@ -173,7 +172,6 @@
         }
       }
 
-      // Overlay do dropdown
       ::ng-deep .p-dropdown-panel {
         z-index: 1200 !important;
         border-radius: 12px !important;

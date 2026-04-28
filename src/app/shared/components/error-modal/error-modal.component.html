@@ -1,7 +1,5 @@
-<!-- src/app/shared/components/error-modal/error-modal.component.html -->
 <div class="modal-backdrop" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
   <div class="error-modal-card" @cardAnimation>
-    <!-- Error Icon -->
     <div class="icon-container">
       <div class="error-icon">
         <svg viewBox="0 0 52 52">
@@ -11,11 +9,9 @@
       </div>
     </div>
 
-    <!-- Message -->
     <h3 class="error-title">Erro</h3>
     <p class="error-message">{{ message }}</p>
 
-    <!-- Button -->
     <button
       pButton
       label="Fechar"

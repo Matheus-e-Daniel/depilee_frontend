@@ -1,4 +1,3 @@
-// src/app/features/service-order-items/models/service-order-item.model.ts
 export interface PagedResponse<T> {
   currentPage: number;
   pageSize: number;
@@ -19,7 +18,6 @@ export interface ServiceOrderItem {
   status: number;
   createdByUser?: string;
   updatedByUser?: string;
-  // Campos de relacionamento
   productName?: string;
   serviceName?: string;
   serviceOrderNumber?: string;

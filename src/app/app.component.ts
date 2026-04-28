@@ -1,4 +1,3 @@
-// src/app/app.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -13,6 +12,5 @@ export class AppComponent implements OnInit {
   private authService = inject(AuthService);
 
   ngOnInit(): void {
-    // Permissões são carregadas automaticamente pelo AuthService
   }
 }
