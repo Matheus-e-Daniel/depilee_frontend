@@ -130,6 +130,29 @@
                   </p-dropdown>
                 </div>
 
+
+                <!-- Responsável (apenas para serviço) -->
+                <div class="field col-12 md:col-6" *ngIf="item.get('serviceId')?.value">
+                  <label [for]="'responsibleUserId-' + i" class="block font-medium mb-2">Responsável pelo Serviço *</label>
+                  <p-dropdown
+                    [id]="'responsibleUserId-' + i"
+                    formControlName="responsibleUserId"
+                    [options]="users()"
+                    optionLabel="fullName"
+                    optionValue="id"
+                    placeholder="Selecione o responsável"
+                    [loading]="usersLoading()"
+                    [showClear]="true"
+                    class="w-full">
+                    <ng-template pTemplate="empty">
+                      <div class="p-2">Nenhum usuário encontrado</div>
+                    </ng-template>
+                  </p-dropdown>
+                  <small *ngIf="item.get('serviceId')?.value && !item.get('responsibleUserId')?.value && item.get('responsibleUserId')?.touched" class="p-error block mt-1">
+                    Responsável é obrigatório para serviço
+                  </small>
+                </div>
+
                 <!-- Quantidade -->
                 <div class="field col-12 md:col-6">
                   <label [for]="'quantity-' + i" class="block font-medium mb-2">Quantidade *</label>

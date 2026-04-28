@@ -32,6 +32,7 @@ export interface ServiceOrderItemFormData {
   serviceId?: number;
   quantity: number;
   unitPrice?: number;
+  responsibleUserId?: number;
 }
 
 export interface ServiceOrder {

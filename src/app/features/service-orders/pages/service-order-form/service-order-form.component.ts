@@ -16,6 +16,8 @@ import { ServiceOrderService } from '../../services/service-order.service';
 import { Client } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
+import { UserService } from '../../../users/services/user.service';
+import { User } from '../../../users/models/user.model';
 import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
 import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
 
@@ -50,6 +52,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
   private paymentMethodService = inject(PaymentMethodService);
+  private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private messageService = inject(MessageService);
@@ -67,6 +70,8 @@ export class ServiceOrderFormComponent implements OnInit {
   paymentMethods = signal<PaymentMethod[]>([]);
   paymentMethodsLoading = signal(true);
   private isLoadingData = false;
+  users = signal<User[]>([]);
+  usersLoading = signal(true);
   installmentsList = signal<Installment[]>([]);
 
   ngOnInit(): void {
@@ -75,7 +80,22 @@ export class ServiceOrderFormComponent implements OnInit {
     this.loadProducts();
     this.loadServices();
     this.loadPaymentMethods();
+    this.loadUsers();
     this.checkEditMode();
+  }
+
+  private loadUsers(): void {
+    this.usersLoading.set(true);
+    this.userService.getAll().subscribe({
+      next: (response) => {
+        this.users.set(response);
+        this.usersLoading.set(false);
+      },
+      error: () => {
+        this.users.set([]);
+        this.usersLoading.set(false);
+      }
+    });
   }
 
   private initForm(): void {
@@ -102,8 +122,23 @@ export class ServiceOrderFormComponent implements OnInit {
     const itemGroup = this.fb.group({
       productId: [null],
       serviceId: [null],
+      responsibleUserId: [null],
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
+    });
+
+    // Limpar responsibleUserId se não for serviço
+    itemGroup.get('productId')?.valueChanges.subscribe(() => {
+      if (itemGroup.get('productId')?.value) {
+        itemGroup.patchValue({ responsibleUserId: null, serviceId: null });
+      }
+    });
+    itemGroup.get('serviceId')?.valueChanges.subscribe(() => {
+      if (itemGroup.get('serviceId')?.value) {
+        itemGroup.patchValue({ productId: null });
+      } else {
+        itemGroup.patchValue({ responsibleUserId: null });
+      }
     });
 
     // Observar mudanças nos campos do item para recalcular o total (exceto durante carregamento)
@@ -430,12 +465,25 @@ export class ServiceOrderFormComponent implements OnInit {
         let itemsWithError = 0;
 
         items.forEach((item: any, index: number) => {
-          const serviceOrderItemPayload = {
+          // Montar payload conforme tipo
+          let serviceOrderItemPayload: any = {
             serviceOrderId: serviceOrderResponse.id,
             productId: item.productId || null,
             serviceId: item.serviceId || null,
-            quantity: item.quantity
+            quantity: item.quantity,
+            unitPrice: item.unitPrice
           };
+          // Se for serviço, responsibleUserId é obrigatório
+          if (item.serviceId) {
+            serviceOrderItemPayload.responsibleUserId = item.responsibleUserId;
+          } else {
+            delete serviceOrderItemPayload.responsibleUserId;
+          }
+
+          // Não enviar responsibleUserId para produto
+          if (item.productId) {
+            delete serviceOrderItemPayload.responsibleUserId;
+          }
 
           console.log(`Criando item ${index + 1}:`, serviceOrderItemPayload);
 
