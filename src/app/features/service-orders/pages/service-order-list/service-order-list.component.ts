@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -32,6 +33,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./service-order-list.component.scss']
 })
 export class ServiceOrderListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
   private messageService = inject(MessageService);
@@ -53,7 +55,7 @@ export class ServiceOrderListComponent implements OnInit {
 
   loadOrders(): void {
     this.loading.set(true);
-    this.serviceOrderService.getAll().subscribe({
+    this.serviceOrderService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.orders.set(response.data);
         this.loading.set(false);
@@ -82,7 +84,7 @@ export class ServiceOrderListComponent implements OnInit {
     if (!this.orderToDelete) return;
 
     this.deleteLoading.set(true);
-    this.serviceOrderService.delete(this.orderToDelete.id).subscribe({
+    this.serviceOrderService.delete(this.orderToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.deleteLoading.set(false);
         this.showDeleteConfirmation.set(false);
@@ -119,19 +121,11 @@ export class ServiceOrderListComponent implements OnInit {
   }
 
   loadOrderItems(orderId: number): void {
-    this.serviceOrderItemService.getAll().subscribe({
+    this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        console.log('='.repeat(80));
-        console.log(`CARREGANDO ITENS PARA ORDEM ID: ${orderId}`);
-        console.log('Todos os itens retornados da API:', response.data);
-
         const filteredItems = response.data.filter(
           item => item.serviceOrderId === orderId
         );
-
-        console.log(`Total de itens encontrados para ordem ${orderId}:`, filteredItems.length);
-        console.log('Itens filtrados:', JSON.stringify(filteredItems, null, 2));
-        console.log('='.repeat(80));
 
         this.orderItems[orderId] = filteredItems;
 
@@ -147,13 +141,7 @@ export class ServiceOrderListComponent implements OnInit {
     });
   }
 
-  private loadItemDetails(items: ServiceOrderItem[]): void {
-    const productIds = items.filter(i => i.productId).map(i => i.productId!);
-    const serviceIds = items.filter(i => i.serviceId).map(i => i.serviceId!);
-
-    console.log('ProductIds encontrados:', productIds);
-    console.log('ServiceIds encontrados:', serviceIds);
-  }
+  private loadItemDetails(_items: ServiceOrderItem[]): void { }
 
   getItemName(item: ServiceOrderItem): string {
     if (item.productName) return item.productName;

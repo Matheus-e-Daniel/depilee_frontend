@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -58,7 +59,6 @@ export class RoleListComponent implements OnInit {
 
   filteredRoles = computed(() => {
     let list = this.roles();
-    console.log('🔍 Lista de roles no computed:', list);
     const search = this.search().toLowerCase().trim();
     if (search) {
       list = list.filter(r => r?.name?.toLowerCase().includes(search));
@@ -76,10 +76,10 @@ export class RoleListComponent implements OnInit {
         return nameA.localeCompare(nameB);
       });
     }
-    console.log('🔍 Lista filtrada/ordenada:', list);
     return list;
   });
 
+  private destroyRef = inject(DestroyRef);
   private roleService = inject(RoleService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -99,15 +99,8 @@ export class RoleListComponent implements OnInit {
   loadRoles(): void {
     this.loading.set(true);
 
-    this.roleService.getAll().subscribe({
+    this.roleService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (roles) => {
-        console.log('📋 Resposta do backend (roles):', roles);
-        console.log('📋 Tipo da resposta:', typeof roles);
-        console.log('📋 É array?', Array.isArray(roles));
-        if (roles && roles.length > 0) {
-          console.log('📋 Primeiro item:', roles[0]);
-          console.log('📋 Estrutura do primeiro item:', JSON.stringify(roles[0], null, 2));
-        }
         this.roles.set(roles);
         this.loading.set(false);
       },
@@ -135,7 +128,7 @@ export class RoleListComponent implements OnInit {
     if (!this.roleToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.roleService.delete(this.roleToDelete).subscribe({
+    this.roleService.delete(this.roleToDelete).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);

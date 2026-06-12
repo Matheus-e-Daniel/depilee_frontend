@@ -1,4 +1,5 @@
-import { Component, output, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, output, inject, ViewChild, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -9,7 +10,7 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../notifications/services/notification.service';
-import { Subscription, interval } from 'rxjs';
+import { interval } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -18,12 +19,11 @@ import { Subscription, interval } from 'rxjs';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private authService = inject(AuthService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
-
-  private notificationSub?: Subscription;
 
   @ViewChild('notificationMenu') notificationMenu!: Menu;
   @ViewChild('userMenu') userMenu!: Menu;
@@ -53,15 +53,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   notificationItems: MenuItem[] = [];
   ngOnInit(): void {
     this.fetchNotifications();
-    this.notificationSub = interval(30000).subscribe(() => this.fetchNotifications());
-  }
-
-  ngOnDestroy(): void {
-    this.notificationSub?.unsubscribe();
+    interval(30000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.fetchNotifications());
   }
 
   private fetchNotifications(): void {
-    this.notificationService.getAll().subscribe({
+    this.notificationService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response: any) => {
         const allItems = response.data || [];
         const items = allItems.filter((n: any) => n.notificationStatus === 0);
@@ -122,37 +118,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService.logout();
   }
 
-  private goToProfile(): void {
-    console.log('Ir para perfil');
-  }
+  private goToProfile(): void { }
 
-  private goToSettings(): void {
-    console.log('Ir para configurações');
-  }
+  private goToSettings(): void { }
 
-  viewNotification(id: number): void {
-    console.log('Visualizar notificação:', id);
-  }
+  viewNotification(_id: number): void { }
 
-  viewAllNotifications(): void {
-    console.log('Ver todas as notificações');
-  }
+  viewAllNotifications(): void { }
 
   markAllAsRead(): void {
     this.notificationCount = 0;
-    console.log('Todas as notificações marcadas como lidas');
   }
 
   markNotificationAsRead(id: number, event: Event): void {
     event.stopPropagation();
-    this.notificationService.markAsRead(id).subscribe({
+    this.notificationService.markAsRead(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.notificationItems = this.notificationItems.filter((item: any) => item.id !== id);
         this.notificationCount = Math.max(0, this.notificationCount - 1);
       },
-      error: (err) => {
-        console.error('Erro ao marcar notificação como lida:', err);
-      }
+      error: () => { }
     });
   }
 }

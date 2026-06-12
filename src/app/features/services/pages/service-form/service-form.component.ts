@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,6 +40,7 @@ import { Category } from '../../../categories/models/category.model';
   styleUrls: ['./service-form.component.scss']
 })
 export class ServiceFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private serviceService = inject(ServiceService);
   private categoryService = inject(CategoryService);
@@ -75,7 +77,7 @@ export class ServiceFormComponent implements OnInit {
       active: [true]
     });
 
-    this.serviceForm.valueChanges.subscribe(() => {
+    this.serviceForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
       }
@@ -84,7 +86,7 @@ export class ServiceFormComponent implements OnInit {
 
   private loadCategories(): void {
     this.categoriesLoading.set(true);
-    this.categoryService.getAll().subscribe({
+    this.categoryService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.categories.set(response.data);
         this.categoriesLoading.set(false);
@@ -112,7 +114,7 @@ export class ServiceFormComponent implements OnInit {
 
   private loadService(id: string): void {
     this.loading.set(true);
-    this.serviceService.getById(id).subscribe({
+    this.serviceService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (service) => {
         const formattedPrice = service.price.toLocaleString('pt-BR', {
           style: 'currency',
@@ -171,7 +173,7 @@ export class ServiceFormComponent implements OnInit {
       ? this.serviceService.update(payload)
       : this.serviceService.create(formData);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);

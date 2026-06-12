@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -18,11 +19,10 @@ import { ErrorModalComponent } from '../../../../shared/components/error-modal/e
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
-import { switchMap, tap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 
 const CEP_DEBOUNCE_TIME = 800;
-const FOCUS_NUMBER_DELAY = 100;
-const USER_DATA_LOAD_DELAY = 1000;
+const FOCUS_NUMBER_DELAY = 0;
 
 @Component({
   selector: 'app-user-form',
@@ -44,6 +44,7 @@ const USER_DATA_LOAD_DELAY = 1000;
   styleUrls: ['./user-form.component.scss']
 })
 export class UserFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private roleService = inject(RoleService);
@@ -102,11 +103,11 @@ export class UserFormComponent implements OnInit {
         const cepLimpo = cep?.replace(/\D/g, '') || '';
         return cepLimpo.length === 8;
       })
-    ).subscribe(cep => {
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(cep => {
       this.buscarCep(cep);
     });
 
-    this.userForm.valueChanges.subscribe(() => {
+    this.userForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.checkFormModified();
     });
 
@@ -125,7 +126,7 @@ export class UserFormComponent implements OnInit {
 
   private loadRoles(): void {
     this.rolesLoading.set(true);
-    this.roleService.getAll().subscribe({
+    this.roleService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (roles) => {
         this.roles.set(roles);
         this.rolesLoading.set(false);
@@ -145,7 +146,7 @@ export class UserFormComponent implements OnInit {
     this.loading.set(true);
     this.isLoadingUserData.set(true);
 
-    this.userService.getById(id).subscribe({
+    this.userService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user: any) => {
         this.userForm.patchValue({
           email: user.email,
@@ -162,16 +163,12 @@ export class UserFormComponent implements OnInit {
             number: user.address?.number || '',
             complement: user.address?.complement || ''
           }
-        });
+        }, { emitEvent: false });
 
         this.originalFormValue = { ...this.userForm.value };
         this.formModified.set(false);
-
         this.loading.set(false);
-
-        setTimeout(() => {
-          this.isLoadingUserData.set(false);
-        }, USER_DATA_LOAD_DELAY);
+        this.isLoadingUserData.set(false);
       },
       error: () => {
         this.errorModalService.show('Falha ao carregar usuário');
@@ -308,28 +305,20 @@ export class UserFormComponent implements OnInit {
       : 'Falha ao cadastrar usuário';
 
     operation.pipe(
-      tap((response: any) => {
-        console.log('[UserFormComponent] Usuário salvo:', response);
-      }),
       switchMap((response: any) => {
         const userId = this.isEditMode() ? this.userId() : response?.data?.id || response?.id;
-        console.log('[UserFormComponent] ID do usuário:', userId);
 
         const selectedRoleId = formValue.roleId;
         const selectedRole = this.roles().find(r => r.id === selectedRoleId);
 
         if (!selectedRole) {
-          console.warn('[UserFormComponent] Role não encontrada');
           return operation;
         }
 
-        console.log('[UserFormComponent] Atribuindo role:', selectedRole.name);
-
         return this.userService.assignRole(userId, selectedRole.name);
       })
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        console.log('[UserFormComponent] Role atribuída com sucesso');
         if (!this.isEditMode()) {
           this.userForm.reset();
         }
@@ -340,8 +329,7 @@ export class UserFormComponent implements OnInit {
           this.router.navigate(['/users']);
         }, 2000);
       },
-      error: (err) => {
-        console.log('[UserFormComponent] Erro recebido:', err);
+      error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
@@ -379,7 +367,7 @@ export class UserFormComponent implements OnInit {
 
     this.loadingCep.set(true);
 
-    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).subscribe({
+    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data: any) => {
         if (data.erro) {
           this.errorModalService.show('O CEP informado não foi encontrado');

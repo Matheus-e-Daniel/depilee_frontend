@@ -14,6 +14,7 @@ module.exports = tseslint.config(
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      "no-console": ["error", { allow: ["warn", "error"] }],
       "@angular-eslint/directive-selector": [
         "error",
         {

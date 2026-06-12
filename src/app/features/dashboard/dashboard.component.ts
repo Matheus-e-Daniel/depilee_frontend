@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -27,6 +28,7 @@ import { ClientService } from '../clients/services/client.service';
 })
 export class DashboardComponent implements OnInit {
 
+  private destroyRef = inject(DestroyRef);
   private clientService = inject(ClientService);
 
   loading = signal(true);
@@ -62,7 +64,7 @@ export class DashboardComponent implements OnInit {
   loadData() {
     this.loading.set(true);
 
-    this.clientService.getAll().subscribe({
+    this.clientService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.totalClientes = response.totalCount;
 
@@ -73,11 +75,6 @@ export class DashboardComponent implements OnInit {
         const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
         const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-        console.log('=== CÁLCULO DE CRESCIMENTO ===');
-        console.log('Data atual:', now);
-        console.log('Mês atual:', currentMonth, '/', currentYear, '(0=Jan, 11=Dez)');
-        console.log('Mês anterior:', lastMonth, '/', lastMonthYear);
-
         const totalAtual = response.totalCount;
 
         const totalMesPassado = response.data.filter(client => {
@@ -86,25 +83,16 @@ export class DashboardComponent implements OnInit {
           return regDate < inicioMesAtual;
         }).length;
 
-        console.log('Total de clientes AGORA:', totalAtual);
-        console.log('Total que existia no fim do mês passado:', totalMesPassado);
-
         if (totalMesPassado === 0) {
           this.crescimentoClientes = totalAtual > 0 ? '+100%' : '0%';
-          console.log('Mês passado = 0, resultado:', this.crescimentoClientes);
         } else {
           const diferenca = totalAtual - totalMesPassado;
           const crescimento = (diferenca / totalMesPassado) * 100;
           const sinal = crescimento > 0 ? '+' : '';
           this.crescimentoClientes = `${sinal}${crescimento.toFixed(0)}%`;
-          console.log('Diferença:', diferenca);
-          console.log('Crescimento:', crescimento);
-          console.log('Resultado final:', this.crescimentoClientes);
         }
-        console.log('==============================');
       },
-      error: (error) => {
-        console.error('Erro ao carregar clientes:', error);
+      error: () => {
         this.totalClientes = 0;
         this.crescimentoClientes = '0%';
       }

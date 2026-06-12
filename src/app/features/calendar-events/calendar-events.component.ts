@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
@@ -44,6 +45,7 @@ interface DayColumn {
   styleUrls: ['./calendar-events.component.scss']
 })
 export class CalendarEventsComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private calendarEventService = inject(CalendarEventService);
   private messageService = inject(MessageService);
 
@@ -138,14 +140,12 @@ export class CalendarEventsComponent implements OnInit {
     if (days.length === 0) return;
 
     this.loading.set(true);
-    this.calendarEventService.getAll().subscribe({
+    this.calendarEventService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (events) => {
-        console.log('Eventos recebidos do backend:', events);
         this.distributeEventsToWeek(events);
         this.loading.set(false);
       },
-      error: (error) => {
-        console.error('Erro ao carregar eventos:', error);
+      error: () => {
         this.loading.set(false);
       }
     });
@@ -155,28 +155,15 @@ export class CalendarEventsComponent implements OnInit {
     const days = this.weekDays();
     days.forEach(day => day.events = []);
 
-    console.log('Distribuindo eventos. Semana atual:', days.map(d => d.date.toDateString()));
-
     events.forEach(event => {
       if (event.startDate) {
-        
         const eventDate = this.parseLocalDate(event.startDate);
-        console.log('Evento:', event.subject, 'Data do evento:', eventDate.toDateString());
-
-        const day = days.find(d =>
-          this.isSameDay(d.date, eventDate)
-        );
-
+        const day = days.find(d => this.isSameDay(d.date, eventDate));
         if (day) {
-          console.log('Evento adicionado ao dia:', day.date.toDateString());
           day.events.push(event);
-        } else {
-          console.log('Evento não está na semana atual');
         }
       }
     });
-
-    console.log('Dias com eventos:', days.filter(d => d.events.length > 0));
     this.weekDays.set([...days]);
   }
 
@@ -267,7 +254,7 @@ export class CalendarEventsComponent implements OnInit {
         ...this.newEvent
       };
 
-      this.calendarEventService.update(updatedEvent).subscribe({
+      this.calendarEventService.update(updatedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -277,8 +264,7 @@ export class CalendarEventsComponent implements OnInit {
           this.showEventDialog.set(false);
           this.loadEvents();
         },
-        error: (error) => {
-          console.error('Erro ao atualizar evento:', error);
+        error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Erro',
@@ -289,7 +275,7 @@ export class CalendarEventsComponent implements OnInit {
       });
     } else {
       
-      this.calendarEventService.create(this.newEvent).subscribe({
+      this.calendarEventService.create(this.newEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -299,8 +285,7 @@ export class CalendarEventsComponent implements OnInit {
           this.showEventDialog.set(false);
           this.loadEvents();
         },
-        error: (error) => {
-          console.error('Erro ao criar evento:', error);
+        error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Erro',
@@ -315,7 +300,7 @@ export class CalendarEventsComponent implements OnInit {
   deleteEvent(event: CalendarEvent, $event: Event): void {
     $event.stopPropagation();
 
-    this.calendarEventService.delete(event.id).subscribe({
+    this.calendarEventService.delete(event.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
@@ -380,9 +365,9 @@ export class CalendarEventsComponent implements OnInit {
     };
     
     this.loading.set(true);
-    this.calendarEventService.update(updatedDraggedEvent).subscribe({
+    this.calendarEventService.update(updatedDraggedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.calendarEventService.update(updatedTargetEvent).subscribe({
+        this.calendarEventService.update(updatedTargetEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
@@ -434,7 +419,7 @@ export class CalendarEventsComponent implements OnInit {
       endDate: endDateTime
     };
 
-    this.calendarEventService.update(updatedEvent).subscribe({
+    this.calendarEventService.update(updatedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

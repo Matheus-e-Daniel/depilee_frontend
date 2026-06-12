@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,6 +38,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
   providers: [MessageService]
 })
 export class PaymentMethodFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private paymentMethodService = inject(PaymentMethodService);
   private route = inject(ActivatedRoute);
@@ -90,7 +92,7 @@ export class PaymentMethodFormComponent implements OnInit {
 
   private loadPaymentMethod(id: string): void {
     this.loading.set(true);
-    this.paymentMethodService.getById(id).subscribe({
+    this.paymentMethodService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (paymentMethod) => {
         this.paymentMethodForm.patchValue({
           name: paymentMethod.name,
@@ -138,7 +140,7 @@ export class PaymentMethodFormComponent implements OnInit {
         ...formData
       };
 
-      this.paymentMethodService.update(updatedPaymentMethod).subscribe({
+      this.paymentMethodService.update(updatedPaymentMethod).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.confirmationLoading.set(false);
           this.showConfirmation.set(false);
@@ -157,7 +159,7 @@ export class PaymentMethodFormComponent implements OnInit {
         }
       });
     } else {
-      this.paymentMethodService.create(formData).subscribe({
+      this.paymentMethodService.create(formData).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.confirmationLoading.set(false);
           this.showConfirmation.set(false);

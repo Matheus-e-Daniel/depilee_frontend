@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,6 +48,7 @@ interface Installment {
   styleUrls: ['./service-order-form.component.scss']
 })
 export class ServiceOrderFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
@@ -85,7 +87,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadUsers(): void {
     this.usersLoading.set(true);
-    this.userService.getAll().subscribe({
+    this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.users.set(response);
         this.usersLoading.set(false);
@@ -108,9 +110,9 @@ export class ServiceOrderFormComponent implements OnInit {
       items: this.fb.array([this.createItemFormGroup()])
     });
 
-    this.orderForm.get('discount')?.valueChanges.subscribe(() => this.calculateTotal());
+    this.orderForm.get('discount')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateTotal());
 
-    this.orderForm.get('paymentMethodId')?.valueChanges.subscribe(paymentMethodId => {
+    this.orderForm.get('paymentMethodId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(paymentMethodId => {
       this.onPaymentMethodChange(paymentMethodId);
     });
   }
@@ -124,12 +126,12 @@ export class ServiceOrderFormComponent implements OnInit {
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
 
-    itemGroup.get('productId')?.valueChanges.subscribe(() => {
+    itemGroup.get('productId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (itemGroup.get('productId')?.value) {
         itemGroup.patchValue({ responsibleUserId: null, serviceId: null });
       }
     });
-    itemGroup.get('serviceId')?.valueChanges.subscribe(() => {
+    itemGroup.get('serviceId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (itemGroup.get('serviceId')?.value) {
         itemGroup.patchValue({ productId: null });
       } else {
@@ -137,12 +139,12 @@ export class ServiceOrderFormComponent implements OnInit {
       }
     });
 
-    itemGroup.get('quantity')?.valueChanges.subscribe(() => {
+    itemGroup.get('quantity')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (!this.isLoadingData) {
         this.calculateTotal();
       }
     });
-    itemGroup.get('unitPrice')?.valueChanges.subscribe(() => {
+    itemGroup.get('unitPrice')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (!this.isLoadingData) {
         this.calculateTotal();
       }
@@ -191,7 +193,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadClients(): void {
     this.clientsLoading.set(true);
-    this.serviceOrderService.getClients().subscribe({
+    this.serviceOrderService.getClients().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.clients.set(response.data);
         this.clientsLoading.set(false);
@@ -209,7 +211,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadProducts(): void {
     this.productsLoading.set(true);
-    this.serviceOrderItemService.getProducts().subscribe({
+    this.serviceOrderItemService.getProducts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.products.set(response.data);
         this.productsLoading.set(false);
@@ -227,7 +229,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadServices(): void {
     this.servicesLoading.set(true);
-    this.serviceOrderItemService.getServices().subscribe({
+    this.serviceOrderItemService.getServices().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.services.set(response.data);
         this.servicesLoading.set(false);
@@ -245,7 +247,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadPaymentMethods(): void {
     this.paymentMethodsLoading.set(true);
-    this.paymentMethodService.getAll().subscribe({
+    this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (methods) => {
         this.paymentMethods.set(methods);
         this.paymentMethodsLoading.set(false);
@@ -350,7 +352,7 @@ export class ServiceOrderFormComponent implements OnInit {
     this.loading.set(true);
     this.isLoadingData = true;
 
-    this.serviceOrderService.getById(id).subscribe({
+    this.serviceOrderService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (order) => {
         this.orderForm.patchValue({
           clientId: order.clientId,
@@ -375,7 +377,7 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   private loadOrderItems(serviceOrderId: number): void {
-    this.serviceOrderItemService.getAll().subscribe({
+    this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         const items = response.data.filter(item => item.serviceOrderId === serviceOrderId);
 
@@ -428,19 +430,11 @@ export class ServiceOrderFormComponent implements OnInit {
       notes: formValues.notes || null
     };
 
-    console.log('========== ETAPA 1: CRIAR ORDEM DE SERVIÇO ==========');
-    console.log('Payload da ordem de serviço:', serviceOrderPayload);
-
-    this.serviceOrderService.create(serviceOrderPayload as any).subscribe({
+    this.serviceOrderService.create(serviceOrderPayload as any).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (serviceOrderResponse) => {
-        console.log('Ordem de serviço criada com sucesso:', serviceOrderResponse);
-        console.log('ID da ordem criada:', serviceOrderResponse.id);
-
         this.orderId.set(serviceOrderResponse.id);
 
         const items = formValues.items || [];
-        console.log('========== ETAPA 2: CRIAR ITENS DA ORDEM DE SERVIÇO ==========');
-        console.log(`Total de itens para criar: ${items.length}`);
 
         let itemsCreated = 0;
         let itemsWithError = 0;
@@ -463,21 +457,15 @@ export class ServiceOrderFormComponent implements OnInit {
             delete serviceOrderItemPayload.responsibleUserId;
           }
 
-          console.log(`Criando item ${index + 1}:`, serviceOrderItemPayload);
-
-          this.serviceOrderItemService.create(serviceOrderItemPayload).subscribe({
-            next: (itemResponse) => {
+          this.serviceOrderItemService.create(serviceOrderItemPayload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: () => {
               itemsCreated++;
-              console.log(`Item ${index + 1} criado com sucesso:`, itemResponse);
-
               if (itemsCreated + itemsWithError === items.length) {
                 this.finishSubmit(itemsCreated, itemsWithError);
               }
             },
-            error: (itemError) => {
+            error: () => {
               itemsWithError++;
-              console.error(`Erro ao criar item ${index + 1}:`, itemError);
-
               if (itemsCreated + itemsWithError === items.length) {
                 this.finishSubmit(itemsCreated, itemsWithError);
               }
@@ -485,9 +473,7 @@ export class ServiceOrderFormComponent implements OnInit {
           });
         });
       },
-      error: (error) => {
-        console.error('========== ERRO AO CRIAR ORDEM DE SERVIÇO ==========');
-        console.error('Erro:', error);
+      error: () => {
         this.loading.set(false);
         this.messageService.add({
           severity: 'error',
@@ -499,9 +485,6 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   private finishSubmit(itemsCreated: number, itemsWithError: number): void {
-    console.log('========== PROCESSO COMPLETO! ==========');
-    console.log(`Itens criados: ${itemsCreated}, Erros: ${itemsWithError}`);
-
     this.finishWithMessage(itemsCreated, itemsWithError);
   }
 

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,6 +34,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
   styleUrls: ['./cash-register-form.component.scss']
 })
 export class CashRegisterFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private cashRegisterService = inject(CashRegisterService);
   private route = inject(ActivatedRoute);
@@ -63,7 +65,7 @@ export class CashRegisterFormComponent implements OnInit {
       notes: ['']
     });
 
-    this.cashRegisterForm.valueChanges.subscribe(() => {
+    this.cashRegisterForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
       }
@@ -82,7 +84,7 @@ export class CashRegisterFormComponent implements OnInit {
 
   private loadCashRegister(id: string): void {
     this.loading.set(true);
-    this.cashRegisterService.getById(id).subscribe({
+    this.cashRegisterService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (cashRegister) => {
         
         const formattedBalance = cashRegister.initialBalance.toLocaleString('pt-BR', {
@@ -137,7 +139,7 @@ export class CashRegisterFormComponent implements OnInit {
       ? this.cashRegisterService.update(payload)
       : this.cashRegisterService.create(payload);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);

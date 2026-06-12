@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -34,6 +35,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./payment-method-list.component.scss']
 })
 export class PaymentMethodListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private paymentMethodService = inject(PaymentMethodService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -89,7 +91,7 @@ export class PaymentMethodListComponent implements OnInit {
   loadPaymentMethods(): void {
     this.loading.set(true);
 
-    this.paymentMethodService.getAll().subscribe({
+    this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (paymentMethods) => {
         this.allPaymentMethods.set(paymentMethods);
         this.loading.set(false);
@@ -122,7 +124,7 @@ export class PaymentMethodListComponent implements OnInit {
     if (!this.paymentMethodToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.paymentMethodService.delete(this.paymentMethodToDelete).subscribe({
+    this.paymentMethodService.delete(this.paymentMethodToDelete).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);

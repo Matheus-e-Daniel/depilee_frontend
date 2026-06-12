@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -68,6 +69,7 @@ export class CategoryListComponent implements OnInit {
     }
     return list;
   });
+  private destroyRef = inject(DestroyRef);
   private categoryService = inject(CategoryService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -86,7 +88,7 @@ export class CategoryListComponent implements OnInit {
   loadCategories(): void {
     this.loading.set(true);
 
-    this.categoryService.getAll().subscribe({
+    this.categoryService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.categories.set(response.data);
         this.loading.set(false);
@@ -118,7 +120,7 @@ export class CategoryListComponent implements OnInit {
     if (!this.categoryToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.categoryService.delete(this.categoryToDelete.id).subscribe({
+    this.categoryService.delete(this.categoryToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.categoryToDelete = null;
         this.confirmationLoading.set(false);

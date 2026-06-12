@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -46,6 +47,7 @@ interface PermissionModule {
   styleUrls: ['./role-form.component.scss']
 })
 export class RoleFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private roleService = inject(RoleService);
   private route = inject(ActivatedRoute);
@@ -127,7 +129,7 @@ export class RoleFormComponent implements OnInit {
       roleName: ['', [Validators.required, Validators.minLength(2)]]
     });
 
-    this.roleForm.valueChanges.subscribe(() => {
+    this.roleForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
       }
@@ -135,9 +137,8 @@ export class RoleFormComponent implements OnInit {
   }
 
   private loadPermissions(): void {
-    this.roleService.getAllPermissions().subscribe({
+    this.roleService.getAllPermissions().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (permissions) => {
-        console.log('Permissões do backend:', permissions);
         this.availablePermissions.set(permissions);
       },
       error: () => {
@@ -254,14 +255,12 @@ export class RoleFormComponent implements OnInit {
   private loadRole(id: string): void {
     this.loading.set(true);
 
-    this.roleService.getRolePermissionsById(id).subscribe({
+    this.roleService.getRolePermissionsById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (permissions) => {
-        console.log('🔑 Permissões da role carregadas:', permissions);
-
         const selectedIds = new Set(permissions.map((p: any) => p.id));
         this.selectedPermissionIds.set(selectedIds);
 
-        this.roleService.getAll().subscribe({
+        this.roleService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: (roles) => {
             const role = roles.find(r => r.id.toString() === id);
             if (role) {
@@ -323,7 +322,8 @@ export class RoleFormComponent implements OnInit {
           return this.roleService.assignPermissions({ roleName, permissionIds });
         }
         return of(null);
-      })
+      }),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         this.confirmationLoading.set(false);

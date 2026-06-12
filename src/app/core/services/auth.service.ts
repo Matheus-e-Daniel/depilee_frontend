@@ -62,8 +62,12 @@ export class AuthService {
     if (this._user) return this._user;
     const stored = localStorage.getItem(this.USER_KEY);
     if (stored) {
-      this._user = JSON.parse(stored);
-      this._permissions = this._user?.permissions ?? [];
+      try {
+        this._user = JSON.parse(stored);
+        this._permissions = this._user?.permissions ?? [];
+      } catch {
+        localStorage.removeItem(this.USER_KEY);
+      }
       return this._user;
     }
     return null;

@@ -24,17 +24,9 @@ export class HasPermissionDirective {
 
   private checkPermission(permission: string | string[]): void {
     const permissions = Array.isArray(permission) ? permission : [permission];
-    console.log(`🔐 [Diretiva] Verificando permissão(ões):`, permissions, `(modo: ${this.appHasPermissionMode})`);
-
-    let hasAccess = false;
-
-    if (this.appHasPermissionMode === 'all') {
-      hasAccess = this.authService.hasAllPermissions(permissions);
-    } else {
-      hasAccess = this.authService.hasAnyPermission(permissions);
-    }
-
-    console.log(`🔐 [Diretiva] Resultado:`, hasAccess ? '✅ Elemento VISÍVEL' : '❌ Elemento OCULTO');
+    const hasAccess = this.appHasPermissionMode === 'all'
+      ? this.authService.hasAllPermissions(permissions)
+      : this.authService.hasAnyPermission(permissions);
 
     if (hasAccess) {
       this.viewContainer.createEmbeddedView(this.templateRef);

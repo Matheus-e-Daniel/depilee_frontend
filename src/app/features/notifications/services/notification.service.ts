@@ -2,7 +2,6 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 
 export interface Notification {
   id: number;
@@ -25,11 +24,7 @@ export class NotificationService {
   private apiUrl = environment.apiBaseUrl + 'notifications';
 
   getAll(): Observable<PagedResponse<Notification>> {
-    return this.http.get<PagedResponse<Notification>>(this.apiUrl).pipe(
-      tap((data) => {
-        console.log('Notificações buscadas do backend:', data);
-      })
-    );
+    return this.http.get<PagedResponse<Notification>>(this.apiUrl);
   }
 
   markAsRead(id: number): Observable<void> {

@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CashRegisterService } from '../../../cash-registers/services/cash-register.service';
@@ -19,6 +20,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
   styleUrls: ['./service-order-payment.component.scss']
 })
 export class ServiceOrderPaymentComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private cashRegisterService = inject(CashRegisterService);
   private paymentService = inject(ServiceOrderPaymentService);
@@ -44,7 +46,7 @@ export class ServiceOrderPaymentComponent implements OnInit {
       notes: ['']
     });
 
-    this.paymentForm.valueChanges.subscribe(val => {
+    this.paymentForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(val => {
       this.paymentChange.emit(val);
     });
 
@@ -55,7 +57,7 @@ export class ServiceOrderPaymentComponent implements OnInit {
 
   private loadCashRegisters(): void {
     this.cashRegistersLoading.set(true);
-    this.cashRegisterService.getAll().subscribe({
+    this.cashRegisterService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.cashRegisters.set(response.data);
         this.cashRegistersLoading.set(false);
@@ -68,7 +70,7 @@ export class ServiceOrderPaymentComponent implements OnInit {
 
   private loadPaymentMethods(): void {
     this.paymentMethodsLoading.set(true);
-    this.paymentService.getPaymentMethods().subscribe({
+    this.paymentService.getPaymentMethods().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.paymentMethods.set(response.data);
         this.paymentMethodsLoading.set(false);

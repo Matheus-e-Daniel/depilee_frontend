@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -30,6 +31,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private userService = inject(UserService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -47,9 +49,8 @@ export class UserListComponent implements OnInit {
 
   loadUsers(): void {
     this.loading.set(true);
-    this.userService.getAll().subscribe({
+    this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response: any) => {
-        console.log('[UserListComponent][loadUsers] Dados recebidos da API:', response);
         const data = Array.isArray(response) ? response : response?.data ?? [];
         this.users.set(data);
         this.loading.set(false);
@@ -85,7 +86,7 @@ export class UserListComponent implements OnInit {
     if (!this.userToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.userService.delete(this.userToDelete.id).subscribe({
+    this.userService.delete(this.userToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.userToDelete = null;
         this.confirmationLoading.set(false);

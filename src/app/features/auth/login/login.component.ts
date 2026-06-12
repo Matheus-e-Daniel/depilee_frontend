@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -29,6 +30,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -53,13 +55,9 @@ export class LoginComponent {
 
       const credentials = this.loginForm.value as { email: string; password: string };
 
-      this.authService.login(credentials).subscribe({
+      this.authService.login(credentials).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (response) => {
           this.isLoading.set(false);
-          console.log('✅ Login bem-sucedido:', response);
-          console.log('👤 Dados do usuário:', response?.data);
-          console.log('🎭 Roles do usuário:', response?.data?.roles);
-
           this.authService.setAuthenticated(true);
 
           if (response?.data) {

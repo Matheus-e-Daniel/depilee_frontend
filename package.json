@@ -20,8 +20,6 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
-    "@ngrx/signals": "^18.1.1",
-    "@ngrx/store-devtools": "^18.1.1",
     "chart.js": "^4.5.1",
     "jwt-decode": "^4.0.0",
     "primeicons": "^7.0.0",

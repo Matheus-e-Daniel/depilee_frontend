@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -34,6 +35,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private productService = inject(ProductService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -105,7 +107,7 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading.set(true);
-    this.productService.getAll().subscribe({
+    this.productService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.allProducts.set(response.data);
         this.loading.set(false);
@@ -143,7 +145,7 @@ export class ProductListComponent implements OnInit {
     if (!this.productToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.productService.delete(this.productToDelete.id).subscribe({
+    this.productService.delete(this.productToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.productToDelete = null;
         this.confirmationLoading.set(false);

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -70,6 +71,7 @@ export class CashRegisterListComponent implements OnInit {
     }
     return list;
   });
+  private destroyRef = inject(DestroyRef);
   private cashRegisterService = inject(CashRegisterService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -88,7 +90,7 @@ export class CashRegisterListComponent implements OnInit {
 
   loadCashRegisters(): void {
     this.loading.set(true);
-    this.cashRegisterService.getAll().subscribe({
+    this.cashRegisterService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.cashRegisters.set(response.data);
         this.loading.set(false);
@@ -111,7 +113,6 @@ export class CashRegisterListComponent implements OnInit {
   openCloseCashRegisterModal(id: string, notes: string): void {
     this.cashRegisterToClose = { id, notes };
     this.showCloseModal.set(true);
-    console.log('Abrindo modal de fechamento de caixa:', id, notes);
     this.messageService.add({
       severity: 'info',
       summary: 'Modal',
@@ -126,7 +127,7 @@ export class CashRegisterListComponent implements OnInit {
       cashRegisterId: Number(this.cashRegisterToClose.id),
       finalBalance: data.finalBalance,
       notes: data.notes
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.closeLoading.set(false);
         this.showCloseModal.set(false);

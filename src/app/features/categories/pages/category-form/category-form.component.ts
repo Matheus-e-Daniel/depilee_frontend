@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -35,6 +36,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
   styleUrls: ['./category-form.component.scss']
 })
 export class CategoryFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
@@ -65,7 +67,7 @@ export class CategoryFormComponent implements OnInit {
       description: ['']
     });
 
-    this.categoryForm.valueChanges.subscribe(() => {
+    this.categoryForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
       }
@@ -84,7 +86,7 @@ export class CategoryFormComponent implements OnInit {
 
   private loadCategory(id: string): void {
     this.loading.set(true);
-    this.categoryService.getById(id).subscribe({
+    this.categoryService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (category) => {
         this.categoryForm.patchValue({
           name: category.name,
@@ -126,7 +128,7 @@ export class CategoryFormComponent implements OnInit {
       ? this.categoryService.update(payload)
       : this.categoryService.create(payload);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);

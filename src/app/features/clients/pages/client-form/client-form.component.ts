@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,8 +16,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ClientService } from '../../services/client.service';
 
 const CEP_DEBOUNCE_TIME = 800;
-const FOCUS_NUMBER_DELAY = 100;
-const CLIENT_DATA_LOAD_DELAY = 1000;
+const FOCUS_NUMBER_DELAY = 0;
 const SUCCESS_REDIRECT_DELAY = 2500;
 import { ClientFormData } from '../../models/client.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
@@ -48,6 +48,7 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
 })
 
 export class ClientFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private clientService = inject(ClientService);
   private route = inject(ActivatedRoute);
@@ -138,11 +139,11 @@ export class ClientFormComponent implements OnInit {
         const cepLimpo = cep?.replace(/\D/g, '') || '';
         return cepLimpo.length === 8;
       })
-    ).subscribe(cep => {
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(cep => {
       this.buscarCep(cep);
     });
 
-    this.clientForm.valueChanges.subscribe(() => {
+    this.clientForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.checkFormModified();
     });
   }
@@ -214,7 +215,7 @@ export class ClientFormComponent implements OnInit {
 
     this.loadingCep.set(true);
 
-    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).subscribe({
+    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data: any) => {
         if (data.erro) {
           this.errorModalService.show('O CEP informado não foi encontrado');
@@ -259,7 +260,7 @@ export class ClientFormComponent implements OnInit {
     this.loading.set(true);
     this.isLoadingClientData.set(true);
 
-    this.clientService.getById(id).subscribe({
+    this.clientService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (client) => {
         this.clientForm.patchValue({
           name: client.name,
@@ -275,16 +276,12 @@ export class ClientFormComponent implements OnInit {
           street: client.address.street,
           number: client.address.number,
           complement: client.address.complement
-        });
+        }, { emitEvent: false });
 
         this.originalFormValue = { ...this.clientForm.value };
         this.formModified.set(false);
-
         this.loading.set(false);
-
-        setTimeout(() => {
-          this.isLoadingClientData.set(false);
-        }, CLIENT_DATA_LOAD_DELAY);
+        this.isLoadingClientData.set(false);
       },
       error: () => {
         this.errorModalService.show('Falha ao carregar cliente');
@@ -339,7 +336,7 @@ export class ClientFormComponent implements OnInit {
       ? this.clientService.update(payload)
       : this.clientService.create(formData);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -36,6 +37,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./client-list.component.scss']
 })
 export class ClientListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private clientService = inject(ClientService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -113,9 +115,8 @@ export class ClientListComponent implements OnInit {
 
   loadClients(): void {
     this.loading.set(true);
-    this.clientService.getAll().subscribe({
+    this.clientService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        console.log('[CLIENTES][API]', response.data);
         this.allClients.set(response.data);
         this.loading.set(false);
       },
@@ -151,7 +152,7 @@ export class ClientListComponent implements OnInit {
     if (!this.clientToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.clientService.delete(this.clientToDelete.id).subscribe({
+    this.clientService.delete(this.clientToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.clientToDelete = null;
         this.confirmationLoading.set(false);

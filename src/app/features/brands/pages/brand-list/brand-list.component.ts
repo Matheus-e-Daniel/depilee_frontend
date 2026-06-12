@@ -1,5 +1,6 @@
 
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -73,6 +74,7 @@ export class BrandListComponent implements OnInit {
     }
     return list;
   });
+  private destroyRef = inject(DestroyRef);
   private brandService = inject(BrandService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -93,7 +95,7 @@ export class BrandListComponent implements OnInit {
   loadBrands(): void {
     this.loading.set(true);
 
-    this.brandService.getAll().subscribe({
+    this.brandService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.brands.set(response.data);
         this.loading.set(false);
@@ -122,7 +124,7 @@ export class BrandListComponent implements OnInit {
     if (!this.brandToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.brandService.delete(this.brandToDelete.id).subscribe({
+    this.brandService.delete(this.brandToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
@@ -155,9 +157,7 @@ export class BrandListComponent implements OnInit {
   }
 
   hasPermission(permission: string): boolean {
-    const perms = this.authService.userPermissions();
-    console.log('[hasPermission]', { permission, perms });
-    return perms.includes(permission);
+    return this.authService.userPermissions().includes(permission);
   }
 }
 

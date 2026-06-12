@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -34,6 +35,7 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
   styleUrls: ['./service-list.component.scss']
 })
 export class ServiceListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private serviceService = inject(ServiceService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -104,7 +106,7 @@ export class ServiceListComponent implements OnInit {
 
   loadServices(): void {
     this.loading.set(true);
-    this.serviceService.getAll().subscribe({
+    this.serviceService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.allServices.set(response.data);
         this.loading.set(false);
@@ -141,7 +143,7 @@ export class ServiceListComponent implements OnInit {
     if (!this.serviceToDelete) return;
 
     this.confirmationLoading.set(true);
-    this.serviceService.delete(this.serviceToDelete.id).subscribe({
+    this.serviceService.delete(this.serviceToDelete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.serviceToDelete = null;
         this.confirmationLoading.set(false);

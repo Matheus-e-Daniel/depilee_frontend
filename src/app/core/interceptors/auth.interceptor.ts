@@ -14,7 +14,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                         req.url.includes('http');
 
   if (isExternalApi) {
-    console.log('🌐 Requisição externa detectada, não interceptando:', req.url);
     return next(req);
   }
 

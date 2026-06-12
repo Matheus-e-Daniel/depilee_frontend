@@ -19,12 +19,10 @@ export class UserService {
     }
 
   create(user: any): Observable<User> {
-    console.log('[UserService][create] Enviando:', user);
     return this.http.post<User>(this.apiUrl, user);
   }
 
   update(user: any): Observable<User> {
-    console.log('[UserService][update] Enviando:', user);
     return this.http.put<User>(this.apiUrl, user);
   }
 
@@ -33,7 +31,6 @@ export class UserService {
   }
 
   assignRole(userId: string | number, roleName: string): Observable<any> {
-    console.log(`[UserService][assignRole] Atribuindo role "${roleName}" ao usuário ${userId}`);
     return this.http.post(`${environment.apiBaseUrl}identity/user/${userId}/role`, { roleName });
   }
 }

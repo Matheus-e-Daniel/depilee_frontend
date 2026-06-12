@@ -2,7 +2,6 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { ServiceOrder, ServiceOrderFormData, PagedResponse, Client, CashRegister } from '../models/service-order.model';
 
 @Injectable({
@@ -13,15 +12,11 @@ export class ServiceOrderService {
   private apiUrl = environment.apiBaseUrl + 'service-orders';
 
   getAll(): Observable<PagedResponse<ServiceOrder>> {
-    return this.http.get<PagedResponse<ServiceOrder>>(this.apiUrl).pipe(
-      tap(result => console.log('getAll service-orders:', result))
-    );
+    return this.http.get<PagedResponse<ServiceOrder>>(this.apiUrl);
   }
 
   getById(id: number): Observable<ServiceOrder> {
-    return this.http.get<ServiceOrder>(`${this.apiUrl}/${id}`).pipe(
-      tap(result => console.log('getById service-order:', result))
-    );
+    return this.http.get<ServiceOrder>(`${this.apiUrl}/${id}`);
   }
 
   create(order: ServiceOrderFormData): Observable<ServiceOrder> {
@@ -37,14 +32,10 @@ export class ServiceOrderService {
   }
 
   getClients(): Observable<PagedResponse<Client>> {
-    return this.http.get<PagedResponse<Client>>(environment.apiBaseUrl + 'clients').pipe(
-      tap(result => console.log('getClients:', result))
-    );
+    return this.http.get<PagedResponse<Client>>(environment.apiBaseUrl + 'clients');
   }
 
   getCashRegisters(): Observable<PagedResponse<CashRegister>> {
-    return this.http.get<PagedResponse<CashRegister>>(environment.apiBaseUrl + 'cash-registers').pipe(
-      tap(result => console.log('getCashRegisters:', result))
-    );
+    return this.http.get<PagedResponse<CashRegister>>(environment.apiBaseUrl + 'cash-registers');
   }
 }

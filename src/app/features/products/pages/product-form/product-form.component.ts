@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -43,6 +44,7 @@ import { Category } from '../../../categories/models/category.model';
   styleUrls: ['./product-form.component.scss']
 })
 export class ProductFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);
   private brandService = inject(BrandService);
@@ -86,14 +88,14 @@ export class ProductFormComponent implements OnInit {
       categoryId: ['', Validators.required]
     });
 
-    this.productForm.valueChanges.subscribe(() => {
+    this.productForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.checkFormModified();
     });
   }
 
   private loadBrands(): void {
     this.brandsLoading.set(true);
-    this.brandService.getAll().subscribe({
+    this.brandService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.brands.set(response.data);
         this.brandsLoading.set(false);
@@ -111,7 +113,7 @@ export class ProductFormComponent implements OnInit {
 
   private loadCategories(): void {
     this.categoriesLoading.set(true);
-    this.categoryService.getAll().subscribe({
+    this.categoryService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.categories.set(response.data);
         this.categoriesLoading.set(false);
@@ -139,7 +141,7 @@ export class ProductFormComponent implements OnInit {
 
   private loadProduct(id: string): void {
     this.loading.set(true);
-    this.productService.getById(id).subscribe({
+    this.productService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (product) => {
         this.productForm.patchValue({
           name: product.name,
@@ -168,10 +170,7 @@ export class ProductFormComponent implements OnInit {
           }
         }, 0);
 
-        setTimeout(() => {
-          this.originalFormValue = JSON.parse(JSON.stringify(this.productForm.value));
-        }, 100);
-
+        this.originalFormValue = JSON.parse(JSON.stringify(this.productForm.value));
         this.loading.set(false);
       },
       error: () => {
@@ -208,7 +207,7 @@ export class ProductFormComponent implements OnInit {
       ? this.productService.update(payload)
       : this.productService.create(payload);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);

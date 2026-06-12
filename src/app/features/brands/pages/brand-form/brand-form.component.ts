@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,6 +34,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
   styleUrls: ['./brand-form.component.scss']
 })
 export class BrandFormComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private brandService = inject(BrandService);
   private route = inject(ActivatedRoute);
@@ -61,7 +63,7 @@ export class BrandFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]]
     });
 
-    this.brandForm.valueChanges.subscribe(() => {
+    this.brandForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isEditMode() && this.originalFormValue) {
         this.checkFormModified();
       }
@@ -80,7 +82,7 @@ export class BrandFormComponent implements OnInit {
 
   private loadBrand(id: string): void {
     this.loading.set(true);
-    this.brandService.getById(id).subscribe({
+    this.brandService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (brand) => {
         this.brandForm.patchValue({
           name: brand.name
@@ -122,7 +124,7 @@ export class BrandFormComponent implements OnInit {
       ? this.brandService.update(payload)
       : this.brandService.create(payload);
 
-    operation.subscribe({
+    operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
