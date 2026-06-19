@@ -5,10 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { PaymentMethodService } from '../../services/payment-method.service';
 import { PaymentMethod } from '../../models/payment-method.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -24,20 +22,17 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     FormsModule,
     ButtonModule,
     TableModule,
-    ToastModule,
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './payment-method-list.component.html',
   styleUrls: ['./payment-method-list.component.scss']
 })
 export class PaymentMethodListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private paymentMethodService = inject(PaymentMethodService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -97,11 +92,6 @@ export class PaymentMethodListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar métodos de pagamento'
-        });
         this.loading.set(false);
       }
     });
@@ -133,11 +123,6 @@ export class PaymentMethodListComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir método de pagamento'
-        });
       }
     });
   }

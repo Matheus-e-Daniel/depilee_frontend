@@ -22,4 +22,5 @@ export interface User {
   birth: Date;
   gender: Gender;
   address: Address;
+  commissionPercentage?: number | null;
 }

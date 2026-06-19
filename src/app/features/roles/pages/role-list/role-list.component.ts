@@ -5,11 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { RoleService } from '../../services/role.service';
 import { Role } from '../../models/role.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -25,13 +23,11 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     FormsModule,
     ButtonModule,
     TableModule,
-    ToastModule,
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './role-list.component.html',
   styleUrls: ['./role-list.component.scss']
 })
@@ -81,7 +77,6 @@ export class RoleListComponent implements OnInit {
 
   private destroyRef = inject(DestroyRef);
   private roleService = inject(RoleService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -105,11 +100,6 @@ export class RoleListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar cargos'
-        });
         this.loading.set(false);
       }
     });
@@ -138,11 +128,6 @@ export class RoleListComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir cargo'
-        });
       }
     });
   }

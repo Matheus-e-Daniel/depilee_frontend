@@ -1,0 +1,175 @@
+<div class="commission-history-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Extrato de Comissão</h1>
+      <p>Consulte o histórico de comissões por colaborador</p>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="pi pi-filter"></i>
+        <h3>Filtros</h3>
+      </div>
+      @if (result()) {
+        <button
+          pButton
+          type="button"
+          label="Limpar"
+          icon="pi pi-times"
+          class="p-button-text p-button-sm clear-btn"
+          (click)="clearFilters()">
+        </button>
+      }
+    </div>
+    <div class="filters-content">
+      <div class="filter-group">
+        <label>Colaborador *</label>
+        <p-dropdown
+          [options]="userOptions"
+          [ngModel]="selectedUserId()"
+          (ngModelChange)="selectedUserId.set($event); result.set(null)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecione o colaborador"
+          [filter]="true"
+          filterPlaceholder="Buscar..."
+          [loading]="usersLoading()"
+          class="w-full">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-group">
+        <label>Data Inicial</label>
+        <p-calendar
+          [ngModel]="startDate()"
+          (ngModelChange)="startDate.set($event)"
+          dateFormat="dd/mm/yy"
+          placeholder="dd/mm/aaaa"
+          [showClear]="true"
+          styleClass="w-full"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>Data Final</label>
+        <p-calendar
+          [ngModel]="endDate()"
+          (ngModelChange)="endDate.set($event)"
+          dateFormat="dd/mm/yy"
+          placeholder="dd/mm/aaaa"
+          [showClear]="true"
+          styleClass="w-full"
+        />
+      </div>
+
+      <div class="filter-group filter-action">
+        <label>&nbsp;</label>
+        <button
+          pButton
+          type="button"
+          label="Buscar"
+          icon="pi pi-search"
+          class="p-button-primary w-full"
+          [disabled]="!selectedUserId()"
+          [class.p-button-loading]="loading()"
+          (click)="search()">
+          <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <p-card>
+        <div class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Buscando extrato...</p>
+        </div>
+      </p-card>
+    </div>
+  } @else if (result()) {
+    <div class="card">
+      <p-card>
+        <div class="result-header">
+          <div class="user-info">
+            <div class="user-avatar">
+              <i class="pi pi-user"></i>
+            </div>
+            <div>
+              <h2>{{ result()!.userName }}</h2>
+              <p>Modo de cálculo: {{ calculationModeLabel(result()!.calculationMode) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <div class="summary-card">
+            <i class="pi pi-briefcase summary-icon blue"></i>
+            <div>
+              <span class="summary-label">Total dos Serviços</span>
+              <span class="summary-value">{{ result()!.totalServicesAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+            </div>
+          </div>
+          <div class="summary-card highlight">
+            <i class="pi pi-percentage summary-icon green"></i>
+            <div>
+              <span class="summary-label">Total de Comissões</span>
+              <span class="summary-value green">{{ result()!.totalCommissionAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <i class="pi pi-list summary-icon purple"></i>
+            <div>
+              <span class="summary-label">Qtd. Itens</span>
+              <span class="summary-value">{{ result()!.services.length }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (result()!.services.length === 0) {
+          <div class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <h3>Nenhuma comissão encontrada</h3>
+            <p>Não há comissões registradas para o período selecionado.</p>
+          </div>
+        } @else {
+          <p-table
+            [value]="result()!.services"
+            [paginator]="result()!.services.length > 10"
+            [rows]="10"
+            styleClass="p-datatable-striped"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} registros">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>OS</th>
+                <th>Serviço</th>
+                <th>Qtd.</th>
+                <th>Preço Unit.</th>
+                <th>Total Serviço</th>
+                <th>% Comissão</th>
+                <th>Valor Comissão</th>
+                <th>Conclusão</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+              <tr>
+                <td data-label="OS">{{ item.serviceOrderNumber }}</td>
+                <td data-label="Serviço">{{ item.serviceName }}</td>
+                <td data-label="Qtd.">{{ item.quantity }}</td>
+                <td data-label="Preço Unit.">{{ item.unitPrice | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+                <td data-label="Total Serviço">{{ item.totalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+                <td data-label="% Comissão"><span class="percentage-badge">{{ item.commissionPercentageApplied }}%</span></td>
+                <td data-label="Valor Comissão" class="commission-value">{{ item.commissionAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+                <td data-label="Conclusão">{{ item.completedAt | date:'dd/MM/yyyy HH:mm':'':'' }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      </p-card>
+    </div>
+  }
+</div>

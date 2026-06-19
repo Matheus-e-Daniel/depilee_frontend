@@ -11,6 +11,7 @@ export interface ServiceOrderItem {
   serviceOrderId: number;
   productId?: number;
   serviceId?: number;
+  responsibleUserId?: number;
   quantity: number;
   unitPrice: number;
   registrationDate?: string;
@@ -22,6 +23,8 @@ export interface ServiceOrderItem {
   serviceName?: string;
   serviceOrderNumber?: string;
   totalPrice?: number;
+  commissionPercentageApplied?: number;
+  commissionAmount?: number;
 }
 
 export interface ServiceOrderItemFormData {

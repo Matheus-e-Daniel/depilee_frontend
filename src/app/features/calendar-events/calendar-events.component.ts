@@ -7,8 +7,6 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { CalendarEventService } from './services/calendar-event.service';
 import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS } from './models/calendar-event.model';
@@ -37,17 +35,14 @@ interface DayColumn {
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
-    ToastModule,
     FormsModule
   ],
-  providers: [MessageService],
   templateUrl: './calendar-events.component.html',
   styleUrls: ['./calendar-events.component.scss']
 })
 export class CalendarEventsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private calendarEventService = inject(CalendarEventService);
-  private messageService = inject(MessageService);
 
   selectedDate = signal<Date>(new Date());
   weekDays = signal<DayColumn[]>([]);
@@ -235,11 +230,6 @@ export class CalendarEventsComponent implements OnInit {
 
   saveEvent(): void {
     if (!this.newEvent.subject.trim()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Assunto do evento é obrigatório'
-      });
       return;
     }
 
@@ -256,20 +246,10 @@ export class CalendarEventsComponent implements OnInit {
 
       this.calendarEventService.update(updatedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: 'Evento atualizado com sucesso!'
-          });
           this.showEventDialog.set(false);
           this.loadEvents();
         },
         error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Falha ao atualizar evento'
-          });
           this.loading.set(false);
         }
       });
@@ -277,20 +257,10 @@ export class CalendarEventsComponent implements OnInit {
       
       this.calendarEventService.create(this.newEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: 'Evento criado com sucesso!'
-          });
           this.showEventDialog.set(false);
           this.loadEvents();
         },
         error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Falha ao criar evento'
-          });
           this.loading.set(false);
         }
       });
@@ -302,19 +272,9 @@ export class CalendarEventsComponent implements OnInit {
 
     this.calendarEventService.delete(event.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Evento excluído com sucesso!'
-        });
         this.loadEvents();
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir evento'
-        });
       }
     });
   }
@@ -369,29 +329,14 @@ export class CalendarEventsComponent implements OnInit {
       next: () => {
         this.calendarEventService.update(updatedTargetEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Eventos reordenados'
-            });
             this.loadEvents();
           },
           error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao reordenar eventos'
-            });
             this.loading.set(false);
           }
         });
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao reordenar eventos'
-        });
         this.loading.set(false);
       }
     });
@@ -421,19 +366,9 @@ export class CalendarEventsComponent implements OnInit {
 
     this.calendarEventService.update(updatedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Evento movido com sucesso!'
-        });
         this.loadEvents();
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao atualizar evento'
-        });
       }
     });
 

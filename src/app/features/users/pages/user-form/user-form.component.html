@@ -102,6 +102,24 @@
               Cargo é obrigatório
             </small>
           </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="commissionPercentage">% de Comissão</label>
+            <p-inputNumber
+              id="commissionPercentage"
+              formControlName="commissionPercentage"
+              [min]="0"
+              [max]="100"
+              [maxFractionDigits]="2"
+              suffix=" %"
+              placeholder="Ex: 10"
+              styleClass="w-full"
+            />
+            <small class="block mt-1 text-color-secondary">Usado no modo de cálculo "Por Usuário"</small>
+            <small *ngIf="userForm.get('commissionPercentage')?.invalid && formSubmitted()" class="p-error block mt-1">
+              Percentual deve estar entre 0 e 100
+            </small>
+          </div>
         </div>
         <fieldset formGroupName="address" class="address-fieldset">
           <legend>Endereço</legend>
@@ -197,6 +215,4 @@
     </p-card>
   </div>
 </div>
-<p-toast></p-toast>
-
 <app-error-modal [visible]="errorModalService.visible()" [message]="errorModalService.message()" (visibleChange)="errorModalService.hide()"></app-error-modal>

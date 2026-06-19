@@ -6,11 +6,9 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { BrandService } from '../../services/brand.service';
 import { Brand } from '../../models/brand.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -28,14 +26,12 @@ import { AuthService } from '../../../../core/services/auth.service';
     FormsModule,
     ButtonModule,
     TableModule,
-    ToastModule,
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent,
     HasPermissionDirective
   ],
-  providers: [MessageService],
   templateUrl: './brand-list.component.html',
   styleUrls: ['./brand-list.component.scss']
 })
@@ -76,7 +72,6 @@ export class BrandListComponent implements OnInit {
   });
   private destroyRef = inject(DestroyRef);
   private brandService = inject(BrandService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
   private authService = inject(AuthService);
@@ -101,11 +96,6 @@ export class BrandListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar marcas'
-        });
         this.loading.set(false);
       }
     });
@@ -134,11 +124,6 @@ export class BrandListComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir marca'
-        });
       }
     });
   }

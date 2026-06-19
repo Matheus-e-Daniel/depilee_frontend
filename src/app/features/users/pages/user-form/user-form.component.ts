@@ -9,8 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputMaskModule } from 'primeng/inputmask';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { User, Gender } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { RoleService } from '../../../roles/services/role.service';
@@ -35,11 +34,10 @@ const FOCUS_NUMBER_DELAY = 0;
     CardModule,
     DropdownModule,
     InputMaskModule,
-    ToastModule,
+    InputNumberModule,
     ErrorModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './user-form.component.html',
   styleUrls: ['./user-form.component.scss']
 })
@@ -50,7 +48,6 @@ export class UserFormComponent implements OnInit {
   private roleService = inject(RoleService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   private http = inject(HttpClient);
   errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
@@ -63,6 +60,7 @@ export class UserFormComponent implements OnInit {
     birth: ['', [Validators.required, this.birthDateValidator.bind(this)]],
     gender: ['', [Validators.required]],
     roleId: [null, [Validators.required]],
+    commissionPercentage: [null, [Validators.min(0), Validators.max(100)]],
     address: this.fb.group({
       cep: ['', [Validators.required]],
       state: ['', [Validators.required]],
@@ -132,11 +130,6 @@ export class UserFormComponent implements OnInit {
         this.rolesLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar cargos'
-        });
         this.rolesLoading.set(false);
       }
     });
@@ -154,6 +147,7 @@ export class UserFormComponent implements OnInit {
           cpf: user.cpf,
           birth: this.formatDateToDDMMYYYY(user.birth),
           gender: user.gender,
+          commissionPercentage: user.commissionPercentage ?? null,
           address: {
             cep: user.address?.cep || '',
             state: user.address?.state || '',
@@ -330,11 +324,6 @@ export class UserFormComponent implements OnInit {
         }, 2000);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: errorMessage
-        });
         this.loading.set(false);
       }
     });

@@ -6,8 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TableModule } from 'primeng/table';
@@ -35,14 +33,12 @@ interface PermissionModule {
     InputTextModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     TooltipModule,
     CheckboxModule,
     TableModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './role-form.component.html',
   styleUrls: ['./role-form.component.scss']
 })
@@ -52,7 +48,6 @@ export class RoleFormComponent implements OnInit {
   private roleService = inject(RoleService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   roleForm!: FormGroup;
@@ -142,11 +137,6 @@ export class RoleFormComponent implements OnInit {
         this.availablePermissions.set(permissions);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar permissões'
-        });
       }
     });
   }
@@ -274,21 +264,11 @@ export class RoleFormComponent implements OnInit {
           },
           error: () => {
             this.loading.set(false);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Falha ao carregar dados da role'
-            });
           }
         });
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar permissões da role'
-        });
         this.router.navigate(['/roles']);
       }
     });
@@ -341,11 +321,6 @@ export class RoleFormComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar cargo'
-        });
       }
     });
   }

@@ -7,8 +7,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CategoryService } from '../../services/category.service';
 import { CategoryFormData } from '../../models/category.model';
@@ -26,12 +24,10 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     InputTextareaModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     TooltipModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './category-form.component.html',
   styleUrls: ['./category-form.component.scss']
 })
@@ -41,7 +37,6 @@ export class CategoryFormComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
 
@@ -96,11 +91,6 @@ export class CategoryFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar categoria'
-        });
         this.router.navigate(['/categories']);
       }
     });
@@ -145,11 +135,6 @@ export class CategoryFormComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar categoria'
-        });
       }
     });
   }

@@ -5,10 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { CashRegisterService } from '../../services/cash-register.service';
 import { CashRegister } from '../../models/cash-register.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -25,14 +23,12 @@ import { CashRegisterCloseFormComponent } from '../cash-register-close-form/cash
     FormsModule,
     ButtonModule,
     TableModule,
-    ToastModule,
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent,
     CashRegisterCloseFormComponent
   ],
-  providers: [MessageService],
   templateUrl: './cash-register-list.component.html',
   styleUrls: ['./cash-register-list.component.scss']
 })
@@ -73,7 +69,6 @@ export class CashRegisterListComponent implements OnInit {
   });
   private destroyRef = inject(DestroyRef);
   private cashRegisterService = inject(CashRegisterService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -96,11 +91,6 @@ export class CashRegisterListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar caixas'
-        });
         this.loading.set(false);
       }
     });
@@ -113,11 +103,6 @@ export class CashRegisterListComponent implements OnInit {
   openCloseCashRegisterModal(id: string, notes: string): void {
     this.cashRegisterToClose = { id, notes };
     this.showCloseModal.set(true);
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Modal',
-      detail: `Abrindo modal para caixa ${id}`
-    });
   }
 
   confirmCloseCashRegister(data: { finalBalance: number; notes?: string }): void {
@@ -137,11 +122,6 @@ export class CashRegisterListComponent implements OnInit {
       },
       error: () => {
         this.closeLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao fechar caixa'
-        });
       }
     });
   }

@@ -25,5 +25,8 @@ export class SidebarComponent {
     { label: 'Caixas', icon: 'pi pi-wallet', route: '/cash-registers' },
     { label: 'Métodos de Pagamento', icon: 'pi pi-credit-card', route: '/payment-methods' },
       { label: 'Cargos', icon: 'pi pi-id-card', route: '/roles' },
+    { label: 'Config. Comissão', icon: 'pi pi-sliders-h', route: '/commissions/settings' },
+    { label: 'Aplicar Comissão', icon: 'pi pi-percentage', route: '/commissions/apply' },
+    { label: 'Histórico Comissão', icon: 'pi pi-chart-bar', route: '/commissions/history' },
   ];
 }

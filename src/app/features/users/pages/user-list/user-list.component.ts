@@ -5,8 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { User } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -22,18 +20,15 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
     ConfirmationModalComponent,
     SuccessModalComponent,
   ],
-  providers: [MessageService],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private userService = inject(UserService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -56,11 +51,6 @@ export class UserListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar usuários'
-        });
         this.loading.set(false);
       }
     });
@@ -101,11 +91,6 @@ export class UserListComponent implements OnInit {
       error: () => {
         this.userToDelete = null;
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir usuário'
-        });
       }
     });
   }

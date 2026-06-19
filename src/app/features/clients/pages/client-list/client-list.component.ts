@@ -6,10 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -26,20 +24,17 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
     InputTextModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './client-list.component.html',
   styleUrls: ['./client-list.component.scss']
 })
 export class ClientListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private clientService = inject(ClientService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -121,11 +116,6 @@ export class ClientListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar clientes'
-        });
         this.loading.set(false);
       }
     });
@@ -167,11 +157,6 @@ export class ClientListComponent implements OnInit {
       error: () => {
         this.clientToDelete = null;
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir cliente'
-        });
       }
     });
   }

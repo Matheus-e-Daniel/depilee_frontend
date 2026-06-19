@@ -4,11 +4,9 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -24,13 +22,11 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     FormsModule,
     ButtonModule,
     TableModule,
-    ToastModule,
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './category-list.component.html',
   styleUrls: ['./category-list.component.scss']
 })
@@ -71,7 +67,6 @@ export class CategoryListComponent implements OnInit {
   });
   private destroyRef = inject(DestroyRef);
   private categoryService = inject(CategoryService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -94,11 +89,6 @@ export class CategoryListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar categorias'
-        });
         this.loading.set(false);
       }
     });
@@ -135,11 +125,6 @@ export class CategoryListComponent implements OnInit {
       error: () => {
         this.categoryToDelete = null;
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir categoria'
-        });
       }
     });
   }

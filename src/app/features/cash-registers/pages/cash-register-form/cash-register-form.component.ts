@@ -6,8 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { CashRegisterService } from '../../services/cash-register.service';
 import { CashRegisterFormData } from '../../models/cash-register.model';
@@ -24,12 +22,10 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     InputTextModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     TooltipModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './cash-register-form.component.html',
   styleUrls: ['./cash-register-form.component.scss']
 })
@@ -39,7 +35,6 @@ export class CashRegisterFormComponent implements OnInit {
   private cashRegisterService = inject(CashRegisterService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   cashRegisterForm!: FormGroup;
@@ -101,11 +96,6 @@ export class CashRegisterFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar caixa'
-        });
         this.router.navigate(['/cash-registers']);
       }
     });
@@ -155,11 +145,6 @@ export class CashRegisterFormComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar caixa'
-        });
       }
     });
   }

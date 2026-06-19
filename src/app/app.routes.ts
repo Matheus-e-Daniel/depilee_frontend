@@ -205,6 +205,24 @@ export const routes: Routes = [
             .then(m => m.RoleFormComponent)
       },
       {
+        path: 'commissions/settings',
+        loadComponent: () =>
+          import('./features/commissions/pages/commission-settings/commission-settings.component')
+            .then(m => m.CommissionSettingsComponent)
+      },
+      {
+        path: 'commissions/apply',
+        loadComponent: () =>
+          import('./features/commissions/pages/commission-apply/commission-apply.component')
+            .then(m => m.CommissionApplyComponent)
+      },
+      {
+        path: 'commissions/history',
+        loadComponent: () =>
+          import('./features/commissions/pages/commission-history/commission-history.component')
+            .then(m => m.CommissionHistoryComponent)
+      },
+      {
         path: '',
         redirectTo: '/dashboard',
         pathMatch: 'full'

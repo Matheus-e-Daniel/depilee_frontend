@@ -5,8 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { ServiceOrderService } from '../../services/service-order.service';
 import { ServiceOrder, OrderStatus } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
@@ -24,11 +22,9 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './service-order-list.component.html',
   styleUrls: ['./service-order-list.component.scss']
 })
@@ -36,7 +32,6 @@ export class ServiceOrderListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -61,11 +56,6 @@ export class ServiceOrderListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar ordens de serviço'
-        });
         this.loading.set(false);
       }
     });
@@ -94,11 +84,6 @@ export class ServiceOrderListComponent implements OnInit {
       },
       error: () => {
         this.deleteLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir ordem de serviço'
-        });
       }
     });
   }
@@ -132,11 +117,6 @@ export class ServiceOrderListComponent implements OnInit {
         this.loadItemDetails(filteredItems);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar itens da ordem'
-        });
       }
     });
   }

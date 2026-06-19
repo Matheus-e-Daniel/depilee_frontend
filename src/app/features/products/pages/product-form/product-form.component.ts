@@ -8,8 +8,6 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ProductService } from '../../services/product.service';
@@ -33,13 +31,11 @@ import { Category } from '../../../categories/models/category.model';
     InputNumberModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     DropdownModule,
     CheckboxModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss']
 })
@@ -51,7 +47,6 @@ export class ProductFormComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   productForm!: FormGroup;
@@ -101,11 +96,6 @@ export class ProductFormComponent implements OnInit {
         this.brandsLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar marcas'
-        });
         this.brandsLoading.set(false);
       }
     });
@@ -119,11 +109,6 @@ export class ProductFormComponent implements OnInit {
         this.categoriesLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar categorias'
-        });
         this.categoriesLoading.set(false);
       }
     });
@@ -174,11 +159,6 @@ export class ProductFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar produto'
-        });
         this.router.navigate(['/products']);
       }
     });
@@ -225,11 +205,6 @@ export class ProductFormComponent implements OnInit {
       error: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar produto'
-        });
       }
     });
   }

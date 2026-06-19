@@ -1,0 +1,73 @@
+<div class="commission-settings-container w-full">
+  <div class="header">
+    <h1>Configuração de Comissão</h1>
+    <p>Defina como o percentual de comissão é calculado</p>
+  </div>
+
+  <div class="card">
+    <p-card>
+      @if (loading()) {
+        <div class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Carregando configuração...</p>
+        </div>
+      } @else {
+        <form [formGroup]="settingsForm" (ngSubmit)="onSave()" class="settings-form">
+          <div class="form-grid">
+
+            <div class="field col-12">
+              <label for="calculationMode" class="block font-medium mb-2">Modo de Cálculo *</label>
+              <p-dropdown
+                id="calculationMode"
+                formControlName="calculationMode"
+                [options]="calculationModeOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Selecione o modo de cálculo"
+                class="w-full"
+              />
+              <small *ngIf="settingsForm.get('calculationMode')?.invalid && settingsForm.get('calculationMode')?.touched"
+                class="p-error block mt-1">
+                Modo de cálculo é obrigatório
+              </small>
+            </div>
+
+            @if (isGlobalMode) {
+              <div class="field col-12 md:col-6">
+                <label for="globalCommissionPercentage" class="block font-medium mb-2">Percentual Global de Comissão *</label>
+                <p-inputNumber
+                  id="globalCommissionPercentage"
+                  formControlName="globalCommissionPercentage"
+                  [min]="0"
+                  [max]="100"
+                  [maxFractionDigits]="2"
+                  suffix=" %"
+                  placeholder="Ex: 10"
+                  styleClass="w-full"
+                />
+                <small class="block mt-1 hint-text">Aplicado a todos os serviços comissionados neste modo</small>
+                <small *ngIf="settingsForm.get('globalCommissionPercentage')?.invalid && settingsForm.get('globalCommissionPercentage')?.touched"
+                  class="p-error block mt-1">
+                  Informe um percentual entre 0 e 100
+                </small>
+              </div>
+            }
+
+          </div>
+
+          <div class="form-actions">
+            <button
+              pButton
+              type="submit"
+              label="Salvar Configuração"
+              icon="pi pi-save"
+              class="p-button-primary"
+              [disabled]="saving()">
+              <i *ngIf="saving()" class="pi pi-spin pi-spinner ml-2"></i>
+            </button>
+          </div>
+        </form>
+      }
+    </p-card>
+  </div>
+</div>

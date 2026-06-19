@@ -6,8 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { BrandService } from '../../services/brand.service';
 import { BrandFormData } from '../../models/brand.model';
@@ -24,12 +22,10 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     InputTextModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     TooltipModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './brand-form.component.html',
   styleUrls: ['./brand-form.component.scss']
 })
@@ -39,7 +35,6 @@ export class BrandFormComponent implements OnInit {
   private brandService = inject(BrandService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   brandForm!: FormGroup;
@@ -92,11 +87,6 @@ export class BrandFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar marca'
-        });
         this.router.navigate(['/brands']);
       }
     });
@@ -141,11 +131,6 @@ export class BrandFormComponent implements OnInit {
       },
       error: () => {
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar marca'
-        });
       }
     });
   }

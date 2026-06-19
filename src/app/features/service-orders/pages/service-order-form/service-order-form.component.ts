@@ -8,10 +8,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
 import { ServiceOrderService } from '../../services/service-order.service';
 import { Client } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
@@ -39,11 +37,9 @@ interface Installment {
     DropdownModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     CheckboxModule,
     TooltipModule
   ],
-  providers: [MessageService],
   templateUrl: './service-order-form.component.html',
   styleUrls: ['./service-order-form.component.scss']
 })
@@ -56,7 +52,6 @@ export class ServiceOrderFormComponent implements OnInit {
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
 
   orderForm!: FormGroup;
   loading = signal(false);
@@ -165,12 +160,6 @@ export class ServiceOrderFormComponent implements OnInit {
     if (this.items.length > 1) {
       this.items.removeAt(index);
       this.calculateTotal();
-    } else {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Aviso',
-        detail: 'A ordem deve ter pelo menos 1 item'
-      });
     }
   }
 
@@ -199,11 +188,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.clientsLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar clientes'
-        });
         this.clientsLoading.set(false);
       }
     });
@@ -217,11 +201,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.productsLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar produtos'
-        });
         this.productsLoading.set(false);
       }
     });
@@ -235,11 +214,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.servicesLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar serviços'
-        });
         this.servicesLoading.set(false);
       }
     });
@@ -253,11 +227,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.paymentMethodsLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar formas de pagamento'
-        });
         this.paymentMethodsLoading.set(false);
       }
     });
@@ -284,20 +253,10 @@ export class ServiceOrderFormComponent implements OnInit {
     const installments = this.orderForm.get('installments')?.value || 1;
 
     if (total <= 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'O total deve ser maior que zero'
-      });
       return;
     }
 
     if (installments <= 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'O número de parcelas deve ser maior que zero'
-      });
       return;
     }
 
@@ -309,12 +268,6 @@ export class ServiceOrderFormComponent implements OnInit {
     }));
 
     this.installmentsList.set(newInstallments);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: `${installments} parcela(s) gerada(s) com sucesso`
-    });
   }
 
   onProductChange(productId: number, itemIndex: number): void {
@@ -364,11 +317,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.loadOrderItems(id);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar ordem de serviço'
-        });
         this.loading.set(false);
         this.isLoadingData = false;
         this.router.navigate(['/service-orders']);
@@ -404,11 +352,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.isLoadingData = false;
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar itens da ordem'
-        });
         this.loading.set(false);
         this.isLoadingData = false;
       }
@@ -475,11 +418,6 @@ export class ServiceOrderFormComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao criar ordem de serviço'
-        });
       }
     });
   }
@@ -488,22 +426,8 @@ export class ServiceOrderFormComponent implements OnInit {
     this.finishWithMessage(itemsCreated, itemsWithError);
   }
 
-  private finishWithMessage(itemsCreated: number, itemsWithError: number): void {
+  private finishWithMessage(_itemsCreated: number, _itemsWithError: number): void {
     this.loading.set(false);
-
-    let detail = '';
-    if (itemsWithError === 0) {
-      detail = `Ordem de serviço e ${itemsCreated} item(ns) criados com sucesso!`;
-    } else {
-      detail = `Ordem criada. ${itemsCreated} item(ns) criado(s), ${itemsWithError} com erro.`;
-    }
-
-    this.messageService.add({
-      severity: itemsWithError === 0 ? 'success' : 'warn',
-      summary: itemsWithError === 0 ? 'Sucesso' : 'Aviso',
-      detail: detail
-    });
-
     setTimeout(() => {
       this.router.navigate(['/service-orders']);
     }, 1500);

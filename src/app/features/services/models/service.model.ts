@@ -6,6 +6,7 @@ export interface Service {
   categoryId: string;
   categoryName?: string;
   active: boolean;
+  commissionPercentage?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,6 +17,7 @@ export interface ServiceFormData {
   price: number;
   categoryId: string;
   active: boolean;
+  commissionPercentage?: number | null;
 }
 
 export interface ServiceCategory {

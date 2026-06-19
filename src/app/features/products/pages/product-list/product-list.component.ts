@@ -6,9 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -25,19 +23,16 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private productService = inject(ProductService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -113,11 +108,6 @@ export class ProductListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar produtos'
-        });
         this.loading.set(false);
       }
     });
@@ -160,11 +150,6 @@ export class ProductListComponent implements OnInit {
       error: () => {
         this.productToDelete = null;
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir produto'
-        });
       }
     });
   }

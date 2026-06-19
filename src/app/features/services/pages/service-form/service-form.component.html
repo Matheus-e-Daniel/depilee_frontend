@@ -88,6 +88,26 @@
               Categoria é obrigatória
             </small>
           </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="commissionPercentage" class="block font-medium mb-2">% de Comissão</label>
+            <p-inputNumber
+              id="commissionPercentage"
+              formControlName="commissionPercentage"
+              [min]="0"
+              [max]="100"
+              [maxFractionDigits]="2"
+              suffix=" %"
+              placeholder="Ex: 10"
+              styleClass="w-full"
+            />
+            <small class="block mt-1 text-color-secondary">Usado no modo de cálculo "Por Serviço"</small>
+            <small
+              *ngIf="serviceForm.get('commissionPercentage')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Percentual deve estar entre 0 e 100
+            </small>
+          </div>
         </div>
 
         <div class="form-actions">
@@ -115,7 +135,6 @@
   </div>
 </div>
 
-<p-toast></p-toast>
 <app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal

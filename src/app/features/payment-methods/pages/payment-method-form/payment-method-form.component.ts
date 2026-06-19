@@ -8,9 +8,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { PaymentMethodService } from '../../services/payment-method.service';
 import { PaymentMethodFormData, PaymentMethod } from '../../models/payment-method.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
@@ -30,12 +28,10 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
     InputNumberModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     DropdownModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService]
 })
 export class PaymentMethodFormComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
@@ -43,7 +39,6 @@ export class PaymentMethodFormComponent implements OnInit {
   private paymentMethodService = inject(PaymentMethodService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   paymentMethodForm!: FormGroup;
@@ -105,11 +100,6 @@ export class PaymentMethodFormComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar método de pagamento'
-        });
         this.router.navigate(['/payment-methods']);
       }
     });
@@ -119,11 +109,6 @@ export class PaymentMethodFormComponent implements OnInit {
     this.formSubmitted.set(true);
 
     if (this.paymentMethodForm.invalid) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Preencha todos os campos obrigatórios'
-      });
       return;
     }
 
@@ -151,11 +136,6 @@ export class PaymentMethodFormComponent implements OnInit {
         },
         error: () => {
           this.confirmationLoading.set(false);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Falha ao atualizar método de pagamento'
-          });
         }
       });
     } else {
@@ -170,11 +150,6 @@ export class PaymentMethodFormComponent implements OnInit {
         },
         error: () => {
           this.confirmationLoading.set(false);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Falha ao criar método de pagamento'
-          });
         }
       });
     }

@@ -5,11 +5,10 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ServiceService } from '../../services/service.service';
 import { ServiceFormData } from '../../models/service.model';
@@ -27,15 +26,14 @@ import { Category } from '../../../categories/models/category.model';
     ReactiveFormsModule,
     InputTextModule,
     InputTextareaModule,
+    InputNumberModule,
     DropdownModule,
     ButtonModule,
     CardModule,
-    ToastModule,
     CheckboxModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './service-form.component.html',
   styleUrls: ['./service-form.component.scss']
 })
@@ -46,7 +44,6 @@ export class ServiceFormComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private messageService = inject(MessageService);
   successModalService = inject(SuccessModalService);
 
   serviceForm!: FormGroup;
@@ -74,7 +71,8 @@ export class ServiceFormComponent implements OnInit {
       description: [''],
       price: ['', [Validators.required]],
       categoryId: ['', Validators.required],
-      active: [true]
+      active: [true],
+      commissionPercentage: [null, [Validators.min(0), Validators.max(100)]]
     });
 
     this.serviceForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
@@ -92,11 +90,6 @@ export class ServiceFormComponent implements OnInit {
         this.categoriesLoading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar categorias'
-        });
         this.categoriesLoading.set(false);
       }
     });
@@ -127,18 +120,14 @@ export class ServiceFormComponent implements OnInit {
           description: service.description,
           price: formattedPrice,
           categoryId: service.categoryId,
-          active: service.active
+          active: service.active,
+          commissionPercentage: service.commissionPercentage ?? null
         });
 
         this.originalFormValue = JSON.stringify(this.serviceForm.value);
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar serviço'
-        });
         this.router.navigate(['/services']);
       }
     });
@@ -191,11 +180,6 @@ export class ServiceFormComponent implements OnInit {
       error: () => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao salvar serviço'
-        });
       }
     });
   }

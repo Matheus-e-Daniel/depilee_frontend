@@ -6,9 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
-import { MessageService } from 'primeng/api';
 import { ServiceService } from '../../services/service.service';
 import { Service } from '../../models/service.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -25,19 +23,16 @@ import { SuccessModalService } from '../../../../shared/components/success-modal
     ButtonModule,
     TableModule,
     TagModule,
-    ToastModule,
     DropdownModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
-  providers: [MessageService],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.scss']
 })
 export class ServiceListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private serviceService = inject(ServiceService);
-  private messageService = inject(MessageService);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
 
@@ -112,11 +107,6 @@ export class ServiceListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao carregar serviços'
-        });
         this.loading.set(false);
       }
     });
@@ -158,11 +148,6 @@ export class ServiceListComponent implements OnInit {
       error: () => {
         this.serviceToDelete = null;
         this.confirmationLoading.set(false);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Falha ao excluir serviço'
-        });
       }
     });
   }
