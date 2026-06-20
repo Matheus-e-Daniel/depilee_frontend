@@ -118,9 +118,18 @@ export class HeaderComponent implements OnInit {
     this.authService.logout();
   }
 
-  private goToProfile(): void { }
+  private goToProfile(): void {
+    const user = this.authService.getUserData();
+    if (user?.id) {
+      this.router.navigate(['/users/edit', user.id]);
+    } else {
+      this.router.navigate(['/users']);
+    }
+  }
 
-  private goToSettings(): void { }
+  private goToSettings(): void {
+    this.router.navigate(['/commissions/settings']);
+  }
 
   viewNotification(_id: number): void { }
 

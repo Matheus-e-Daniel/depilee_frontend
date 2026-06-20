@@ -14,6 +14,9 @@ import { RoleFormData, Permission } from '../../models/role.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -37,7 +40,8 @@ interface PermissionModule {
     CheckboxModule,
     TableModule,
     SuccessModalComponent,
-    ConfirmationModalComponent
+    ConfirmationModalComponent,
+    ErrorModalComponent
   ],
   templateUrl: './role-form.component.html',
   styleUrls: ['./role-form.component.scss']
@@ -49,6 +53,7 @@ export class RoleFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   roleForm!: FormGroup;
   loading = signal(false);
@@ -319,8 +324,13 @@ export class RoleFormComponent implements OnInit {
           this.router.navigate(['/roles']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.showConfirmation.set(false);
+        const msg = err.status === 403
+          ? 'Você não tem permissão para realizar esta ação.'
+          : 'Erro ao salvar cargo. Tente novamente.';
+        this.errorModalService.show(msg);
       }
     });
   }
