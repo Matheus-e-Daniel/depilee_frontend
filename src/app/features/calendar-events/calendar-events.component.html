@@ -181,3 +181,9 @@
     </button>
   </ng-template>
 </p-dialog>
+
+<app-error-modal
+  [visible]="errorModalService.visible()"
+  [message]="errorModalService.message()"
+  (visibleChange)="errorModalService.hide()">
+</app-error-modal>
