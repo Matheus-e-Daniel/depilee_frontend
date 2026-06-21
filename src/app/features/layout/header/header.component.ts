@@ -119,12 +119,7 @@ export class HeaderComponent implements OnInit {
   }
 
   private goToProfile(): void {
-    const user = this.authService.getUserData();
-    if (user?.id) {
-      this.router.navigate(['/users/edit', user.id]);
-    } else {
-      this.router.navigate(['/users']);
-    }
+    this.router.navigate(['/profile']);
   }
 
   private goToSettings(): void {

@@ -205,6 +205,11 @@ export const routes: Routes = [
             .then(m => m.RoleFormComponent)
       },
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
         path: 'commissions/settings',
         loadComponent: () =>
           import('./features/commissions/pages/commission-settings/commission-settings.component')

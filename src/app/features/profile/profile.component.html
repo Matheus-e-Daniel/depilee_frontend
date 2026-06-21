@@ -1,0 +1,101 @@
+<div class="profile-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="top"
+      class="p-button-text p-button-sm"
+      type="button"
+      (click)="onCancel()">
+    </button>
+    <h1>Meu Perfil</h1>
+  </div>
+
+  <div class="card">
+    <p-card>
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+        <div class="form-grid">
+
+          <div class="field col-12">
+            <label for="fullName">Nome completo *</label>
+            <input
+              id="fullName"
+              formControlName="fullName"
+              type="text"
+              class="p-inputtext"
+              placeholder="Digite o nome completo" />
+            <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error block mt-1">
+              Nome completo é obrigatório
+            </small>
+          </div>
+
+          <div class="field col-12">
+            <label for="email">Email (login) *</label>
+            <input
+              id="email"
+              formControlName="email"
+              type="email"
+              class="p-inputtext"
+              placeholder="Digite o email" />
+            <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="p-error block mt-1">
+              <span *ngIf="profileForm.get('email')?.errors?.['required']">Email é obrigatório</span>
+              <span *ngIf="profileForm.get('email')?.errors?.['email']">Email inválido</span>
+            </small>
+          </div>
+
+          <div class="field col-12 section-divider">
+            <span class="section-label">Alterar senha (opcional)</span>
+          </div>
+
+          <div class="field col-12">
+            <label for="newPassword">Nova senha</label>
+            <input
+              id="newPassword"
+              formControlName="newPassword"
+              type="password"
+              class="p-inputtext"
+              placeholder="Deixe em branco para não alterar" />
+            <small *ngIf="profileForm.get('newPassword')?.value && profileForm.get('newPassword')!.value!.length < 6" class="p-error block mt-1">
+              A senha deve ter pelo menos 6 caracteres
+            </small>
+          </div>
+
+          <div class="field col-12">
+            <label for="confirmPassword">Confirmar nova senha</label>
+            <input
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              type="password"
+              class="p-inputtext"
+              placeholder="Repita a nova senha" />
+            <small *ngIf="profileForm.errors?.['passwordMismatch'] && profileForm.get('confirmPassword')?.touched" class="p-error block mt-1">
+              As senhas não coincidem
+            </small>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="button"
+            label="Cancelar"
+            class="p-button-outlined"
+            (click)="onCancel()">
+          </button>
+          <button
+            pButton
+            type="submit"
+            label="Salvar"
+            [loading]="loading()"
+            [disabled]="loading()">
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>
+
+<app-error-modal></app-error-modal>
+<app-success-modal></app-success-modal>
