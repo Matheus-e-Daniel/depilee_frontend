@@ -379,6 +379,27 @@
         margin: 0;
         color: #94a3b8;
       }
+
+      ::ng-deep .p-button {
+        background: transparent;
+        border: 2px solid #cbd5e1;
+        color: #64748b;
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+
+        &:hover {
+          border-color: #3b82f6;
+          color: #3b82f6;
+          background: rgba(59, 130, 246, 0.05);
+          transform: translateY(-1px);
+        }
+
+        .pi {
+          margin-right: 0.5rem;
+        }
+      }
     }
   }
 }
