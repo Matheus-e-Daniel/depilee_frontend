@@ -8,8 +8,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CalendarEventService } from './services/calendar-event.service';
 import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS } from './models/calendar-event.model';
+import { ErrorModalComponent } from '../../shared/components/error-modal/error-modal.component';
+import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 
 interface TimeSlot {
   hour: string;
@@ -35,7 +38,8 @@ interface DayColumn {
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
-    FormsModule
+    FormsModule,
+    ErrorModalComponent
   ],
   templateUrl: './calendar-events.component.html',
   styleUrls: ['./calendar-events.component.scss']
@@ -43,6 +47,7 @@ interface DayColumn {
 export class CalendarEventsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private calendarEventService = inject(CalendarEventService);
+  errorModalService = inject(ErrorModalService);
 
   selectedDate = signal<Date>(new Date());
   weekDays = signal<DayColumn[]>([]);
@@ -249,19 +254,26 @@ export class CalendarEventsComponent implements OnInit {
           this.showEventDialog.set(false);
           this.loadEvents();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.loading.set(false);
+          const msg = err.status === 403
+            ? 'Você não tem permissão para realizar esta ação.'
+            : 'Erro ao salvar evento. Tente novamente.';
+          this.errorModalService.show(msg);
         }
       });
     } else {
-      
       this.calendarEventService.create(this.newEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.showEventDialog.set(false);
           this.loadEvents();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.loading.set(false);
+          const msg = err.status === 403
+            ? 'Você não tem permissão para realizar esta ação.'
+            : 'Erro ao salvar evento. Tente novamente.';
+          this.errorModalService.show(msg);
         }
       });
     }

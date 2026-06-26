@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'https://depilee-backend.onrender.com/'
+  production: true,
+  apiBaseUrl: 'https://depilee-backend.onrender.com/v1/'
 };
