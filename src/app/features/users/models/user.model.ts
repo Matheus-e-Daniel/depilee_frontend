@@ -15,12 +15,15 @@ export interface Address {
 }
 
 export interface User {
+  id: string;
   email: string;
   fullName: string;
   password: string;
   cpf: string;
   birth: Date;
   gender: Gender;
+  roleId?: string | null;
+  role?: { id: string; name: string } | null;
   address: Address;
   commissionPercentage?: number | null;
 }

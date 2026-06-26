@@ -9,7 +9,7 @@
       type="button"
       (click)="onCancel()">
     </button>
-    <h1>Novo Usuário</h1>
+    <h1>{{ isEditMode() ? 'Editar Usuário' : 'Novo Usuário' }}</h1>
   </div>
   <div class="card">
     <p-card>
@@ -200,7 +200,7 @@
           <button
             pButton
             type="submit"
-            label="Cadastrar"
+            [label]="isEditMode() ? 'Salvar' : 'Cadastrar'"
             class="p-button-primary"
             [disabled]="loading()">
             <i *ngIf="loading()" class="pi pi-spin pi-spinner ml-2"></i>

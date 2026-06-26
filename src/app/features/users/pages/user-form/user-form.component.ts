@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -114,6 +115,7 @@ export class UserFormComponent implements OnInit {
 
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
+    console.log('[UserForm] checkEditMode - id:', id);
 
     if (id) {
       this.isEditMode.set(true);
@@ -138,15 +140,19 @@ export class UserFormComponent implements OnInit {
   private loadUser(id: string): void {
     this.loading.set(true);
     this.isLoadingUserData.set(true);
+    console.log('[UserForm] loadUser - chamando GET identity/users/' + id);
 
     this.userService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (user: any) => {
+      next: (response: any) => {
+        console.log('[UserForm] loadUser - resposta da API:', response);
+        const user = response?.data ?? response;
         this.userForm.patchValue({
           email: user.email,
           fullName: user.fullName,
           cpf: user.cpf,
           birth: this.formatDateToDDMMYYYY(user.birth),
           gender: user.gender,
+          roleId: user.roleId || user.roles?.[0]?.id || null,
           commissionPercentage: user.commissionPercentage ?? null,
           address: {
             cep: user.address?.cep || '',
@@ -159,12 +165,14 @@ export class UserFormComponent implements OnInit {
           }
         }, { emitEvent: false });
 
+        console.log('[UserForm] loadUser - form após patchValue:', this.userForm.value);
         this.originalFormValue = { ...this.userForm.value };
         this.formModified.set(false);
         this.loading.set(false);
         this.isLoadingUserData.set(false);
       },
-      error: () => {
+      error: (err: any) => {
+        console.error('[UserForm] loadUser - ERRO ao buscar usuário:', err);
         this.errorModalService.show('Falha ao carregar usuário');
         this.isLoadingUserData.set(false);
         this.loading.set(false);
@@ -275,6 +283,7 @@ export class UserFormComponent implements OnInit {
       Cpf: formValue.cpf,
       Birth: birthISO,
       Gender: formValue.gender || 3,
+      CommissionPercentage: formValue.commissionPercentage ?? null,
       Address: mappedAddress
     };
 
@@ -306,7 +315,7 @@ export class UserFormComponent implements OnInit {
         const selectedRole = this.roles().find(r => r.id === selectedRoleId);
 
         if (!selectedRole) {
-          return operation;
+          return of(response);
         }
 
         return this.userService.assignRole(userId, selectedRole.name);
