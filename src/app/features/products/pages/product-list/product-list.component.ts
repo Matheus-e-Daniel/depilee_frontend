@@ -12,6 +12,7 @@ import { Product } from '../../models/product.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-product-list',
@@ -34,6 +35,7 @@ export class ProductListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private productService = inject(ProductService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   allProducts = signal<Product[]>([]);
@@ -166,5 +168,9 @@ export class ProductListComponent implements OnInit {
     if (stock > 20) return 'success';
     if (stock > 0) return 'warning';
     return 'danger';
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

@@ -12,6 +12,7 @@ import { PaymentMethod } from '../../models/payment-method.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-payment-method-list',
@@ -34,6 +35,7 @@ export class PaymentMethodListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private paymentMethodService = inject(PaymentMethodService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   allPaymentMethods = signal<PaymentMethod[]>([]);
@@ -154,5 +156,9 @@ export class PaymentMethodListComponent implements OnInit {
       5: 'Transferência'
     };
     return types[type] || 'Desconhecido';
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

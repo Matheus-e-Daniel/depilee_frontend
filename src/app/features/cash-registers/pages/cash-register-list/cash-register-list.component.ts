@@ -13,6 +13,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { CashRegisterCloseFormComponent } from '../cash-register-close-form/cash-register-close-form.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-cash-register-list',
@@ -70,6 +71,7 @@ export class CashRegisterListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private cashRegisterService = inject(CashRegisterService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   cashRegisters = signal<CashRegister[]>([]);
@@ -137,5 +139,9 @@ export class CashRegisterListComponent implements OnInit {
 
   newCashRegister(): void {
     this.router.navigate(['/cash-registers/new']);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

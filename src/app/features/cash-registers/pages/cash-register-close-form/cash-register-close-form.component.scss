@@ -12,15 +12,14 @@
   backdrop-filter: blur(4px);
 }
 
-
 .confirmation-modal-card.cash-register-close-modal-card {
   background: #fff;
   border-radius: 16px;
-  padding: 2rem 2.5rem 2rem 2.5rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   min-width: 350px;
   max-width: 420px;
   width: 100%;
@@ -28,30 +27,61 @@
   overflow-y: auto;
   position: relative;
   margin: 0 auto;
+  animation: slideIn 0.3s ease-out;
 }
 
 .close-btn {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: transparent;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
   border: none;
-  font-size: 1.7rem;
-  color: #888;
+  border-radius: 10px;
+  color: #64748b;
   cursor: pointer;
   z-index: 2;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
+
+  .pi {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: #e2e8f0;
+    color: #334155;
+  }
 }
-.close-btn:hover {
-  color: #333;
+
+.icon-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  background: rgba(59, 130, 246, 0.12);
+
+  i {
+    font-size: 1.75rem;
+    color: #3b82f6;
+  }
 }
 
 .modal-title {
-  margin-bottom: 1.5rem;
+  margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #1f2937;
   width: 100%;
-  text-align: left;
+  text-align: center;
 }
 
 .close-form {
@@ -59,8 +89,72 @@
 }
 
 .field {
+  position: relative;
   margin-bottom: 1.5rem;
   width: 100%;
+
+  label {
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  ::ng-deep input.p-inputtext,
+  ::ng-deep textarea.p-inputtext {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #1e293b;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:hover {
+      border-color: #cbd5e1;
+    }
+
+    &:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+
+    &.ng-invalid.ng-touched {
+      border-color: #ef4444;
+
+      &:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+
+  .p-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #fef2f2;
+    border-radius: 8px;
+    border-left: 3px solid #ef4444;
+
+    &::before {
+      content: '⚠';
+      font-size: 0.9rem;
+    }
+  }
 }
 
 .actions {
@@ -68,4 +162,82 @@
   justify-content: flex-end;
   gap: 1rem;
   width: 100%;
+  margin-top: 0.5rem;
+
+  ::ng-deep .p-button {
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    min-width: 120px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.p-button-text {
+      background: transparent;
+      color: #64748b;
+      border: 2px solid #e2e8f0;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #334155;
+        border-color: #cbd5e1;
+      }
+    }
+
+    &.p-button-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border: none;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+      }
+
+      &:disabled {
+        background: #cbd5e1;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .confirmation-modal-card.cash-register-close-modal-card {
+    min-width: 280px;
+    padding: 1.75rem;
+    margin: 1rem;
+  }
+
+  .icon-container {
+    width: 56px;
+    height: 56px;
+
+    i {
+      font-size: 1.5rem;
+    }
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+
+    ::ng-deep .p-button {
+      width: 100%;
+    }
+  }
 }

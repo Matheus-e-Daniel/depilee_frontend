@@ -9,7 +9,9 @@
       icon="pi pi-plus"
       label="Nova Categoria"
       class="p-button-primary"
-      (click)="newCategory()">
+      [class.not-clickable]="!hasPermission('Category.Create')"
+      [attr.disabled]="!hasPermission('Category.Create') ? true : null"
+      (click)="hasPermission('Category.Create') && newCategory()">
     </button>
   </div>
 
@@ -86,13 +88,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editCategory(category.id)">
+                [class.not-clickable]="!hasPermission('Category.Edit')"
+                [attr.disabled]="!hasPermission('Category.Edit') ? true : null"
+                (click)="hasPermission('Category.Edit') && editCategory(category.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteCategory(category.id, category.name)">
+                [class.not-clickable]="!hasPermission('Category.Delete')"
+                [attr.disabled]="!hasPermission('Category.Delete') ? true : null"
+                (click)="hasPermission('Category.Delete') && deleteCategory(category.id, category.name)">
               </button>
             </div>
           </td>
@@ -111,7 +117,9 @@
                 icon="pi pi-plus"
                 label="Nova Categoria"
                 class="p-button-outlined mt-3"
-                (click)="newCategory()">
+                [class.not-clickable]="!hasPermission('Category.Create')"
+                [attr.disabled]="!hasPermission('Category.Create') ? true : null"
+                (click)="hasPermission('Category.Create') && newCategory()">
               </button>
             </div>
           </td>

@@ -10,7 +10,9 @@
       icon="pi pi-plus"
       label="Novo Método"
       class="p-button-primary"
-      (click)="newPaymentMethod()">
+      [class.not-clickable]="!hasPermission('PaymentMethod.Create')"
+      [attr.disabled]="!hasPermission('PaymentMethod.Create') ? true : null"
+      (click)="hasPermission('PaymentMethod.Create') && newPaymentMethod()">
     </button>
   </div>
 
@@ -88,14 +90,18 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editPaymentMethod(paymentMethod)"
+                [class.not-clickable]="!hasPermission('PaymentMethod.Edit')"
+                [attr.disabled]="!hasPermission('PaymentMethod.Edit') ? true : null"
+                (click)="hasPermission('PaymentMethod.Edit') && editPaymentMethod(paymentMethod)"
                 pTooltip="Editar">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deletePaymentMethod(paymentMethod)"
+                [class.not-clickable]="!hasPermission('PaymentMethod.Delete')"
+                [attr.disabled]="!hasPermission('PaymentMethod.Delete') ? true : null"
+                (click)="hasPermission('PaymentMethod.Delete') && deletePaymentMethod(paymentMethod)"
                 pTooltip="Excluir">
               </button>
             </div>
@@ -115,7 +121,9 @@
                 icon="pi pi-plus"
                 label="Novo Método"
                 class="p-button-outlined mt-3"
-                (click)="newPaymentMethod()">
+                [class.not-clickable]="!hasPermission('PaymentMethod.Create')"
+                [attr.disabled]="!hasPermission('PaymentMethod.Create') ? true : null"
+                (click)="hasPermission('PaymentMethod.Create') && newPaymentMethod()">
               </button>
             </div>
           </td>

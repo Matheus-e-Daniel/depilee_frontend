@@ -1,8 +1,9 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { debounceTime, Observable } from 'rxjs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
@@ -10,14 +11,19 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
+import { TabViewModule } from 'primeng/tabview';
 import { ServiceOrderService } from '../../services/service-order.service';
-import { Client } from '../../models/service-order.model';
+import { Client, ServiceOrder } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
-import { ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
+import { ProductOption, ServiceOption, ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
 import { UserService } from '../../../users/services/user.service';
 import { User } from '../../../users/models/user.model';
 import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
 import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
+import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
+import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 
 interface Installment {
   number: number;
@@ -38,7 +44,10 @@ interface Installment {
     ButtonModule,
     CardModule,
     CheckboxModule,
-    TooltipModule
+    TooltipModule,
+    TabViewModule,
+    ErrorModalComponent,
+    SuccessModalComponent
   ],
   templateUrl: './service-order-form.component.html',
   styleUrls: ['./service-order-form.component.scss']
@@ -52,11 +61,24 @@ export class ServiceOrderFormComponent implements OnInit {
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  errorModalService = inject(ErrorModalService);
+  successModalService = inject(SuccessModalService);
 
   orderForm!: FormGroup;
+  serviceItemForm!: FormGroup;
+  productItemForm!: FormGroup;
+
   loading = signal(false);
   isEditMode = signal(false);
   orderId = signal<number | null>(null);
+  activeTabIndex = signal(0);
+
+  creatingOrder = signal(false);
+  savingInfo = signal(false);
+  addingServiceItem = signal(false);
+  addingProductItem = signal(false);
+  removingItemId = signal<number | null>(null);
+
   clients = signal<Client[]>([]);
   clientsLoading = signal(true);
   products = signal<ProductOption[]>([]);
@@ -65,10 +87,23 @@ export class ServiceOrderFormComponent implements OnInit {
   servicesLoading = signal(true);
   paymentMethods = signal<PaymentMethod[]>([]);
   paymentMethodsLoading = signal(true);
-  private isLoadingData = false;
   users = signal<User[]>([]);
   usersLoading = signal(true);
   installmentsList = signal<Installment[]>([]);
+
+  orderItems = signal<ServiceOrderItem[]>([]);
+  serviceLineItems = computed(() => this.orderItems().filter(item => !!item.serviceId));
+  productLineItems = computed(() => this.orderItems().filter(item => !!item.productId));
+
+  private discountValue = signal<number | null>(null);
+  subtotal = computed(() => this.orderItems().reduce((sum, item) => sum + item.quantity * item.unitPrice, 0));
+  total = computed(() => {
+    const discountPercent = this.discountValue() || 0;
+    const sub = this.subtotal();
+    return sub - (sub * discountPercent / 100);
+  });
+
+  private isLoadingData = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -98,86 +133,40 @@ export class ServiceOrderFormComponent implements OnInit {
     this.orderForm = this.fb.group({
       clientId: [null],
       discount: [null, [Validators.min(0), Validators.max(100)]],
-      total: [0, [Validators.required, Validators.min(0.01)]],
       notes: [''],
-      paymentMethodId: [null, Validators.required],
-      installments: [{ value: 1, disabled: true }],
-      items: this.fb.array([this.createItemFormGroup()])
+      paymentMethodId: [null],
+      installments: [{ value: 1, disabled: true }]
     });
 
-    this.orderForm.get('discount')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.calculateTotal());
-
-    this.orderForm.get('paymentMethodId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(paymentMethodId => {
-      this.onPaymentMethodChange(paymentMethodId);
-    });
-  }
-
-  private createItemFormGroup(): FormGroup {
-    const itemGroup = this.fb.group({
-      productId: [null],
-      serviceId: [null],
-      responsibleUserId: [null],
+    this.serviceItemForm = this.fb.group({
+      serviceId: [null, Validators.required],
+      responsibleUserId: [null, Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
 
-    itemGroup.get('productId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      if (itemGroup.get('productId')?.value) {
-        itemGroup.patchValue({ responsibleUserId: null, serviceId: null });
-      }
-    });
-    itemGroup.get('serviceId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      if (itemGroup.get('serviceId')?.value) {
-        itemGroup.patchValue({ productId: null });
-      } else {
-        itemGroup.patchValue({ responsibleUserId: null });
-      }
+    this.productItemForm = this.fb.group({
+      productId: [null, Validators.required],
+      quantity: [1, [Validators.required, Validators.min(1)]],
+      unitPrice: [0, [Validators.required, Validators.min(0.01)]]
     });
 
-    itemGroup.get('quantity')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.orderForm.get('discount')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(value => {
+      this.discountValue.set(value);
+    });
+
+    this.orderForm.get('discount')?.valueChanges.pipe(
+      debounceTime(600),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
       if (!this.isLoadingData) {
-        this.calculateTotal();
-      }
-    });
-    itemGroup.get('unitPrice')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      if (!this.isLoadingData) {
-        this.calculateTotal();
+        this.syncOrderTotals();
       }
     });
 
-    return itemGroup;
-  }
-
-  get items(): FormArray {
-    return this.orderForm.get('items') as FormArray;
-  }
-
-  addItem(): void {
-    this.items.push(this.createItemFormGroup());
-  }
-
-  removeItem(index: number): void {
-    if (this.items.length > 1) {
-      this.items.removeAt(index);
-      this.calculateTotal();
-    }
-  }
-
-  private calculateTotal(): void {
-    const discountPercent = this.orderForm.get('discount')?.value || 0;
-
-    let subtotal = 0;
-    this.items.controls.forEach(item => {
-      const quantity = item.get('quantity')?.value || 0;
-      const unitPrice = item.get('unitPrice')?.value || 0;
-      subtotal += quantity * unitPrice;
+    this.orderForm.get('paymentMethodId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(paymentMethodId => {
+      this.onPaymentMethodChange(paymentMethodId);
     });
-
-    const discountValue = subtotal * (discountPercent / 100);
-
-    const total = subtotal - discountValue;
-
-    this.orderForm.get('total')?.setValue(total, { emitEvent: false });
   }
 
   private loadClients(): void {
@@ -249,14 +238,10 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   generateInstallments(): void {
-    const total = this.orderForm.get('total')?.value || 0;
+    const total = this.total();
     const installments = this.orderForm.get('installments')?.value || 1;
 
-    if (total <= 0) {
-      return;
-    }
-
-    if (installments <= 0) {
+    if (total <= 0 || installments <= 0) {
       return;
     }
 
@@ -270,26 +255,34 @@ export class ServiceOrderFormComponent implements OnInit {
     this.installmentsList.set(newInstallments);
   }
 
-  onProductChange(productId: number, itemIndex: number): void {
+  onProductChange(productId: number): void {
     if (productId) {
-      const itemControl = this.items.at(itemIndex);
-      itemControl.patchValue({ serviceId: null });
       const product = this.products().find(p => p.id === productId);
       if (product) {
-        itemControl.patchValue({ unitPrice: product.price });
+        this.productItemForm.patchValue({ unitPrice: product.price });
       }
     }
   }
 
-  onServiceChange(serviceId: number, itemIndex: number): void {
+  onServiceChange(serviceId: number): void {
     if (serviceId) {
-      const itemControl = this.items.at(itemIndex);
-      itemControl.patchValue({ productId: null });
       const service = this.services().find(s => s.id === serviceId);
       if (service) {
-        itemControl.patchValue({ unitPrice: service.price });
+        this.serviceItemForm.patchValue({ unitPrice: service.price });
       }
     }
+  }
+
+  getServiceName(item: ServiceOrderItem): string {
+    return item.serviceName || this.services().find(s => s.id === item.serviceId)?.name || `Serviço #${item.serviceId}`;
+  }
+
+  getProductName(item: ServiceOrderItem): string {
+    return item.productName || this.products().find(p => p.id === item.productId)?.name || `Produto #${item.productId}`;
+  }
+
+  getResponsibleName(item: ServiceOrderItem): string {
+    return this.users().find(u => String(u.id) === String(item.responsibleUserId))?.fullName || '—';
   }
 
   private checkEditMode(): void {
@@ -310,7 +303,6 @@ export class ServiceOrderFormComponent implements OnInit {
         this.orderForm.patchValue({
           clientId: order.clientId,
           discount: order.discount,
-          total: order.total,
           notes: order.notes || ''
         });
 
@@ -327,27 +319,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private loadOrderItems(serviceOrderId: number): void {
     this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        const items = response.data.filter(item => item.serviceOrderId === serviceOrderId);
-
-        while (this.items.length > 0) {
-          this.items.removeAt(0);
-        }
-
-        if (items.length > 0) {
-          items.forEach(item => {
-            const itemGroup = this.createItemFormGroup();
-            itemGroup.patchValue({
-              productId: item.productId || null,
-              serviceId: item.serviceId || null,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice
-            });
-            this.items.push(itemGroup);
-          });
-        } else {
-          this.items.push(this.createItemFormGroup());
-        }
-
+        this.orderItems.set(response.data.filter(item => item.serviceOrderId === serviceOrderId));
         this.loading.set(false);
         this.isLoadingData = false;
       },
@@ -358,89 +330,150 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
-    if (this.orderForm.invalid) {
-      this.markFormGroupTouched();
+  createOrder(): void {
+    if (this.orderForm.get('discount')?.invalid) {
+      this.orderForm.get('discount')?.markAsTouched();
       return;
     }
 
-    this.loading.set(true);
-    const formValues = this.orderForm.value;
-
-    const serviceOrderPayload = {
-      clientId: formValues.clientId || null,
-      discount: formValues.discount || null,
-      notes: formValues.notes || null
+    this.creatingOrder.set(true);
+    const payload = {
+      clientId: this.orderForm.get('clientId')?.value || null,
+      discount: this.orderForm.get('discount')?.value || null,
+      notes: this.orderForm.get('notes')?.value || null
     };
 
-    this.serviceOrderService.create(serviceOrderPayload as any).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (serviceOrderResponse) => {
-        this.orderId.set(serviceOrderResponse.id);
-
-        const items = formValues.items || [];
-
-        let itemsCreated = 0;
-        let itemsWithError = 0;
-
-        items.forEach((item: any, index: number) => {
-          let serviceOrderItemPayload: any = {
-            serviceOrderId: serviceOrderResponse.id,
-            productId: item.productId || null,
-            serviceId: item.serviceId || null,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice
-          };
-          if (item.serviceId) {
-            serviceOrderItemPayload.responsibleUserId = item.responsibleUserId;
-          } else {
-            delete serviceOrderItemPayload.responsibleUserId;
-          }
-
-          if (item.productId) {
-            delete serviceOrderItemPayload.responsibleUserId;
-          }
-
-          this.serviceOrderItemService.create(serviceOrderItemPayload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: () => {
-              itemsCreated++;
-              if (itemsCreated + itemsWithError === items.length) {
-                this.finishSubmit(itemsCreated, itemsWithError);
-              }
-            },
-            error: () => {
-              itemsWithError++;
-              if (itemsCreated + itemsWithError === items.length) {
-                this.finishSubmit(itemsCreated, itemsWithError);
-              }
-            }
-          });
-        });
+    this.serviceOrderService.create(payload as any).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (order) => {
+        this.orderId.set(order.id);
+        this.creatingOrder.set(false);
+        this.activeTabIndex.set(1);
+        this.successModalService.show('Ordem criada! Agora adicione serviços e produtos.');
       },
       error: () => {
-        this.loading.set(false);
+        this.creatingOrder.set(false);
+        this.errorModalService.show('Falha ao criar a ordem de serviço');
       }
     });
   }
 
-  private finishSubmit(itemsCreated: number, itemsWithError: number): void {
-    this.finishWithMessage(itemsCreated, itemsWithError);
+  saveBasicInfo(): void {
+    if (this.orderForm.get('discount')?.invalid) {
+      this.orderForm.get('discount')?.markAsTouched();
+      return;
+    }
+
+    this.savingInfo.set(true);
+    this.persistOrderChanges().subscribe({
+      next: () => {
+        this.savingInfo.set(false);
+        this.successModalService.show('Informações atualizadas!');
+      },
+      error: () => {
+        this.savingInfo.set(false);
+        this.errorModalService.show('Falha ao atualizar a ordem');
+      }
+    });
   }
 
-  private finishWithMessage(_itemsCreated: number, _itemsWithError: number): void {
-    this.loading.set(false);
-    setTimeout(() => {
-      this.router.navigate(['/service-orders']);
-    }, 1500);
+  private persistOrderChanges(): Observable<ServiceOrder> {
+    const id = this.orderId();
+    const payload = {
+      id,
+      clientId: this.orderForm.get('clientId')?.value || null,
+      discount: this.orderForm.get('discount')?.value || null,
+      notes: this.orderForm.get('notes')?.value || null,
+      total: this.total()
+    };
+    return this.serviceOrderService.update(payload as any);
+  }
+
+  private syncOrderTotals(): void {
+    if (!this.orderId()) {
+      return;
+    }
+    this.persistOrderChanges().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      error: () => this.errorModalService.show('Falha ao atualizar o total da ordem')
+    });
+  }
+
+  addServiceItem(): void {
+    const orderId = this.orderId();
+    if (this.serviceItemForm.invalid || !orderId) {
+      this.serviceItemForm.markAllAsTouched();
+      return;
+    }
+
+    this.addingServiceItem.set(true);
+    const value = this.serviceItemForm.value;
+    const payload = {
+      serviceOrderId: orderId,
+      serviceId: value.serviceId,
+      responsibleUserId: value.responsibleUserId,
+      quantity: value.quantity,
+      unitPrice: value.unitPrice
+    };
+
+    this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (created) => {
+        this.orderItems.update(items => [...items, created]);
+        this.serviceItemForm.reset({ serviceId: null, responsibleUserId: null, quantity: 1, unitPrice: 0 });
+        this.addingServiceItem.set(false);
+        this.syncOrderTotals();
+      },
+      error: () => {
+        this.addingServiceItem.set(false);
+        this.errorModalService.show('Falha ao adicionar serviço');
+      }
+    });
+  }
+
+  addProductItem(): void {
+    const orderId = this.orderId();
+    if (this.productItemForm.invalid || !orderId) {
+      this.productItemForm.markAllAsTouched();
+      return;
+    }
+
+    this.addingProductItem.set(true);
+    const value = this.productItemForm.value;
+    const payload = {
+      serviceOrderId: orderId,
+      productId: value.productId,
+      quantity: value.quantity,
+      unitPrice: value.unitPrice
+    };
+
+    this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (created) => {
+        this.orderItems.update(items => [...items, created]);
+        this.productItemForm.reset({ productId: null, quantity: 1, unitPrice: 0 });
+        this.addingProductItem.set(false);
+        this.syncOrderTotals();
+      },
+      error: () => {
+        this.addingProductItem.set(false);
+        this.errorModalService.show('Falha ao adicionar produto');
+      }
+    });
+  }
+
+  removeLineItem(item: ServiceOrderItem): void {
+    this.removingItemId.set(item.id);
+    this.serviceOrderItemService.delete(item.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.orderItems.update(items => items.filter(i => i.id !== item.id));
+        this.removingItemId.set(null);
+        this.syncOrderTotals();
+      },
+      error: () => {
+        this.removingItemId.set(null);
+        this.errorModalService.show('Falha ao remover item');
+      }
+    });
   }
 
   onCancel(): void {
     this.router.navigate(['/service-orders']);
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.orderForm.controls).forEach(key => {
-      const control = this.orderForm.get(key);
-      control?.markAsTouched();
-    });
   }
 }

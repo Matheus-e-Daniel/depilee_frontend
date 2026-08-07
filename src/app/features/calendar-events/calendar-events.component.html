@@ -157,12 +157,18 @@
     </div>
 
     <div class="form-field">
-      <label for="categoryColor">Cor da Categoria</label>
-      <input
+      <label for="categoryColor">Prioridade do Evento</label>
+      <select
         id="categoryColor"
-        type="color"
         [(ngModel)]="newEvent.categoryColor"
-        class="color-picker" />
+        class="w-full">
+        <option
+          *ngFor="let opt of categoryColorOptions"
+          [ngValue]="opt.value"
+          [style.color]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
     </div>
   </div>
 

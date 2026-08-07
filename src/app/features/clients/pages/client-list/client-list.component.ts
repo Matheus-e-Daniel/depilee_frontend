@@ -13,6 +13,7 @@ import { Client } from '../../models/client.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-client-list',
@@ -36,6 +37,7 @@ export class ClientListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private clientService = inject(ClientService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   allClients = signal<Client[]>([]);
@@ -192,5 +194,9 @@ export class ClientListComponent implements OnInit {
       return `${cleaned.substring(0,3)}.${cleaned.substring(3,6)}.${cleaned.substring(6,9)}-${cleaned.substring(9)}`;
     }
     return cpf;
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

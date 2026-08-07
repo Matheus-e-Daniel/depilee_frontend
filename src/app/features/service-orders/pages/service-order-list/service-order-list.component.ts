@@ -12,6 +12,7 @@ import { ServiceOrderItem } from '../../../service-order-items/models/service-or
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-service-order-list',
@@ -33,6 +34,7 @@ export class ServiceOrderListComponent implements OnInit {
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   orders = signal<ServiceOrder[]>([]);
@@ -159,5 +161,9 @@ export class ServiceOrderListComponent implements OnInit {
     return this.orderToDelete
       ? `Tem certeza que deseja excluir a ordem "${this.orderToDelete.orderNumber}"?`
       : '';
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

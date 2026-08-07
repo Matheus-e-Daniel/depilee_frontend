@@ -10,7 +10,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CalendarEventService } from './services/calendar-event.service';
-import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS } from './models/calendar-event.model';
+import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS, CATEGORY_COLOR_OPTIONS } from './models/calendar-event.model';
 import { ErrorModalComponent } from '../../shared/components/error-modal/error-modal.component';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 
@@ -55,6 +55,7 @@ export class CalendarEventsComponent implements OnInit {
   timeSlots: TimeSlot[] = [];
 
   statusOptions = EVENT_STATUS_OPTIONS;
+  categoryColorOptions = CATEGORY_COLOR_OPTIONS;
   EEventStatus = EEventStatus;
  
   showEventDialog = signal(false);
@@ -68,7 +69,7 @@ export class CalendarEventsComponent implements OnInit {
     startDate: '',
     endDate: '',
     allDay: false,
-    categoryColor: '#3b82f6'
+    categoryColor: CATEGORY_COLOR_OPTIONS[0].value
   };
 
   eventDate: Date = new Date();
@@ -185,7 +186,7 @@ export class CalendarEventsComponent implements OnInit {
       startDate: startDateTime,
       endDate: endDateTime,
       allDay: false,
-      categoryColor: '#3b82f6'
+      categoryColor: CATEGORY_COLOR_OPTIONS[0].value
     };
     this.showEventDialog.set(true);
   }
@@ -210,7 +211,7 @@ export class CalendarEventsComponent implements OnInit {
       startDate: event.startDate || '',
       endDate: event.endDate || '',
       allDay: event.allDay,
-      categoryColor: event.categoryColor || '#3b82f6'
+      categoryColor: event.categoryColor || CATEGORY_COLOR_OPTIONS[0].value
     };
 
     this.showEventDialog.set(true);

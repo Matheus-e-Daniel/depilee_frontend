@@ -18,7 +18,6 @@ import { ErrorModalComponent } from '../../../../shared/components/error-modal/e
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 interface PermissionModule {
   name: string;
@@ -302,12 +301,7 @@ export class RoleFormComponent implements OnInit {
       : this.roleService.create(rolePayload);
 
     createOrUpdateRole.pipe(
-      switchMap(() => {
-        if (permissionIds.length > 0) {
-          return this.roleService.assignPermissions({ roleName, permissionIds });
-        }
-        return of(null);
-      }),
+      switchMap(() => this.roleService.assignPermissions({ roleName, permissionIds })),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {

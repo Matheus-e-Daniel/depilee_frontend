@@ -1,4 +1,4 @@
-import { Component, output, inject, ViewChild, OnInit, DestroyRef } from '@angular/core';
+import { Component, output, inject, signal, ViewChild, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -10,12 +10,13 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../notifications/services/notification.service';
+import { ProfileComponent } from '../../profile/profile.component';
 import { interval } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule],
+  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule, ProfileComponent],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
@@ -30,6 +31,7 @@ export class HeaderComponent implements OnInit {
 
   toggleSidebar = output<void>();
   notificationCount = 0;
+  showProfileCard = signal(false);
 
   userMenuItems: MenuItem[] = [
     {
@@ -119,7 +121,7 @@ export class HeaderComponent implements OnInit {
   }
 
   private goToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.showProfileCard.set(true);
   }
 
   private goToSettings(): void {

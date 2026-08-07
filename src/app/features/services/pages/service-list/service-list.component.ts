@@ -12,6 +12,7 @@ import { Service } from '../../models/service.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-service-list',
@@ -34,6 +35,7 @@ export class ServiceListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private serviceService = inject(ServiceService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   allServices = signal<Service[]>([]);
@@ -158,5 +160,9 @@ export class ServiceListComponent implements OnInit {
 
   newService(): void {
     this.router.navigate(['/services/new']);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

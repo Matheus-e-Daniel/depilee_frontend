@@ -334,6 +334,7 @@ export class UserFormComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
+        this.errorModalService.show(errorMessage);
       }
     });
   }

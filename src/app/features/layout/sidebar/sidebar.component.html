@@ -2,7 +2,7 @@
   <nav>
     <div class="menu-items">
       <a
-        *ngFor="let item of menuItems"
+        *ngFor="let item of menuItems()"
         [routerLink]="item.route"
         routerLinkActive="active"
         [title]="item.label">

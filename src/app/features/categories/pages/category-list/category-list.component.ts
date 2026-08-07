@@ -12,6 +12,7 @@ import { Category } from '../../models/category.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-category-list',
@@ -68,6 +69,7 @@ export class CategoryListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private categoryService = inject(CategoryService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   successModalService = inject(SuccessModalService);
 
   categories = signal<Category[]>([]);
@@ -135,6 +137,10 @@ export class CategoryListComponent implements OnInit {
 
   newCategory(): void {
     this.router.navigate(['/categories/new']);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }
 

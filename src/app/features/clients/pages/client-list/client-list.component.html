@@ -9,7 +9,9 @@
       icon="pi pi-plus"
       label="Novo Cliente"
       class="p-button-primary"
-      (click)="newClient()">
+      [class.not-clickable]="!hasPermission('Client.Create')"
+      [attr.disabled]="!hasPermission('Client.Create') ? true : null"
+      (click)="hasPermission('Client.Create') && newClient()">
     </button>
   </div>
 
@@ -97,13 +99,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editClient(client.id)">
+                [class.not-clickable]="!hasPermission('Client.Edit')"
+                [attr.disabled]="!hasPermission('Client.Edit') ? true : null"
+                (click)="hasPermission('Client.Edit') && editClient(client.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteClient(client.id, client.name)">
+                [class.not-clickable]="!hasPermission('Client.Delete')"
+                [attr.disabled]="!hasPermission('Client.Delete') ? true : null"
+                (click)="hasPermission('Client.Delete') && deleteClient(client.id, client.name)">
               </button>
             </div>
           </td>
@@ -122,7 +128,9 @@
                 icon="pi pi-plus"
                 label="Novo Cliente"
                 class="p-button-outlined mt-3"
-                (click)="newClient()">
+                [class.not-clickable]="!hasPermission('Client.Create')"
+                [attr.disabled]="!hasPermission('Client.Create') ? true : null"
+                (click)="hasPermission('Client.Create') && newClient()">
               </button>
             </div>
           </td>

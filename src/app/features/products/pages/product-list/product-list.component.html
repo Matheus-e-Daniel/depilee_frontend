@@ -9,7 +9,9 @@
       icon="pi pi-plus"
       label="Novo Produto"
       class="p-button-primary"
-      (click)="newProduct()">
+      [class.not-clickable]="!hasPermission('Product.Create')"
+      [attr.disabled]="!hasPermission('Product.Create') ? true : null"
+      (click)="hasPermission('Product.Create') && newProduct()">
     </button>
   </div>
 
@@ -70,7 +72,6 @@
       <ng-template pTemplate="header">
         <tr>
           <th>Nome</th>
-          <th>Custo</th>
           <th>Preço</th>
           <th>Estoque</th>
           <th>Status</th>
@@ -81,7 +82,6 @@
       <ng-template pTemplate="body" let-product>
         <tr>
           <td data-label="Nome">{{ product.name }}</td>
-          <td data-label="Custo">{{ product.cost | currency:'BRL' }}</td>
           <td data-label="Preço">{{ product.price | currency:'BRL' }}</td>
           <td data-label="Estoque">
             <span [class]="product.stock === 0 ? 'text-red-500 font-semibold' : ''">
@@ -100,13 +100,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editProduct(product.id)">
+                [class.not-clickable]="!hasPermission('Product.Edit')"
+                [attr.disabled]="!hasPermission('Product.Edit') ? true : null"
+                (click)="hasPermission('Product.Edit') && editProduct(product.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteProduct(product.id, product.name)">
+                [class.not-clickable]="!hasPermission('Product.Delete')"
+                [attr.disabled]="!hasPermission('Product.Delete') ? true : null"
+                (click)="hasPermission('Product.Delete') && deleteProduct(product.id, product.name)">
               </button>
             </div>
           </td>
@@ -125,7 +129,9 @@
                 icon="pi pi-plus"
                 label="Novo Produto"
                 class="p-button-outlined mt-3"
-                (click)="newProduct()">
+                [class.not-clickable]="!hasPermission('Product.Create')"
+                [attr.disabled]="!hasPermission('Product.Create') ? true : null"
+                (click)="hasPermission('Product.Create') && newProduct()">
               </button>
             </div>
           </td>

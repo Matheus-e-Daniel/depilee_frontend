@@ -74,6 +74,7 @@ export class AuthService {
   }
 
   getPermissions(): Permission[] {
+    this.getUserData();
     return this._permissions;
   }
 

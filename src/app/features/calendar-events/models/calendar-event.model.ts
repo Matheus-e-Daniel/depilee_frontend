@@ -12,6 +12,12 @@ export const EVENT_STATUS_OPTIONS = [
   { label: 'Outro', value: EEventStatus.Other },
 ];
 
+export const CATEGORY_COLOR_OPTIONS = [
+  { label: 'Vermelho', value: '#ef4444' },
+  { label: 'Amarelo', value: '#f59e0b' },
+  { label: 'Verde', value: '#10b981' },
+];
+
 export interface CalendarEvent {
   id: string;
   subject: string;

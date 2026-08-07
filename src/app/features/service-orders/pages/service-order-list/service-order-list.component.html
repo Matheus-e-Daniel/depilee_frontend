@@ -9,7 +9,9 @@
       icon="pi pi-plus"
       label="Nova Ordem"
       class="p-button-primary"
-      (click)="newOrder()">
+      [class.not-clickable]="!hasPermission('ServiceOrder.Create')"
+      [attr.disabled]="!hasPermission('ServiceOrder.Create') ? true : null"
+      (click)="hasPermission('ServiceOrder.Create') && newOrder()">
     </button>
   </div>
 
@@ -64,13 +66,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editOrder(order.id)">
+                [class.not-clickable]="!hasPermission('ServiceOrder.Edit')"
+                [attr.disabled]="!hasPermission('ServiceOrder.Edit') ? true : null"
+                (click)="hasPermission('ServiceOrder.Edit') && editOrder(order.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteOrder(order.id, order.orderNumber)">
+                [class.not-clickable]="!hasPermission('ServiceOrder.Delete')"
+                [attr.disabled]="!hasPermission('ServiceOrder.Delete') ? true : null"
+                (click)="hasPermission('ServiceOrder.Delete') && deleteOrder(order.id, order.orderNumber)">
               </button>
             </div>
           </td>
@@ -130,7 +136,9 @@
                 icon="pi pi-plus"
                 label="Nova Ordem"
                 class="p-button-outlined mt-3"
-                (click)="newOrder()">
+                [class.not-clickable]="!hasPermission('ServiceOrder.Create')"
+                [attr.disabled]="!hasPermission('ServiceOrder.Create') ? true : null"
+                (click)="hasPermission('ServiceOrder.Create') && newOrder()">
               </button>
             </div>
           </td>

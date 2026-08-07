@@ -9,7 +9,9 @@
       icon="pi pi-plus"
       label="Novo Caixa"
       class="p-button-primary"
-      (click)="newCashRegister()">
+      [class.not-clickable]="!hasPermission('CashRegister.Create')"
+      [attr.disabled]="!hasPermission('CashRegister.Create') ? true : null"
+      (click)="hasPermission('CashRegister.Create') && newCashRegister()">
     </button>
   </div>
 
@@ -86,7 +88,9 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editCashRegister(cashRegister.id)">
+                [class.not-clickable]="!hasPermission('CashRegister.Edit')"
+                [attr.disabled]="!hasPermission('CashRegister.Edit') ? true : null"
+                (click)="hasPermission('CashRegister.Edit') && editCashRegister(cashRegister.id)">
               </button>
               <button
                 pButton
@@ -111,7 +115,9 @@
                 icon="pi pi-plus"
                 label="Novo Caixa"
                 class="p-button-outlined mt-3"
-                (click)="newCashRegister()">
+                [class.not-clickable]="!hasPermission('CashRegister.Create')"
+                [attr.disabled]="!hasPermission('CashRegister.Create') ? true : null"
+                (click)="hasPermission('CashRegister.Create') && newCashRegister()">
               </button>
             </div>
           </td>

@@ -81,3 +81,8 @@
   [popup]="true"
   id="user-menu">
 </p-menu>
+
+<app-profile
+  [visible]="showProfileCard()"
+  (closed)="showProfileCard.set(false)">
+</app-profile>

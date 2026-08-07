@@ -1,10 +1,10 @@
-import { Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, Input, Output, EventEmitter, OnChanges, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
 import { ProfileService } from './services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ErrorModalComponent } from '../../shared/components/error-modal/error-modal.component';
@@ -19,19 +19,22 @@ import { SuccessModalService } from '../../shared/components/success-modal/succe
     CommonModule,
     ReactiveFormsModule,
     ButtonModule,
-    CardModule,
+    InputTextModule,
+    TooltipModule,
     ErrorModalComponent,
     SuccessModalComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnChanges {
+  @Input() visible = false;
+  @Output() closed = new EventEmitter<void>();
+
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
-  private router = inject(Router);
   errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
@@ -44,9 +47,24 @@ export class ProfileComponent implements OnInit {
 
   loading = signal(false);
   formSubmitted = signal(false);
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
 
-  ngOnInit(): void {
-    this.loadProfile();
+  ngOnChanges(): void {
+    if (this.visible) {
+      this.formSubmitted.set(false);
+      this.showNewPassword.set(false);
+      this.showConfirmPassword.set(false);
+      this.loadProfile();
+    }
+  }
+
+  toggleNewPasswordVisibility(): void {
+    this.showNewPassword.update(v => !v);
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.update(v => !v);
   }
 
   private loadProfile(): void {
@@ -116,6 +134,6 @@ export class ProfileComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/dashboard']);
+    this.closed.emit();
   }
 }
