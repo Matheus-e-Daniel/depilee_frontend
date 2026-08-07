@@ -151,42 +151,7 @@
   }
 
   .service-order-form {
-                        .installments-table {
-                          .installments-header {
-                            .installment-col {
-                              &:first-child {
-                                background: #f3f4f6;
-                                color: #334155;
-                              }
-                            }
-                          }
-                          .installments-body {
-                            .installment-row {
-                              .installment-col {
-                                &:first-child {
-                                  background: #f3f4f6;
-                                  color: #334155;
-                                  border-radius: 0;
-                                }
-                              }
-                              .installment-number {
-                                background: none;
-                                color: #3b82f6;
-                                font-weight: 600;
-                                font-size: 1rem;
-                                padding: 0.25rem 0.75rem;
-                                border-radius: 0;
-                                display: inline-block;
-                              }
-                              ::ng-deep .p-checkbox-label {
-                                margin-left: 1.25rem !important;
-                                color: #64748b;
-                                font-weight: 500;
-                              }
-                            }
-                          }
-                        }
-                    .installments-table {
+    .installments-table {
                       background: white;
                       border-radius: 12px;
                       border: 1px solid #e2e8f0;
@@ -288,68 +253,6 @@
                         }
                       }
                     }
-                .form-grid .add-item-btn {
-                  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                  border: none;
-                  color: white;
-                  padding: 0.875rem 1.75rem;
-                  border-radius: 12px;
-                  font-weight: 600;
-                  font-size: 1rem;
-                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-                  position: relative;
-                  overflow: hidden;
-                  display: flex;
-                  align-items: center;
-                  gap: 0.5rem;
-                }
-                .form-grid .add-item-btn:hover {
-                  transform: translateY(-2px);
-                  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-                }
-                .form-grid .add-item-btn .pi-calculator {
-                  font-size: 1.1rem;
-                  font-weight: bold;
-                }
-            .form-grid .field.col-12.md\:col-6 {
-              > div {
-                display: flex !important;
-                align-items: flex-end !important;
-                gap: 0.75rem !important;
-              }
-              .add-item-btn {
-                flex-shrink: 0;
-                margin-bottom: 0 !important;
-              }
-              .w-full {
-                min-width: 0;
-              }
-            }
-        .section-card .form-grid .field.col-12.md\:col-6.flex.align-items-end .add-item-btn {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          border: none;
-          color: white;
-          padding: 0.875rem 1.75rem;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 1rem;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        .section-card .form-grid .field.col-12.md\:col-6.flex.align-items-end .add-item-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-        }
-        .section-card .form-grid .field.col-12.md\:col-6.flex.align-items-end .add-item-btn .pi-calculator {
-          font-size: 1.1rem;
-          font-weight: bold;
-        }
     .section-card {
       background: #f8fafc;
       border-radius: 12px;
@@ -774,49 +677,6 @@
           margin-top: 1.5rem;
           padding-top: 1.5rem;
           border-top: 1px solid #e2e8f0;
-
-          ::ng-deep .add-item-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border: none;
-            color: white;
-            padding: 0.875rem 1.75rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-
-            &::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: -100%;
-              width: 100%;
-              height: 100%;
-              background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-              transition: left 0.5s ease;
-            }
-
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-
-              &::before {
-                left: 100%;
-              }
-            }
-
-            &:disabled {
-              background: #cbd5e1;
-              transform: none;
-              box-shadow: none;
-            }
-          }
         }
       }
 
@@ -915,48 +775,6 @@
           }
         }
 
-        ::ng-deep .add-item-btn {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          border: none;
-          color: white;
-          padding: 0.875rem 1.75rem;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 1rem;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-          position: relative;
-          overflow: hidden;
-
-          &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-          }
-
-          &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-
-            &::before {
-              left: 100%;
-            }
-          }
-
-          &:active {
-            transform: translateY(0);
-          }
-
-          .pi-plus {
-            font-size: 1.1rem;
-            font-weight: bold;
-          }
-        }
       }
 
       .empty-items {
@@ -1073,6 +891,35 @@
   }
 }
 
+.form-grid .add-item-btn,
+.add-item-actions .add-item-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  }
+
+  &:disabled {
+    background: #cbd5e1;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -1149,11 +996,6 @@
             h2 {
               font-size: 1.25rem;
             }
-          }
-
-          ::ng-deep .add-item-btn {
-            width: 100%;
-            justify-content: center;
           }
         }
 
