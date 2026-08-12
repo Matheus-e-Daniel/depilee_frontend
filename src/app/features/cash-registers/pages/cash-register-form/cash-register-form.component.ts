@@ -80,8 +80,8 @@ export class CashRegisterFormComponent implements OnInit {
   private loadCashRegister(id: string): void {
     this.loading.set(true);
     this.cashRegisterService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (cashRegister) => {
-        
+      next: ({ data: cashRegister }) => {
+
         const formattedBalance = cashRegister.initialBalance.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',

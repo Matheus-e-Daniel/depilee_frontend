@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputMaskModule } from 'primeng/inputmask';
@@ -22,7 +22,6 @@ import { ClientFormData } from '../../models/client.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
-import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 
 @Component({
@@ -40,8 +39,7 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
     CardModule,
     CheckboxModule,
     SuccessModalComponent,
-    ConfirmationModalComponent,
-    ErrorModalComponent
+    ConfirmationModalComponent
   ],
   templateUrl: './client-form.component.html',
   styleUrls: ['./client-form.component.scss']
@@ -261,7 +259,7 @@ export class ClientFormComponent implements OnInit {
     this.isLoadingClientData.set(true);
 
     this.clientService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (client) => {
+      next: ({ data: client }) => {
         this.clientForm.patchValue({
           name: client.name,
           gender: client.gender,
@@ -283,8 +281,8 @@ export class ClientFormComponent implements OnInit {
         this.loading.set(false);
         this.isLoadingClientData.set(false);
       },
-      error: () => {
-        this.errorModalService.show('Falha ao carregar cliente');
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar cliente');
         this.isLoadingClientData.set(false);
         this.loading.set(false);
         setTimeout(() => {
@@ -351,10 +349,10 @@ export class ClientFormComponent implements OnInit {
           this.router.navigate(['/clients']);
         }, SUCCESS_REDIRECT_DELAY);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
-        this.errorModalService.show('Falha ao salvar cliente');
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar cliente');
       }
     });
   }

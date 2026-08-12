@@ -12,9 +12,9 @@
     </div>
 
     <div class="header-actions">
-      <div class="last-update" *ngIf="!loading()">
+      <div class="last-update" *ngIf="!loading() && lastUpdated">
         <i class="pi pi-clock"></i>
-        <span>1</span>
+        <span>Atualizado às {{ lastUpdated | date:'HH:mm' }}</span>
       </div>
       <button pButton
               icon="pi pi-refresh"
@@ -28,14 +28,14 @@
 
   <section class="cards">
 
-    <p-card class="card card-clientes">
+    <p-card class="card card-clientes" *ngIf="canViewClients">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
         <div class="card-content">
           <div class="card-header">
             <div>
               <span class="label">Total de Clientes</span>
-              <p class="card-description">Clientes ativos no sistema</p>
+              <p class="card-description">Clientes cadastrados no sistema</p>
             </div>
             <div class="card-icon-wrapper">
               <i class="pi pi-users"></i>
@@ -56,42 +56,14 @@
       </ng-container>
     </p-card>
 
-    <p-card class="card card-caixa">
-      <div class="card-decoration"></div>
-      <ng-container *ngIf="!loading(); else cardSkeleton">
-        <div class="card-content">
-          <div class="card-header">
-            <div>
-              <span class="label">Caixa Total</span>
-              <p class="card-description">Valor em caixa disponível</p>
-            </div>
-            <div class="card-icon-wrapper">
-              <i class="pi pi-wallet"></i>
-            </div>
-          </div>
-
-          <div class="card-body">
-            <span class="value">R$ {{ valorCaixa | number:'1.2-2' }}</span>
-            <div class="card-footer">
-              <span class="indicator positive">
-                <i class="pi pi-arrow-up"></i>
-                {{ crescimentoCaixa }}
-              </span>
-              <span class="trend-label">crescimento mensal</span>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-    </p-card>
-
-    <p-card class="card card-agendamentos">
+    <p-card class="card card-agendamentos" *ngIf="canViewEvents">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
         <div class="card-content">
           <div class="card-header">
             <div>
               <span class="label">Agendamentos Hoje</span>
-              <p class="card-description">Agendamentos para hoje</p>
+              <p class="card-description">Eventos do calendário para hoje</p>
             </div>
             <div class="card-icon-wrapper">
               <i class="pi pi-calendar-check"></i>
@@ -101,8 +73,8 @@
           <div class="card-body">
             <span class="value">{{ agendamentosHoje }}</span>
             <div class="card-footer">
-              <span class="indicator" [ngClass]="variacaoAgendamentos >= 0 ? 'positive' : 'negative'">
-                <i class="pi" [ngClass]="variacaoAgendamentos >= 0 ? 'pi-arrow-up' : 'pi-arrow-down'"></i>
+              <span class="indicator" [ngClass]="variacaoAgendamentos > 0 ? 'positive' : variacaoAgendamentos < 0 ? 'negative' : 'neutral'">
+                <i class="pi" [ngClass]="variacaoAgendamentos > 0 ? 'pi-arrow-up' : variacaoAgendamentos < 0 ? 'pi-arrow-down' : 'pi-minus'"></i>
                 {{ variacaoAgendamentos | percent }}
               </span>
               <span class="trend-label">vs. ontem</span>
@@ -112,14 +84,14 @@
       </ng-container>
     </p-card>
 
-    <p-card class="card card-cancelamentos">
+    <p-card class="card card-cancelamentos" *ngIf="canViewOrders">
       <div class="card-decoration"></div>
       <ng-container *ngIf="!loading(); else cardSkeleton">
         <div class="card-content">
           <div class="card-header">
             <div>
               <span class="label">Taxa de Cancelamento</span>
-              <p class="card-description">Últimos 7 dias</p>
+              <p class="card-description">Ordens de serviço nos últimos 7 dias</p>
             </div>
             <div class="card-icon-wrapper">
               <i class="pi pi-times-circle"></i>
@@ -127,13 +99,13 @@
           </div>
 
           <div class="card-body">
-            <span class="value">{{ cancelamentos }}</span>
+            <span class="value">{{ taxaCancelamento | number:'1.0-1' }}%</span>
             <div class="card-footer">
-              <span class="indicator negative">
-                <i class="pi pi-arrow-down"></i>
-                {{ variacaoCancelamentos }}
+              <span class="indicator" [ngClass]="pontosVariacaoCancelamento <= 0 ? 'positive' : 'negative'">
+                <i class="pi" [ngClass]="pontosVariacaoCancelamento <= 0 ? 'pi-arrow-down' : 'pi-arrow-up'"></i>
+                {{ pontosVariacaoCancelamento > 0 ? '+' : '' }}{{ pontosVariacaoCancelamento | number:'1.0-1' }}pp
               </span>
-              <span class="trend-label">redução mensal</span>
+              <span class="trend-label">vs. 7 dias anteriores</span>
             </div>
           </div>
         </div>
@@ -144,13 +116,13 @@
 
   <section class="lower">
 
-    <p-card class="chart-card">
+    <p-card class="chart-card" *ngIf="canViewClients">
       <ng-container *ngIf="!loading(); else chartSkeleton">
         <div class="chart-content">
           <div class="chart-header">
             <div class="chart-title">
               <h2><i class="pi pi-chart-line"></i> Crescimento de Clientes</h2>
-              <p class="chart-subtitle">Evolução mensal do número de clientes</p>
+              <p class="chart-subtitle">Total de clientes cadastrados ao longo do tempo</p>
             </div>
 
             <div class="period-buttons">
@@ -172,52 +144,56 @@
       </ng-container>
     </p-card>
 
-    <p-card class="list-card">
+    <p-card class="list-card" *ngIf="canViewEvents">
       <div class="list-header">
         <div>
           <h2><i class="pi pi-clock"></i> Próximos Agendamentos</h2>
-          <p class="list-subtitle">Próximos compromissos agendados</p>
+          <p class="list-subtitle">Próximos eventos do calendário</p>
         </div>
-        <button pButton icon="pi pi-ellipsis-h" class="list-menu-btn"></button>
       </div>
 
       <ng-container *ngIf="!loading(); else listSkeleton">
-        <div class="agendamentos-list">
+        <div class="agendamentos-list" *ngIf="proximosAgendamentos.length > 0; else emptyAgendamentos">
           <div *ngFor="let a of proximosAgendamentos" class="agendamento-item">
             <div class="agendamento-left">
               <div class="agendamento-time">
                 <span class="time-hour">{{ a.horario }}</span>
-                <span class="time-duration">60 min</span>
+                <span class="time-duration" *ngIf="a.duracao">{{ a.duracao }}</span>
               </div>
               <div class="agendamento-separator">
                 <div class="line"></div>
-                <div class="dot"></div>
+                <div class="dot" [style.background]="a.color"></div>
               </div>
             </div>
 
             <div class="agendamento-content">
               <div class="agendamento-client">
-                <div class="client-avatar">
-                  <i class="pi pi-user"></i>
+                <div class="client-avatar" [style.background]="a.color + '22'" [style.color]="a.color">
+                  <i class="pi pi-calendar"></i>
                 </div>
                 <div class="client-info">
-                  <div class="client-name">{{ a.cliente }}</div>
-                  <div class="client-service">{{ a.servico }}</div>
+                  <div class="client-name">{{ a.subject }}</div>
                 </div>
               </div>
 
               <div class="agendamento-footer">
-                <div class="status-badge" [ngClass]="'status-' + a.status.toLowerCase()">
-                  {{ a.status }}
+                <div class="status-badge" [ngClass]="'status-' + a.statusClass">
+                  {{ a.statusLabel }}
                 </div>
-                <button pButton icon="pi pi-ellipsis-v" class="action-btn"></button>
               </div>
             </div>
           </div>
         </div>
 
+        <ng-template #emptyAgendamentos>
+          <div class="empty-agendamentos">
+            <i class="pi pi-calendar-times"></i>
+            <p>Nenhum agendamento futuro no calendário</p>
+          </div>
+        </ng-template>
+
         <div class="list-footer">
-          <button pButton label="Ver todos" icon="pi pi-list" class="view-all-btn"></button>
+          <button pButton label="Ver todos" icon="pi pi-list" class="view-all-btn" (click)="goToCalendar()"></button>
         </div>
       </ng-container>
     </p-card>

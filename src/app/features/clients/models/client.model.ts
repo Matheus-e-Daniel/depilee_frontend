@@ -1,11 +1,3 @@
-export interface PagedResponse<T> {
-  currentPage: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  data: T[];
-}
-
 export interface Client {
   id: string;
   name: string;

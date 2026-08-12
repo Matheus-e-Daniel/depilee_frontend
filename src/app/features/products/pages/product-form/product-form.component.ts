@@ -127,7 +127,7 @@ export class ProductFormComponent implements OnInit {
   private loadProduct(id: string): void {
     this.loading.set(true);
     this.productService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (product) => {
+      next: ({ data: product }) => {
         this.productForm.patchValue({
           name: product.name,
           description: product.description,

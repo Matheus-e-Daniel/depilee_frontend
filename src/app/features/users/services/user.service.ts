@@ -1,8 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, of, throwError } from 'rxjs';
 import { User } from '../models/user.model';
 import { environment } from '../../../../environments/environment';
+import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
+
+const EMPTY_PAGED_RESPONSE: PagedApiResponse<any> = {
+  data: [],
+  message: '',
+  currentPage: 1,
+  pageSize: 0,
+  totalCount: 0,
+  totalPages: 0
+};
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -10,27 +20,29 @@ export class UserService {
   private apiUrl = environment.apiBaseUrl + 'identity/register';
   private apiListUrl = environment.apiBaseUrl + 'identity/users/all';
 
-  getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiListUrl);
+  getAll(): Observable<PagedApiResponse<User>> {
+    return this.http.get<PagedApiResponse<User>>(this.apiListUrl).pipe(
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(EMPTY_PAGED_RESPONSE) : throwError(() => err))
+    );
   }
 
-    getById(id: string): Observable<User> {
-      return this.http.get<User>(`${environment.apiBaseUrl}identity/users/${id}`);
+    getById(id: string): Observable<ApiResponse<User>> {
+      return this.http.get<ApiResponse<User>>(`${environment.apiBaseUrl}identity/users/${id}`);
     }
 
-  create(user: any): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
+  create(user: any): Observable<ApiResponse<User>> {
+    return this.http.post<ApiResponse<User>>(this.apiUrl, user);
   }
 
-  update(user: any): Observable<User> {
-    return this.http.put<User>(this.apiUrl, user);
+  update(user: any): Observable<ApiResponse<User>> {
+    return this.http.put<ApiResponse<User>>(this.apiUrl, user);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  assignRole(userId: string | number, roleName: string): Observable<any> {
-    return this.http.post(`${environment.apiBaseUrl}identity/user/${userId}/role`, { roleName });
+  assignRole(userId: string | number, roleName: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiBaseUrl}identity/user/${userId}/role`, { roleName });
   }
 }

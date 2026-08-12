@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models/api-response.model';
 
 export interface ProfileData {
   id: number;
@@ -20,13 +21,11 @@ export class ProfileService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiBaseUrl + 'identity/users/me';
 
-  getOwnProfile(): Observable<ProfileData> {
-    return this.http.get<any>(this.baseUrl).pipe(
-      map(res => res.data)
-    );
+  getOwnProfile(): Observable<ApiResponse<ProfileData>> {
+    return this.http.get<ApiResponse<ProfileData>>(this.baseUrl);
   }
 
-  updateOwnProfile(data: UpdateProfileRequest): Observable<any> {
-    return this.http.put<any>(this.baseUrl, data);
+  updateOwnProfile(data: UpdateProfileRequest): Observable<ApiResponse<ProfileData>> {
+    return this.http.put<ApiResponse<ProfileData>>(this.baseUrl, data);
   }
 }

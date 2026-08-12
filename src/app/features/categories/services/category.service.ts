@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PagedResponse, Category, CategoryFormData } from '../models/category.model';
+import { Category, CategoryFormData } from '../models/category.model';
+import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -11,23 +12,23 @@ export class CategoryService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'categories';
 
-  getAll(): Observable<PagedResponse<Category>> {
-    return this.http.get<PagedResponse<Category>>(this.apiUrl);
+  getAll(): Observable<PagedApiResponse<Category>> {
+    return this.http.get<PagedApiResponse<Category>>(this.apiUrl);
   }
 
-  getById(id: string): Observable<Category> {
-    return this.http.get<Category>(`${this.apiUrl}/${id}`);
+  getById(id: string): Observable<ApiResponse<Category>> {
+    return this.http.get<ApiResponse<Category>>(`${this.apiUrl}/${id}`);
   }
 
-  create(category: CategoryFormData): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, category);
+  create(category: CategoryFormData): Observable<ApiResponse<Category>> {
+    return this.http.post<ApiResponse<Category>>(this.apiUrl, category);
   }
 
-  update(category: any): Observable<Category> {
-    return this.http.put<Category>(this.apiUrl, category);
+  update(category: any): Observable<ApiResponse<Category>> {
+    return this.http.put<ApiResponse<Category>>(this.apiUrl, category);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

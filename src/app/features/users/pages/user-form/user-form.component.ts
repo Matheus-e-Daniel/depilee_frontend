@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
@@ -15,7 +15,6 @@ import { User, Gender } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { RoleService } from '../../../roles/services/role.service';
 import { Role } from '../../../roles/models/role.model';
-import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -36,7 +35,6 @@ const FOCUS_NUMBER_DELAY = 0;
     DropdownModule,
     InputMaskModule,
     InputNumberModule,
-    ErrorModalComponent,
     SuccessModalComponent
   ],
   templateUrl: './user-form.component.html',
@@ -171,9 +169,9 @@ export class UserFormComponent implements OnInit {
         this.loading.set(false);
         this.isLoadingUserData.set(false);
       },
-      error: (err: any) => {
+      error: (err: HttpErrorResponse) => {
         console.error('[UserForm] loadUser - ERRO ao buscar usuário:', err);
-        this.errorModalService.show('Falha ao carregar usuário');
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar usuário');
         this.isLoadingUserData.set(false);
         this.loading.set(false);
         setTimeout(() => {
@@ -308,8 +306,8 @@ export class UserFormComponent implements OnInit {
       : 'Falha ao cadastrar usuário';
 
     operation.pipe(
-      switchMap((response: any) => {
-        const userId = this.isEditMode() ? this.userId() : response?.data?.id || response?.id;
+      switchMap((response) => {
+        const userId = this.isEditMode() ? this.userId()! : response.data.id;
 
         const selectedRoleId = formValue.roleId;
         const selectedRole = this.roles().find(r => r.id === selectedRoleId);
@@ -332,9 +330,9 @@ export class UserFormComponent implements OnInit {
           this.router.navigate(['/users']);
         }, 2000);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.errorModalService.show(errorMessage);
+        this.errorModalService.show(err.error?.message || errorMessage);
       }
     });
   }

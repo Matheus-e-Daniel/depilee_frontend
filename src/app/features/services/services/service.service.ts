@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Service, ServiceFormData, ServiceCategory } from '../models/service.model';
-import { PagedResponse } from '../../products/product.index';
+import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -13,27 +13,27 @@ export class ServiceService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'services';
 
-  getAll(): Observable<PagedResponse<Service>> {
-    return this.http.get<PagedResponse<Service>>(this.apiUrl);
+  getAll(): Observable<PagedApiResponse<Service>> {
+    return this.http.get<PagedApiResponse<Service>>(this.apiUrl);
   }
 
-  getById(id: string): Observable<Service> {
-    return this.http.get<Service>(`${this.apiUrl}/${id}`);
+  getById(id: string): Observable<ApiResponse<Service>> {
+    return this.http.get<ApiResponse<Service>>(`${this.apiUrl}/${id}`);
   }
 
-  create(service: ServiceFormData): Observable<Service> {
-    return this.http.post<Service>(this.apiUrl, service);
+  create(service: ServiceFormData): Observable<ApiResponse<Service>> {
+    return this.http.post<ApiResponse<Service>>(this.apiUrl, service);
   }
 
-  update(service: any): Observable<Service> {
-    return this.http.put<Service>(this.apiUrl, service);
+  update(service: any): Observable<ApiResponse<Service>> {
+    return this.http.put<ApiResponse<Service>>(this.apiUrl, service);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  getCategories(): Observable<ServiceCategory[]> {
-    return this.http.get<ServiceCategory[]>(environment.apiBaseUrl + 'service-categories');
+  getCategories(): Observable<PagedApiResponse<ServiceCategory>> {
+    return this.http.get<PagedApiResponse<ServiceCategory>>(environment.apiBaseUrl + 'service-categories');
   }
 }

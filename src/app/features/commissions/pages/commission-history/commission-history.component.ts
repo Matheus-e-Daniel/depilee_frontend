@@ -57,9 +57,9 @@ export class CommissionHistoryComponent implements OnInit {
     this.userService.getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (users) => {
-          this.users.set(users);
-          this.userOptions = users.map(u => ({
+        next: (response) => {
+          this.users.set(response.data);
+          this.userOptions = response.data.map(u => ({
             label: (u as any).fullName || (u as any).name || u.email,
             value: (u as any).id
           }));
@@ -84,7 +84,7 @@ export class CommissionHistoryComponent implements OnInit {
     this.commissionService.getByUser(userId, startDate, endDate)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: ({ data: res }) => {
           this.result.set(res);
           this.loading.set(false);
         },

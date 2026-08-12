@@ -2,7 +2,8 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Client, ClientFormData, PagedResponse } from '../models/client.model';
+import { Client, ClientFormData } from '../models/client.model';
+import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,23 +12,23 @@ export class ClientService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'clients';
 
-  getAll(): Observable<PagedResponse<Client>> {
-    return this.http.get<PagedResponse<Client>>(this.apiUrl);
+  getAll(): Observable<PagedApiResponse<Client>> {
+    return this.http.get<PagedApiResponse<Client>>(this.apiUrl);
   }
 
-  getById(id: string): Observable<Client> {
-    return this.http.get<Client>(`${this.apiUrl}/${id}`);
+  getById(id: string): Observable<ApiResponse<Client>> {
+    return this.http.get<ApiResponse<Client>>(`${this.apiUrl}/${id}`);
   }
 
-  create(client: ClientFormData): Observable<Client> {
-    return this.http.post<Client>(this.apiUrl, client);
+  create(client: ClientFormData): Observable<ApiResponse<Client>> {
+    return this.http.post<ApiResponse<Client>>(this.apiUrl, client);
   }
 
-  update(client: any): Observable<Client> {
-    return this.http.put<Client>(this.apiUrl, client);
+  update(client: any): Observable<ApiResponse<Client>> {
+    return this.http.put<ApiResponse<Client>>(this.apiUrl, client);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

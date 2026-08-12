@@ -28,8 +28,8 @@ export interface UserData {
 }
 
 export interface LoginResponse {
-  code: number;
   data: UserData;
+  message: string;
 }
 
 @Injectable({

@@ -108,7 +108,7 @@ export class ServiceFormComponent implements OnInit {
   private loadService(id: string): void {
     this.loading.set(true);
     this.serviceService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (service) => {
+      next: ({ data: service }) => {
         const formattedPrice = service.price.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL',

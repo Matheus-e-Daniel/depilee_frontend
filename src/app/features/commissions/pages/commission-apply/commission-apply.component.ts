@@ -110,7 +110,7 @@ export class CommissionApplyComponent implements OnInit {
       items: this.serviceOrderItemService.getAll()
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ users, orders, items }) => {
-        this.users.set(users);
+        this.users.set(users.data);
         this.allOrders.set(orders.data);
         this.allItems.set(items.data);
         this.dataLoading.set(false);
@@ -173,7 +173,7 @@ export class CommissionApplyComponent implements OnInit {
       userId,
       serviceOrderItemIds: Array.from(this.selectedItemIds())
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (result) => {
+      next: ({ data: result }) => {
         this.applying.set(false);
         this.applyResult.set(result);
       },

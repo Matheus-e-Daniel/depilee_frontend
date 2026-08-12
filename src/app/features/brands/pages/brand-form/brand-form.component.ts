@@ -78,7 +78,7 @@ export class BrandFormComponent implements OnInit {
   private loadBrand(id: string): void {
     this.loading.set(true);
     this.brandService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (brand) => {
+      next: ({ data: brand }) => {
         this.brandForm.patchValue({
           name: brand.name
         });

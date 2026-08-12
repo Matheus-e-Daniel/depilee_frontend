@@ -63,7 +63,7 @@ export class CommissionSettingsComponent implements OnInit {
     this.commissionService.getSettings()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (settings) => {
+        next: ({ data: settings }) => {
           this.settingsForm.patchValue({
             calculationMode: settings.calculationMode,
             globalCommissionPercentage: settings.globalCommissionPercentage ?? null

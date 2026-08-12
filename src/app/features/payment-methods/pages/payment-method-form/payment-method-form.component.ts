@@ -88,7 +88,7 @@ export class PaymentMethodFormComponent implements OnInit {
   private loadPaymentMethod(id: string): void {
     this.loading.set(true);
     this.paymentMethodService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (paymentMethod) => {
+      next: ({ data: paymentMethod }) => {
         this.paymentMethodForm.patchValue({
           name: paymentMethod.name,
           type: paymentMethod.type,

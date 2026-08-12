@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CalendarEventService } from './services/calendar-event.service';
 import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS, CATEGORY_COLOR_OPTIONS } from './models/calendar-event.model';
-import { ErrorModalComponent } from '../../shared/components/error-modal/error-modal.component';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 
 interface TimeSlot {
@@ -38,8 +37,7 @@ interface DayColumn {
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
-    FormsModule,
-    ErrorModalComponent
+    FormsModule
   ],
   templateUrl: './calendar-events.component.html',
   styleUrls: ['./calendar-events.component.scss']
@@ -142,8 +140,8 @@ export class CalendarEventsComponent implements OnInit {
 
     this.loading.set(true);
     this.calendarEventService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (events) => {
-        this.distributeEventsToWeek(events);
+      next: (response) => {
+        this.distributeEventsToWeek(response.data);
         this.loading.set(false);
       },
       error: () => {
@@ -257,10 +255,10 @@ export class CalendarEventsComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           this.loading.set(false);
-          const msg = err.status === 403
-            ? 'Você não tem permissão para realizar esta ação.'
-            : 'Erro ao salvar evento. Tente novamente.';
-          this.errorModalService.show(msg);
+          // 403 já é tratado globalmente pelo auth.interceptor
+          if (err.status !== 403) {
+            this.errorModalService.show(err.error?.message || 'Erro ao salvar evento. Tente novamente.');
+          }
         }
       });
     } else {
@@ -271,10 +269,10 @@ export class CalendarEventsComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           this.loading.set(false);
-          const msg = err.status === 403
-            ? 'Você não tem permissão para realizar esta ação.'
-            : 'Erro ao salvar evento. Tente novamente.';
-          this.errorModalService.show(msg);
+          // 403 já é tratado globalmente pelo auth.interceptor
+          if (err.status !== 403) {
+            this.errorModalService.show(err.error?.message || 'Erro ao salvar evento. Tente novamente.');
+          }
         }
       });
     }

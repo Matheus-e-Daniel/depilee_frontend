@@ -89,8 +89,8 @@ export class PaymentMethodListComponent implements OnInit {
     this.loading.set(true);
 
     this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (paymentMethods) => {
-        this.allPaymentMethods.set(paymentMethods);
+      next: (response) => {
+        this.allPaymentMethods.set(response.data);
         this.loading.set(false);
       },
       error: () => {

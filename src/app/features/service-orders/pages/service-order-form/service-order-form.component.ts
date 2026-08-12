@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, Observable } from 'rxjs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -20,7 +21,7 @@ import { UserService } from '../../../users/services/user.service';
 import { User } from '../../../users/models/user.model';
 import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
 import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
-import { ErrorModalComponent } from '../../../../shared/components/error-modal/error-modal.component';
+import { ApiResponse } from '../../../../core/models/api-response.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -46,7 +47,6 @@ interface Installment {
     CheckboxModule,
     TooltipModule,
     TabViewModule,
-    ErrorModalComponent,
     SuccessModalComponent
   ],
   templateUrl: './service-order-form.component.html',
@@ -119,7 +119,7 @@ export class ServiceOrderFormComponent implements OnInit {
     this.usersLoading.set(true);
     this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        this.users.set(response);
+        this.users.set(response.data);
         this.usersLoading.set(false);
       },
       error: () => {
@@ -211,8 +211,8 @@ export class ServiceOrderFormComponent implements OnInit {
   private loadPaymentMethods(): void {
     this.paymentMethodsLoading.set(true);
     this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (methods) => {
-        this.paymentMethods.set(methods);
+      next: (response) => {
+        this.paymentMethods.set(response.data);
         this.paymentMethodsLoading.set(false);
       },
       error: () => {
@@ -299,7 +299,7 @@ export class ServiceOrderFormComponent implements OnInit {
     this.isLoadingData = true;
 
     this.serviceOrderService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (order) => {
+      next: ({ data: order }) => {
         this.orderForm.patchValue({
           clientId: order.clientId,
           discount: order.discount,
@@ -344,15 +344,15 @@ export class ServiceOrderFormComponent implements OnInit {
     };
 
     this.serviceOrderService.create(payload as any).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (order) => {
+      next: ({ data: order }) => {
         this.orderId.set(order.id);
         this.creatingOrder.set(false);
         this.activeTabIndex.set(1);
         this.successModalService.show('Ordem criada! Agora adicione serviços e produtos.');
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.creatingOrder.set(false);
-        this.errorModalService.show('Falha ao criar a ordem de serviço');
+        this.errorModalService.show(err.error?.message || 'Falha ao criar a ordem de serviço');
       }
     });
   }
@@ -369,14 +369,14 @@ export class ServiceOrderFormComponent implements OnInit {
         this.savingInfo.set(false);
         this.successModalService.show('Informações atualizadas!');
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.savingInfo.set(false);
-        this.errorModalService.show('Falha ao atualizar a ordem');
+        this.errorModalService.show(err.error?.message || 'Falha ao atualizar a ordem');
       }
     });
   }
 
-  private persistOrderChanges(): Observable<ServiceOrder> {
+  private persistOrderChanges(): Observable<ApiResponse<ServiceOrder>> {
     const id = this.orderId();
     const payload = {
       id,
@@ -393,7 +393,7 @@ export class ServiceOrderFormComponent implements OnInit {
       return;
     }
     this.persistOrderChanges().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      error: () => this.errorModalService.show('Falha ao atualizar o total da ordem')
+      error: (err: HttpErrorResponse) => this.errorModalService.show(err.error?.message || 'Falha ao atualizar o total da ordem')
     });
   }
 
@@ -415,15 +415,15 @@ export class ServiceOrderFormComponent implements OnInit {
     };
 
     this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (created) => {
+      next: ({ data: created }) => {
         this.orderItems.update(items => [...items, created]);
         this.serviceItemForm.reset({ serviceId: null, responsibleUserId: null, quantity: 1, unitPrice: 0 });
         this.addingServiceItem.set(false);
         this.syncOrderTotals();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.addingServiceItem.set(false);
-        this.errorModalService.show('Falha ao adicionar serviço');
+        this.errorModalService.show(err.error?.message || 'Falha ao adicionar serviço');
       }
     });
   }
@@ -445,15 +445,15 @@ export class ServiceOrderFormComponent implements OnInit {
     };
 
     this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (created) => {
+      next: ({ data: created }) => {
         this.orderItems.update(items => [...items, created]);
         this.productItemForm.reset({ productId: null, quantity: 1, unitPrice: 0 });
         this.addingProductItem.set(false);
         this.syncOrderTotals();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.addingProductItem.set(false);
-        this.errorModalService.show('Falha ao adicionar produto');
+        this.errorModalService.show(err.error?.message || 'Falha ao adicionar produto');
       }
     });
   }
@@ -466,9 +466,9 @@ export class ServiceOrderFormComponent implements OnInit {
         this.removingItemId.set(null);
         this.syncOrderTotals();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.removingItemId.set(null);
-        this.errorModalService.show('Falha ao remover item');
+        this.errorModalService.show(err.error?.message || 'Falha ao remover item');
       }
     });
   }

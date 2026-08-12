@@ -5,9 +5,9 @@ import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, Validati
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ProfileService } from './services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ErrorModalComponent } from '../../shared/components/error-modal/error-modal.component';
 import { SuccessModalComponent } from '../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../shared/components/success-modal/success-modal.service';
@@ -21,7 +21,6 @@ import { SuccessModalService } from '../../shared/components/success-modal/succe
     ButtonModule,
     InputTextModule,
     TooltipModule,
-    ErrorModalComponent,
     SuccessModalComponent
   ],
   templateUrl: './profile.component.html',
@@ -70,15 +69,15 @@ export class ProfileComponent implements OnChanges {
   private loadProfile(): void {
     this.loading.set(true);
     this.profileService.getOwnProfile().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (profile) => {
+      next: ({ data: profile }) => {
         this.profileForm.patchValue({
           fullName: profile.fullName,
           email: profile.email
         });
         this.loading.set(false);
       },
-      error: () => {
-        this.errorModalService.show('Falha ao carregar perfil');
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar perfil');
         this.loading.set(false);
       }
     });
@@ -125,10 +124,9 @@ export class ProfileComponent implements OnChanges {
         this.successModalService.show('Perfil atualizado com sucesso!');
         setTimeout(() => this.successModalService.hide(), 2000);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        const msg = err?.error?.error?.[0]?.description || 'Falha ao atualizar perfil';
-        this.errorModalService.show(msg);
+        this.errorModalService.show(err.error?.message || 'Falha ao atualizar perfil');
       }
     });
   }

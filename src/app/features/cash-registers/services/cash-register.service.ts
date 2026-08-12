@@ -2,7 +2,8 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PagedResponse, CashRegister, CashRegisterFormData } from '../models/cash-register.model';
+import { CashRegister, CashRegisterFormData } from '../models/cash-register.model';
+import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,27 +12,27 @@ export class CashRegisterService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'cash-registers';
 
-  getAll(): Observable<PagedResponse<CashRegister>> {
-    return this.http.get<PagedResponse<CashRegister>>(this.apiUrl);
+  getAll(): Observable<PagedApiResponse<CashRegister>> {
+    return this.http.get<PagedApiResponse<CashRegister>>(this.apiUrl);
   }
 
-  getById(id: string): Observable<CashRegister> {
-    return this.http.get<CashRegister>(`${this.apiUrl}/${id}`);
+  getById(id: string): Observable<ApiResponse<CashRegister>> {
+    return this.http.get<ApiResponse<CashRegister>>(`${this.apiUrl}/${id}`);
   }
 
-  create(cashRegister: CashRegisterFormData): Observable<CashRegister> {
-    return this.http.post<CashRegister>(this.apiUrl, cashRegister);
+  create(cashRegister: CashRegisterFormData): Observable<ApiResponse<CashRegister>> {
+    return this.http.post<ApiResponse<CashRegister>>(this.apiUrl, cashRegister);
   }
 
-  update(cashRegister: any): Observable<CashRegister> {
-    return this.http.put<CashRegister>(this.apiUrl, cashRegister);
+  update(cashRegister: any): Observable<ApiResponse<CashRegister>> {
+    return this.http.put<ApiResponse<CashRegister>>(this.apiUrl, cashRegister);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  closeCashRegister(data: { cashRegisterId: number; finalBalance: number; notes?: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/close`, data);
+  closeCashRegister(data: { cashRegisterId: number; finalBalance: number; notes?: string }): Observable<ApiResponse<CashRegister>> {
+    return this.http.post<ApiResponse<CashRegister>>(`${this.apiUrl}/close`, data);
   }
 }

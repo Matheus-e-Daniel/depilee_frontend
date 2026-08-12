@@ -45,9 +45,8 @@ export class UserListComponent implements OnInit {
   loadUsers(): void {
     this.loading.set(true);
     this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (response: any) => {
-        const data = Array.isArray(response) ? response : response?.data ?? [];
-        this.users.set(data);
+      next: (response) => {
+        this.users.set(response.data);
         this.loading.set(false);
       },
       error: () => {

@@ -82,7 +82,7 @@ export class CategoryFormComponent implements OnInit {
   private loadCategory(id: string): void {
     this.loading.set(true);
     this.categoryService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (category) => {
+      next: ({ data: category }) => {
         this.categoryForm.patchValue({
           name: category.name,
           description: category.description
