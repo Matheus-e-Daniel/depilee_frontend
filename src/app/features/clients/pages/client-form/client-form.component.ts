@@ -326,12 +326,8 @@ export class ClientFormComponent implements OnInit {
       }
     };
 
-    const payload = this.isEditMode()
-      ? { id: parseInt(this.clientId()!), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.clientService.update(payload)
+      ? this.clientService.update({ id: parseInt(this.clientId()!), ...formData })
       : this.clientService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

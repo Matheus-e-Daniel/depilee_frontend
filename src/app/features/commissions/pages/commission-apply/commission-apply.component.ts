@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { DropdownModule } from 'primeng/dropdown';
@@ -19,6 +20,7 @@ import { ServiceOrder, OrderStatus } from '../../../service-orders/models/servic
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 
 @Component({
   selector: 'app-commission-apply',
@@ -44,11 +46,12 @@ export class CommissionApplyComponent implements OnInit {
   private userService = inject(UserService);
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
+  private errorModalService = inject(ErrorModalService);
 
   users = signal<User[]>([]);
   allOrders = signal<ServiceOrder[]>([]);
   allItems = signal<ServiceOrderItem[]>([]);
-  selectedUserId = signal<number | null>(null);
+  selectedUserId = signal<string | null>(null);
   selectedItemIds = signal<Set<number>>(new Set());
   applyResult = signal<CommissionResult | null>(null);
   dataLoading = signal(true);
@@ -56,7 +59,7 @@ export class CommissionApplyComponent implements OnInit {
   showConfirmation = signal(false);
 
   userOptions = computed(() =>
-    this.users().map(u => ({ label: (u as any).fullName || (u as any).name || u.email, value: (u as any).id }))
+    this.users().map(u => ({ label: u.fullName || u.email, value: u.id }))
   );
 
   filteredItems = computed(() => {
@@ -70,7 +73,7 @@ export class CommissionApplyComponent implements OnInit {
     );
 
     return this.allItems().filter(item =>
-      (item as any).responsibleUserId === userId &&
+      String(item.responsibleUserId) === userId &&
       item.serviceId != null &&
       completedOrderIds.has(item.serviceOrderId)
     );
@@ -79,7 +82,7 @@ export class CommissionApplyComponent implements OnInit {
   alreadyCommissionedCount = computed(() => {
     const ids = this.selectedItemIds();
     return this.allItems()
-      .filter(i => ids.has(i.id) && (i as any).commissionAmount != null)
+      .filter(i => ids.has(i.id) && i.commissionAmount != null)
       .length;
   });
 
@@ -121,7 +124,7 @@ export class CommissionApplyComponent implements OnInit {
     });
   }
 
-  onUserChange(userId: number | null): void {
+  onUserChange(userId: string | null): void {
     this.selectedUserId.set(userId);
     this.selectedItemIds.set(new Set());
   }
@@ -177,8 +180,9 @@ export class CommissionApplyComponent implements OnInit {
         this.applying.set(false);
         this.applyResult.set(result);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.applying.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao aplicar comissão');
       }
     });
   }

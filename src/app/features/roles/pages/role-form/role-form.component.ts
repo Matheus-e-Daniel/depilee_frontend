@@ -138,7 +138,8 @@ export class RoleFormComponent implements OnInit {
       next: (permissions) => {
         this.availablePermissions.set(permissions);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar permissões');
       }
     });
   }
@@ -295,7 +296,7 @@ export class RoleFormComponent implements OnInit {
     const rolePayload: RoleFormData = { roleName };
 
     const createOrUpdateRole = this.isEditMode()
-      ? this.roleService.update({ id: this.roleId(), ...rolePayload })
+      ? this.roleService.update({ id: this.roleId()!, ...rolePayload })
       : this.roleService.create(rolePayload);
 
     createOrUpdateRole.pipe(

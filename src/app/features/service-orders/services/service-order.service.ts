@@ -2,7 +2,7 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ServiceOrder, ServiceOrderFormData, Client, CashRegister } from '../models/service-order.model';
+import { ServiceOrder, ServiceOrderFormData, ClientOption, CashRegisterOption } from '../models/service-order.model';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
@@ -24,7 +24,7 @@ export class ServiceOrderService {
     return this.http.post<ApiResponse<ServiceOrder>>(this.apiUrl, order);
   }
 
-  update(order: any): Observable<ApiResponse<ServiceOrder>> {
+  update(order: Pick<ServiceOrderFormData, 'clientId' | 'discount' | 'notes' | 'total'> & { id: number }): Observable<ApiResponse<ServiceOrder>> {
     return this.http.put<ApiResponse<ServiceOrder>>(this.apiUrl, order);
   }
 
@@ -32,11 +32,11 @@ export class ServiceOrderService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  getClients(): Observable<PagedApiResponse<Client>> {
-    return this.http.get<PagedApiResponse<Client>>(environment.apiBaseUrl + 'clients');
+  getClients(): Observable<PagedApiResponse<ClientOption>> {
+    return this.http.get<PagedApiResponse<ClientOption>>(environment.apiBaseUrl + 'clients');
   }
 
-  getCashRegisters(): Observable<PagedApiResponse<CashRegister>> {
-    return this.http.get<PagedApiResponse<CashRegister>>(environment.apiBaseUrl + 'cash-registers');
+  getCashRegisters(): Observable<PagedApiResponse<CashRegisterOption>> {
+    return this.http.get<PagedApiResponse<CashRegisterOption>>(environment.apiBaseUrl + 'cash-registers');
   }
 }

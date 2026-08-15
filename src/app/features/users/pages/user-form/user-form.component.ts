@@ -11,7 +11,7 @@ import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputMaskModule } from 'primeng/inputmask';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { User, Gender } from '../../models/user.model';
+import { UserFormData } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { RoleService } from '../../../roles/services/role.service';
 import { Role } from '../../../roles/models/role.model';
@@ -113,7 +113,6 @@ export class UserFormComponent implements OnInit {
 
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    console.log('[UserForm] checkEditMode - id:', id);
 
     if (id) {
       this.isEditMode.set(true);
@@ -129,8 +128,9 @@ export class UserFormComponent implements OnInit {
         this.roles.set(roles);
         this.rolesLoading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.rolesLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar cargos');
       }
     });
   }
@@ -138,12 +138,9 @@ export class UserFormComponent implements OnInit {
   private loadUser(id: string): void {
     this.loading.set(true);
     this.isLoadingUserData.set(true);
-    console.log('[UserForm] loadUser - chamando GET identity/users/' + id);
 
     this.userService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (response: any) => {
-        console.log('[UserForm] loadUser - resposta da API:', response);
-        const user = response?.data ?? response;
+      next: ({ data: user }) => {
         this.userForm.patchValue({
           email: user.email,
           fullName: user.fullName,
@@ -163,14 +160,12 @@ export class UserFormComponent implements OnInit {
           }
         }, { emitEvent: false });
 
-        console.log('[UserForm] loadUser - form após patchValue:', this.userForm.value);
         this.originalFormValue = { ...this.userForm.value };
         this.formModified.set(false);
         this.loading.set(false);
         this.isLoadingUserData.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        console.error('[UserForm] loadUser - ERRO ao buscar usuário:', err);
         this.errorModalService.show(err.error?.message || 'Falha ao carregar usuário');
         this.isLoadingUserData.set(false);
         this.loading.set(false);
@@ -255,13 +250,13 @@ export class UserFormComponent implements OnInit {
     const formValue = this.userForm.value;
     const address = formValue.address;
     const mappedAddress = {
-      Cep: address.cep,
-      State: address.state,
-      City: address.city,
-      Neighborhood: address.neighborhood,
-      Street: address.street,
-      Number: address.number,
-      Complement: address.complement
+      cep: address.cep,
+      state: address.state,
+      city: address.city,
+      neighborhood: address.neighborhood,
+      street: address.street,
+      number: address.number,
+      complement: address.complement
     };
 
     let birthISO = null;
@@ -275,26 +270,22 @@ export class UserFormComponent implements OnInit {
       }
     }
 
-    const userPayload: any = {
-      Email: formValue.email,
-      FullName: formValue.fullName,
-      Cpf: formValue.cpf,
-      Birth: birthISO,
-      Gender: formValue.gender || 3,
-      CommissionPercentage: formValue.commissionPercentage ?? null,
-      Address: mappedAddress
+    const userPayload: UserFormData = {
+      email: formValue.email,
+      fullName: formValue.fullName,
+      cpf: formValue.cpf,
+      birth: birthISO,
+      gender: formValue.gender || 3,
+      commissionPercentage: formValue.commissionPercentage ?? null,
+      address: mappedAddress
     };
 
     if (!this.isEditMode() || formValue.password) {
-      userPayload.Password = formValue.password;
-    }
-
-    if (this.isEditMode()) {
-      userPayload.Id = this.userId();
+      userPayload.password = formValue.password;
     }
 
     const operation = this.isEditMode()
-      ? this.userService.update(userPayload)
+      ? this.userService.update({ id: this.userId()!, ...userPayload })
       : this.userService.create(userPayload);
 
     const successMessage = this.isEditMode()

@@ -7,10 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CashRegisterService } from '../../services/cash-register.service';
 import { CashRegisterFormData } from '../../models/cash-register.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
@@ -36,6 +38,7 @@ export class CashRegisterFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   cashRegisterForm!: FormGroup;
   loading = signal(false);
@@ -121,13 +124,9 @@ export class CashRegisterFormComponent implements OnInit {
       initialBalance: initialBalanceValue
     };
 
-    const payload = this.isEditMode()
-      ? { id: this.cashRegisterId(), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.cashRegisterService.update(payload)
-      : this.cashRegisterService.create(payload);
+      ? this.cashRegisterService.update({ id: this.cashRegisterId()!, ...formData })
+      : this.cashRegisterService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
@@ -143,8 +142,9 @@ export class CashRegisterFormComponent implements OnInit {
           this.router.navigate(['/cash-registers']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar caixa');
       }
     });
   }

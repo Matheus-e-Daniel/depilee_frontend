@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,7 @@ import { ConfirmationModalComponent } from '../../../../shared/components/confir
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { CashRegisterCloseFormComponent } from '../cash-register-close-form/cash-register-close-form.component';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -72,6 +74,7 @@ export class CashRegisterListComponent implements OnInit {
   private cashRegisterService = inject(CashRegisterService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   cashRegisters = signal<CashRegister[]>([]);
@@ -92,8 +95,9 @@ export class CashRegisterListComponent implements OnInit {
         this.cashRegisters.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar caixas');
       }
     });
   }
@@ -122,8 +126,9 @@ export class CashRegisterListComponent implements OnInit {
         this.loadCashRegisters();
         this.cashRegisterToClose = null;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.closeLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao fechar caixa');
       }
     });
   }

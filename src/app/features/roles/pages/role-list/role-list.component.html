@@ -10,7 +10,9 @@
       icon="pi pi-plus"
       label="Novo Cargo"
       class="p-button-primary"
-      (click)="newRole()">
+      [class.not-clickable]="!hasPermission('Identity.Create')"
+      [attr.disabled]="!hasPermission('Identity.Create') ? true : null"
+      (click)="hasPermission('Identity.Create') && newRole()">
     </button>
   </div>
 
@@ -85,13 +87,17 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
-                (click)="editRole(role.id)">
+                [class.not-clickable]="!hasPermission('Identity.Edit')"
+                [attr.disabled]="!hasPermission('Identity.Edit') ? true : null"
+                (click)="hasPermission('Identity.Edit') && editRole(role.id)">
               </button>
               <button
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
-                (click)="deleteRole(role.id)">
+                [class.not-clickable]="!hasPermission('Identity.Delete')"
+                [attr.disabled]="!hasPermission('Identity.Delete') ? true : null"
+                (click)="hasPermission('Identity.Delete') && deleteRole(role.id)">
               </button>
             </div>
           </td>
@@ -110,7 +116,9 @@
                 icon="pi pi-plus"
                 label="Novo Cargo"
                 class="p-button-outlined mt-3"
-                (click)="newRole()">
+                [class.not-clickable]="!hasPermission('Identity.Create')"
+                [attr.disabled]="!hasPermission('Identity.Create') ? true : null"
+                (click)="hasPermission('Identity.Create') && newRole()">
               </button>
             </div>
           </td>

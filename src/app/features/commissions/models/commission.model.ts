@@ -10,7 +10,7 @@ export interface CommissionSettings {
 }
 
 export interface CommissionApplyRequest {
-  userId: number;
+  userId: string;
   serviceOrderItemIds: number[];
 }
 
@@ -29,7 +29,7 @@ export interface CommissionServiceItem {
 }
 
 export interface CommissionResult {
-  userId: number;
+  userId: string;
   userName: string;
   calculationMode: CalculationMode;
   startDate: string | null;

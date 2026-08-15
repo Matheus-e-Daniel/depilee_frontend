@@ -9,10 +9,12 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
+import { HttpErrorResponse } from '@angular/common/http';
 import { PaymentMethodService } from '../../services/payment-method.service';
 import { PaymentMethodFormData, PaymentMethod } from '../../models/payment-method.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
@@ -40,6 +42,7 @@ export class PaymentMethodFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   paymentMethodForm!: FormGroup;
   loading = signal(false);
@@ -134,8 +137,9 @@ export class PaymentMethodFormComponent implements OnInit {
             this.router.navigate(['/payment-methods']);
           }, 1500);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.confirmationLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao salvar método de pagamento');
         }
       });
     } else {
@@ -148,8 +152,9 @@ export class PaymentMethodFormComponent implements OnInit {
             this.router.navigate(['/payment-methods']);
           }, 1500);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.confirmationLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao salvar método de pagamento');
         }
       });
     }

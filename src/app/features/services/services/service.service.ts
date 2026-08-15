@@ -25,7 +25,7 @@ export class ServiceService {
     return this.http.post<ApiResponse<Service>>(this.apiUrl, service);
   }
 
-  update(service: any): Observable<ApiResponse<Service>> {
+  update(service: ServiceFormData & { id: number }): Observable<ApiResponse<Service>> {
     return this.http.put<ApiResponse<Service>>(this.apiUrl, service);
   }
 

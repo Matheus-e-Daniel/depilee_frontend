@@ -191,19 +191,25 @@ export const routes: Routes = [
         path: 'users',
         loadComponent: () =>
           import('./features/users/pages/user-list/user-list.component')
-            .then(m => m.UserListComponent)
+            .then(m => m.UserListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Get'] }
       },
       {
         path: 'users/new',
         loadComponent: () =>
           import('./features/users/pages/user-form/user-form.component')
-            .then(m => m.UserFormComponent)
+            .then(m => m.UserFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Create'] }
       },
       {
         path: 'users/edit/:id',
         loadComponent: () =>
           import('./features/users/pages/user-form/user-form.component')
-            .then(m => m.UserFormComponent)
+            .then(m => m.UserFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Edit'] }
       },
       {
         path: 'payment-methods',
@@ -241,19 +247,25 @@ export const routes: Routes = [
         path: 'roles',
         loadComponent: () =>
           import('./features/roles/pages/role-list/role-list.component')
-            .then(m => m.RoleListComponent)
+            .then(m => m.RoleListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Get'] }
       },
       {
         path: 'roles/new',
         loadComponent: () =>
           import('./features/roles/pages/role-form/role-form.component')
-            .then(m => m.RoleFormComponent)
+            .then(m => m.RoleFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Create'] }
       },
       {
         path: 'roles/:id/edit',
         loadComponent: () =>
           import('./features/roles/pages/role-form/role-form.component')
-            .then(m => m.RoleFormComponent)
+            .then(m => m.RoleFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Identity.Edit'] }
       },
       {
         path: 'commissions/settings',

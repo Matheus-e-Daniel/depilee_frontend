@@ -14,7 +14,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabViewModule } from 'primeng/tabview';
 import { ServiceOrderService } from '../../services/service-order.service';
-import { Client, ServiceOrder } from '../../models/service-order.model';
+import { ClientOption, ServiceOrder } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ProductOption, ServiceOption, ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
 import { UserService } from '../../../users/services/user.service';
@@ -79,7 +79,7 @@ export class ServiceOrderFormComponent implements OnInit {
   addingProductItem = signal(false);
   removingItemId = signal<number | null>(null);
 
-  clients = signal<Client[]>([]);
+  clients = signal<ClientOption[]>([]);
   clientsLoading = signal(true);
   products = signal<ProductOption[]>([]);
   services = signal<ServiceOption[]>([]);

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -12,6 +13,7 @@ import { ServiceOrderItem } from '../../../service-order-items/models/service-or
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -35,6 +37,7 @@ export class ServiceOrderListComponent implements OnInit {
   private serviceOrderItemService = inject(ServiceOrderItemService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   orders = signal<ServiceOrder[]>([]);
@@ -57,8 +60,9 @@ export class ServiceOrderListComponent implements OnInit {
         this.orders.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar ordens de serviço');
       }
     });
   }
@@ -84,8 +88,9 @@ export class ServiceOrderListComponent implements OnInit {
         this.loadOrders();
         this.orderToDelete = null;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.deleteLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir ordem de serviço');
       }
     });
   }
@@ -110,20 +115,15 @@ export class ServiceOrderListComponent implements OnInit {
   loadOrderItems(orderId: number): void {
     this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        const filteredItems = response.data.filter(
+        this.orderItems[orderId] = response.data.filter(
           item => item.serviceOrderId === orderId
         );
-
-        this.orderItems[orderId] = filteredItems;
-
-        this.loadItemDetails(filteredItems);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar itens da ordem');
       }
     });
   }
-
-  private loadItemDetails(_items: ServiceOrderItem[]): void { }
 
   getItemName(item: ServiceOrderItem): string {
     if (item.productName) return item.productName;

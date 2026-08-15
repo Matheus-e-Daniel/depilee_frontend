@@ -1,12 +1,12 @@
 
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { BrandService } from '../../services/brand.service';
@@ -14,7 +14,7 @@ import { Brand } from '../../models/brand.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
-import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -29,8 +29,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TooltipModule,
     DropdownModule,
     ConfirmationModalComponent,
-    SuccessModalComponent,
-    HasPermissionDirective
+    SuccessModalComponent
   ],
   templateUrl: './brand-list.component.html',
   styleUrls: ['./brand-list.component.scss']
@@ -75,6 +74,7 @@ export class BrandListComponent implements OnInit {
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
   private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
 
   brands = signal<Brand[]>([]);
   loading = signal(true);
@@ -95,8 +95,9 @@ export class BrandListComponent implements OnInit {
         this.brands.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar marcas');
       }
     });
   }
@@ -122,8 +123,9 @@ export class BrandListComponent implements OnInit {
         this.loadBrands();
         this.brandToDelete = null;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir marca');
       }
     });
   }

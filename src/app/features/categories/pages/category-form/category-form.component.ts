@@ -8,10 +8,12 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CategoryService } from '../../services/category.service';
 import { CategoryFormData } from '../../models/category.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
@@ -38,6 +40,7 @@ export class CategoryFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
 
   categoryForm!: FormGroup;
@@ -110,13 +113,9 @@ export class CategoryFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formData: CategoryFormData = this.categoryForm.value;
 
-    const payload = this.isEditMode()
-      ? { id: this.categoryId(), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.categoryService.update(payload)
-      : this.categoryService.create(payload);
+      ? this.categoryService.update({ id: this.categoryId()!, ...formData })
+      : this.categoryService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
@@ -133,8 +132,9 @@ export class CategoryFormComponent implements OnInit {
           this.router.navigate(['/categories']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar categoria');
       }
     });
   }

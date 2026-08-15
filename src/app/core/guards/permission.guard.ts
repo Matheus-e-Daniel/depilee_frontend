@@ -6,6 +6,11 @@ export const permissionGuard = (route: ActivatedRouteSnapshot) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  if (!authService.isAuthenticatedUser()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
   const requiredPermissions = route.data['permissions'] as string[];
 
   if (!requiredPermissions || requiredPermissions.length === 0) {

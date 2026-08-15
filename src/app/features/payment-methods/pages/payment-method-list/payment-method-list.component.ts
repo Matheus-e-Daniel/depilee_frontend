@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +13,7 @@ import { PaymentMethod } from '../../models/payment-method.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -36,6 +38,7 @@ export class PaymentMethodListComponent implements OnInit {
   private paymentMethodService = inject(PaymentMethodService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   allPaymentMethods = signal<PaymentMethod[]>([]);
@@ -93,8 +96,9 @@ export class PaymentMethodListComponent implements OnInit {
         this.allPaymentMethods.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar métodos de pagamento');
       }
     });
   }
@@ -123,8 +127,9 @@ export class PaymentMethodListComponent implements OnInit {
         this.successModalService.show('Método de pagamento excluído com sucesso!');
         this.loadPaymentMethods();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir método de pagamento');
       }
     });
   }

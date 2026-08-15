@@ -22,7 +22,7 @@ export class CommissionService {
     return this.http.post<ApiResponse<CommissionResult>>(`${this.apiUrl}/`, request);
   }
 
-  getByUser(userId: number, startDate?: string, endDate?: string): Observable<ApiResponse<CommissionResult>> {
+  getByUser(userId: string, startDate?: string, endDate?: string): Observable<ApiResponse<CommissionResult>> {
     let params = new HttpParams();
     if (startDate) params = params.set('startDate', startDate);
     if (endDate) params = params.set('endDate', endDate);

@@ -1,11 +1,11 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { RoleService } from '../../services/role.service';
@@ -13,6 +13,8 @@ import { Role } from '../../models/role.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-role-list',
@@ -78,6 +80,8 @@ export class RoleListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private roleService = inject(RoleService);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   roles = signal<Role[]>([]);
@@ -99,8 +103,9 @@ export class RoleListComponent implements OnInit {
         this.roles.set(roles);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar cargos');
       }
     });
   }
@@ -126,8 +131,9 @@ export class RoleListComponent implements OnInit {
         this.loadRoles();
         this.roleToDelete = null;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir cargo');
       }
     });
   }
@@ -143,5 +149,9 @@ export class RoleListComponent implements OnInit {
 
   newRole(): void {
     this.router.navigate(['/roles/new']);
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

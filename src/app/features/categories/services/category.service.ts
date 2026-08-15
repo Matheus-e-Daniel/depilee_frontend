@@ -24,7 +24,7 @@ export class CategoryService {
     return this.http.post<ApiResponse<Category>>(this.apiUrl, category);
   }
 
-  update(category: any): Observable<ApiResponse<Category>> {
+  update(category: CategoryFormData & { id: string }): Observable<ApiResponse<Category>> {
     return this.http.put<ApiResponse<Category>>(this.apiUrl, category);
   }
 

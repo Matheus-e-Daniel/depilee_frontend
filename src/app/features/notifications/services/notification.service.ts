@@ -6,9 +6,9 @@ import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response
 
 export interface Notification {
   id: number;
-  label: string;
-  icon: string;
-  badge: string;
+  title: string;
+  notificationType: number;
+  notificationStatus: number;
   createdAt: string;
 }
 

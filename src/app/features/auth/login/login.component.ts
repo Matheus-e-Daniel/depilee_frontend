@@ -74,6 +74,8 @@ export class LoginComponent {
             this.errorMessage.set('Servidor indisponível');
           } else if (error.status === 401) {
             this.errorMessage.set('Email ou senha incorretos');
+          } else if (error.status === 429) {
+            this.errorMessage.set(error.error?.message || 'Muitas tentativas de login incorretas. Tente novamente em alguns minutos.');
           } else {
             this.errorMessage.set('Erro ao fazer login');
           }

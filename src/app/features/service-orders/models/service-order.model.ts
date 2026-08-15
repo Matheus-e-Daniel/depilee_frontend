@@ -33,12 +33,12 @@ export enum OrderStatus {
   Cancelled = 3
 }
 
-export interface Client {
+export interface ClientOption {
   id: number;
   name: string;
 }
 
-export interface CashRegister {
+export interface CashRegisterOption {
   id: number;
   name: string;
 }

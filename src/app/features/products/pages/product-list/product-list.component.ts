@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -12,6 +13,7 @@ import { Product } from '../../models/product.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -36,6 +38,7 @@ export class ProductListComponent implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   allProducts = signal<Product[]>([]);
@@ -109,8 +112,9 @@ export class ProductListComponent implements OnInit {
         this.allProducts.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar produtos');
       }
     });
   }
@@ -149,9 +153,10 @@ export class ProductListComponent implements OnInit {
 
         this.loadProducts();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.productToDelete = null;
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir produto');
       }
     });
   }

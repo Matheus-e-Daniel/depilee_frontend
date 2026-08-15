@@ -28,11 +28,6 @@ export interface ServiceOrderItemFormData {
   responsibleUserId?: number;
 }
 
-export interface ServiceOrder {
-  id: number;
-  orderNumber: string;
-}
-
 export interface ProductOption {
   id: number;
   name: string;

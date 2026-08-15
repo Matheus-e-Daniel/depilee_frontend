@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, of, throwError } from 'rxjs';
-import { User } from '../models/user.model';
+import { User, UserFormData } from '../models/user.model';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
@@ -30,11 +30,11 @@ export class UserService {
       return this.http.get<ApiResponse<User>>(`${environment.apiBaseUrl}identity/users/${id}`);
     }
 
-  create(user: any): Observable<ApiResponse<User>> {
+  create(user: UserFormData): Observable<ApiResponse<User>> {
     return this.http.post<ApiResponse<User>>(this.apiUrl, user);
   }
 
-  update(user: any): Observable<ApiResponse<User>> {
+  update(user: UserFormData & { id: string }): Observable<ApiResponse<User>> {
     return this.http.put<ApiResponse<User>>(this.apiUrl, user);
   }
 

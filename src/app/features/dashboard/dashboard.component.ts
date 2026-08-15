@@ -82,7 +82,6 @@ export class DashboardComponent implements OnInit {
   proximosAgendamentos: UpcomingEvent[] = [];
 
   private clientes: Client[] = [];
-  private eventos: CalendarEvent[] = [];
 
   ngOnInit() {
     this.loadData();
@@ -112,7 +111,6 @@ export class DashboardComponent implements OnInit {
         this.processClients(clientsRes.data, clientsRes.totalCount);
       }
       if (events) {
-        this.eventos = events.data;
         this.processEvents(events.data);
       }
       if (ordersRes) {

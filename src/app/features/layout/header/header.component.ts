@@ -2,6 +2,7 @@ import { Component, output, inject, signal, ViewChild, OnInit, DestroyRef } from
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { MenuModule } from 'primeng/menu';
@@ -9,9 +10,10 @@ import { BadgeModule } from 'primeng/badge';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
-import { NotificationService } from '../../notifications/services/notification.service';
+import { NotificationService, Notification } from '../../notifications/services/notification.service';
 import { ProfileComponent } from '../../profile/profile.component';
-import { interval } from 'rxjs';
+import { ErrorModalService } from '../../../shared/components/error-modal/error-modal.service';
+import { interval, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -25,6 +27,7 @@ export class HeaderComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
+  private errorModalService = inject(ErrorModalService);
 
   @ViewChild('notificationMenu') notificationMenu!: Menu;
   @ViewChild('userMenu') userMenu!: Menu;
@@ -53,6 +56,8 @@ export class HeaderComponent implements OnInit {
   ];
 
   notificationItems: MenuItem[] = [];
+  private unreadIds: number[] = [];
+
   ngOnInit(): void {
     this.fetchNotifications();
     interval(30000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.fetchNotifications());
@@ -60,16 +65,16 @@ export class HeaderComponent implements OnInit {
 
   private fetchNotifications(): void {
     this.notificationService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (response: any) => {
-        const allItems = response.data || [];
-        const items = allItems.filter((n: any) => n.notificationStatus === 0);
-        this.notificationCount = items.length;
+      next: (response) => {
+        const unread = response.data.filter(n => n.notificationStatus === 0);
+        this.unreadIds = unread.map(n => n.id);
+        this.notificationCount = unread.length;
         this.notificationItems = [
-          ...items.map((n: any) => ({
+          ...unread.map(n => ({
             label: n.title,
             icon: this.getNotificationIcon(n),
             badge: this.getNotificationBadge(n),
-            id: n.id,
+            id: String(n.id),
             command: () => this.viewNotification(n.id)
           })),
           { separator: true },
@@ -93,12 +98,12 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  private getNotificationIcon(n: any): string {
+  private getNotificationIcon(n: Notification): string {
     if (n.notificationType === 0) return 'pi pi-bell';
     return 'pi pi-info-circle';
   }
 
-  private getNotificationBadge(n: any): string {
+  private getNotificationBadge(n: Notification): string {
     if (!n.createdAt) return '';
     const date = new Date(n.createdAt);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
@@ -133,17 +138,35 @@ export class HeaderComponent implements OnInit {
   viewAllNotifications(): void { }
 
   markAllAsRead(): void {
-    this.notificationCount = 0;
+    const ids = [...this.unreadIds];
+    if (ids.length === 0) return;
+
+    forkJoin(ids.map(id => this.notificationService.markAsRead(id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.unreadIds = [];
+          this.notificationCount = 0;
+          const removedIds = ids.map(String);
+          this.notificationItems = this.notificationItems.filter((item: MenuItem) => !removedIds.includes(item.id!));
+        },
+        error: (err: HttpErrorResponse) => {
+          this.errorModalService.show(err.error?.message || 'Falha ao marcar notificações como lidas');
+        }
+      });
   }
 
   markNotificationAsRead(id: number, event: Event): void {
     event.stopPropagation();
     this.notificationService.markAsRead(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.notificationItems = this.notificationItems.filter((item: any) => item.id !== id);
+        this.unreadIds = this.unreadIds.filter(unreadId => unreadId !== id);
+        this.notificationItems = this.notificationItems.filter((item: MenuItem) => item.id !== String(id));
         this.notificationCount = Math.max(0, this.notificationCount - 1);
       },
-      error: () => { }
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Falha ao marcar notificação como lida');
+      }
     });
   }
 }

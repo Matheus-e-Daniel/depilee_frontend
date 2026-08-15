@@ -10,10 +10,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ServiceService } from '../../services/service.service';
 import { ServiceFormData } from '../../models/service.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { CategoryService } from '../../../categories/services/category.service';
 import { Category } from '../../../categories/models/category.model';
@@ -45,6 +47,7 @@ export class ServiceFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   serviceForm!: FormGroup;
   loading = signal(false);
@@ -154,12 +157,8 @@ export class ServiceFormComponent implements OnInit {
       price: priceValue
     };
 
-    const payload = this.isEditMode()
-      ? { id: parseInt(this.serviceId()!), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.serviceService.update(payload)
+      ? this.serviceService.update({ id: parseInt(this.serviceId()!), ...formData })
       : this.serviceService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -177,9 +176,10 @@ export class ServiceFormComponent implements OnInit {
           this.router.navigate(['/services']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar serviço');
       }
     });
   }

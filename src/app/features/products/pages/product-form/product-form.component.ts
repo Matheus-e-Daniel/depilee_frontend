@@ -10,10 +10,12 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { ProductFormData } from '../../models/product.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { BrandService } from '../../../brands/services/brand.service';
 import { CategoryService } from '../../../categories/services/category.service';
@@ -48,6 +50,7 @@ export class ProductFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   productForm!: FormGroup;
   loading = signal(false);
@@ -179,13 +182,9 @@ export class ProductFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formData: ProductFormData = { ...this.productForm.value, cost: 0 };
 
-    const payload = this.isEditMode()
-      ? { id: this.productId(), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.productService.update(payload)
-      : this.productService.create(payload);
+      ? this.productService.update({ id: this.productId()!, ...formData })
+      : this.productService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
@@ -202,9 +201,10 @@ export class ProductFormComponent implements OnInit {
           this.router.navigate(['/products']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.showConfirmation.set(false);
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar produto');
       }
     });
   }

@@ -24,7 +24,7 @@ export class CashRegisterService {
     return this.http.post<ApiResponse<CashRegister>>(this.apiUrl, cashRegister);
   }
 
-  update(cashRegister: any): Observable<ApiResponse<CashRegister>> {
+  update(cashRegister: CashRegisterFormData & { id: string }): Observable<ApiResponse<CashRegister>> {
     return this.http.put<ApiResponse<CashRegister>>(this.apiUrl, cashRegister);
   }
 

@@ -33,14 +33,14 @@ export class CommissionHistoryComponent implements OnInit {
   private userService = inject(UserService);
 
   users = signal<User[]>([]);
-  selectedUserId = signal<number | null>(null);
+  selectedUserId = signal<string | null>(null);
   startDate = signal<Date | null>(null);
   endDate = signal<Date | null>(null);
   result = signal<CommissionResult | null>(null);
   usersLoading = signal(true);
   loading = signal(false);
 
-  userOptions: { label: string; value: number }[] = [];
+  userOptions: { label: string; value: string }[] = [];
 
   readonly CalculationMode = CalculationMode;
 
@@ -60,8 +60,8 @@ export class CommissionHistoryComponent implements OnInit {
         next: (response) => {
           this.users.set(response.data);
           this.userOptions = response.data.map(u => ({
-            label: (u as any).fullName || (u as any).name || u.email,
-            value: (u as any).id
+            label: u.fullName || u.email,
+            value: u.id
           }));
           this.usersLoading.set(false);
         },

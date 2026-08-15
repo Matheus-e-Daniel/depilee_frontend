@@ -7,10 +7,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TooltipModule } from 'primeng/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { BrandService } from '../../services/brand.service';
 import { BrandFormData } from '../../models/brand.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 @Component({
@@ -36,6 +38,7 @@ export class BrandFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   successModalService = inject(SuccessModalService);
+  errorModalService = inject(ErrorModalService);
 
   brandForm!: FormGroup;
   loading = signal(false);
@@ -106,13 +109,9 @@ export class BrandFormComponent implements OnInit {
     this.confirmationLoading.set(true);
     const formData: BrandFormData = this.brandForm.value;
 
-    const payload = this.isEditMode()
-      ? { id: this.brandId(), ...formData }
-      : formData;
-
     const operation = this.isEditMode()
-      ? this.brandService.update(payload)
-      : this.brandService.create(payload);
+      ? this.brandService.update({ id: this.brandId()!, ...formData })
+      : this.brandService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
@@ -129,8 +128,9 @@ export class BrandFormComponent implements OnInit {
           this.router.navigate(['/brands']);
         }, 2500);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar marca');
       }
     });
   }

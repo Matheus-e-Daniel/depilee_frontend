@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -10,6 +11,8 @@ import { UserService } from '../../services/user.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-list',
@@ -30,6 +33,8 @@ export class UserListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private userService = inject(UserService);
   private router = inject(Router);
+  private authService = inject(AuthService);
+  private errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
   users = signal<User[]>([]);
@@ -49,8 +54,9 @@ export class UserListComponent implements OnInit {
         this.users.set(response.data);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar usuários');
       }
     });
   }
@@ -87,14 +93,19 @@ export class UserListComponent implements OnInit {
 
         this.loadUsers();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.userToDelete = null;
         this.confirmationLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao excluir usuário');
       }
     });
   }
 
   cancelDelete(): void {
     this.userToDelete = null;
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.authService.userPermissions().includes(permission);
   }
 }

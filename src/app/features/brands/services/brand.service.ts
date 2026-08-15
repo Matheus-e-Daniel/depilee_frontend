@@ -24,7 +24,7 @@ export class BrandService {
     return this.http.post<ApiResponse<Brand>>(this.apiUrl, brand);
   }
 
-  update(brand: any): Observable<ApiResponse<Brand>> {
+  update(brand: BrandFormData & { id: string }): Observable<ApiResponse<Brand>> {
     return this.http.put<ApiResponse<Brand>>(this.apiUrl, brand);
   }
 

@@ -42,7 +42,7 @@ export class RoleService {
     return this.http.post<ApiResponse<Role>>(this.apiUrl, role);
   }
 
-  update(role: any): Observable<ApiResponse<Role>> {
+  update(role: RoleFormData & { id: string }): Observable<ApiResponse<Role>> {
     return this.http.put<ApiResponse<Role>>(this.apiUrl, role);
   }
 
