@@ -65,7 +65,7 @@ export class ClientListComponent implements OnInit {
         // Nome: começa com o termo buscado
         const nameMatch = client.name?.toLowerCase().startsWith(searchFilter);
         // CPF (remove máscara do input e do dado)
-        const onlyNumbers = (str: string) => str ? str.replace(/\D/g, '') : '';
+        const onlyNumbers = (str: string | null) => str ? str.replace(/\D/g, '') : '';
         const searchNumbers = onlyNumbers(searchFilter);
         const cpfMatch = searchNumbers.length > 0 && onlyNumbers(client.cpf).startsWith(searchNumbers);
         return nameMatch || cpfMatch;
@@ -183,7 +183,8 @@ export class ClientListComponent implements OnInit {
     return labels[gender] ?? 'Não informado';
   }
 
-  formatPhone(phone: string): string {
+  formatPhone(phone: string | null): string {
+    if (!phone) return '—';
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `(${cleaned.substring(0,2)}) ${cleaned.substring(2,7)}-${cleaned.substring(7)}`;
@@ -191,7 +192,8 @@ export class ClientListComponent implements OnInit {
     return phone;
   }
 
-  formatCPF(cpf: string): string {
+  formatCPF(cpf: string | null): string {
+    if (!cpf) return '—';
     const cleaned = cpf.replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `${cleaned.substring(0,3)}.${cleaned.substring(3,6)}.${cleaned.substring(6,9)}-${cleaned.substring(9)}`;

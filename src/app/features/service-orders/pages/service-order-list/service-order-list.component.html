@@ -73,10 +73,21 @@
               <button
                 pButton
                 icon="pi pi-trash"
-                class="p-button-sm p-button-danger"
+                class="p-button-sm p-button-danger mr-2"
                 [class.not-clickable]="!hasPermission('ServiceOrder.Delete')"
                 [attr.disabled]="!hasPermission('ServiceOrder.Delete') ? true : null"
                 (click)="hasPermission('ServiceOrder.Delete') && deleteOrder(order.id, order.orderNumber)">
+              </button>
+              <button
+                *ngIf="canCancelOrder(order)"
+                pButton
+                icon="pi pi-times-circle"
+                pTooltip="Cancelar ordem"
+                tooltipPosition="top"
+                class="p-button-sm p-button-warning"
+                [class.not-clickable]="!hasPermission('ServiceOrder.Edit')"
+                [attr.disabled]="!hasPermission('ServiceOrder.Edit') ? true : null"
+                (click)="hasPermission('ServiceOrder.Edit') && cancelOrder(order.id, order.orderNumber)">
               </button>
             </div>
           </td>
@@ -102,7 +113,7 @@
                     <td>
                       <p-tag
                         [value]="getItemType(item)"
-                        [severity]="item.productId ? 'success' : 'info'">
+                        [severity]="getItemType(item) === 'Produto' ? 'success' : 'info'">
                       </p-tag>
                     </td>
                     <td>{{ getItemName(item) }}</td>
@@ -157,4 +168,15 @@
   [loading]="deleteLoading()"
   (confirm)="confirmDelete()"
   (cancel)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="showCancelConfirmation()"
+  [type]="'delete'"
+  [message]="getCancelMessage()"
+  confirmLabel="Cancelar Ordem"
+  cancelLabel="Voltar"
+  [loading]="cancelLoading()"
+  (confirm)="confirmCancelOrder()"
+  (cancel)="cancelCancelOrder()">
 </app-confirmation-modal>

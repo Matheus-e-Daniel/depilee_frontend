@@ -267,13 +267,13 @@ export class ClientFormComponent implements OnInit {
           phone: client.phone,
           email: client.email,
           birth: this.formatDateToDDMMYYYY(client.birth),
-          cep: client.address.cep,
-          state: client.address.state,
-          city: client.address.city,
-          neighborhood: client.address.neighborhood,
-          street: client.address.street,
-          number: client.address.number,
-          complement: client.address.complement
+          cep: client.address?.cep || '',
+          state: client.address?.state || '',
+          city: client.address?.city || '',
+          neighborhood: client.address?.neighborhood || '',
+          street: client.address?.street || '',
+          number: client.address?.number || '',
+          complement: client.address?.complement || ''
         }, { emitEvent: false });
 
         this.originalFormValue = { ...this.clientForm.value };

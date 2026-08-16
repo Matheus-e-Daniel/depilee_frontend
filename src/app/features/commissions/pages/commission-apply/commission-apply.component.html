@@ -189,8 +189,8 @@
                       (click)="$event.stopPropagation()"
                     />
                   </td>
-                  <td data-label="OS">{{ item.serviceOrderNumber }}</td>
-                  <td data-label="Serviço">{{ item.serviceName }}</td>
+                  <td data-label="OS">{{ getOrderNumber(item) }}</td>
+                  <td data-label="Serviço">{{ item.item?.name }}</td>
                   <td data-label="Qtd.">{{ item.quantity }}</td>
                   <td data-label="Preço Unit.">{{ item.unitPrice | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
                   <td data-label="Total">{{ (item.quantity * item.unitPrice) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>

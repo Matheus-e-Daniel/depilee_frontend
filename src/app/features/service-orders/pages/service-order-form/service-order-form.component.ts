@@ -14,7 +14,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabViewModule } from 'primeng/tabview';
 import { ServiceOrderService } from '../../services/service-order.service';
-import { ClientOption, ServiceOrder } from '../../models/service-order.model';
+import { ClientOption, ServiceOrder, OrderStatus } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
 import { ProductOption, ServiceOption, ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
 import { UserService } from '../../../users/services/user.service';
@@ -25,6 +25,7 @@ import { ApiResponse } from '../../../../core/models/api-response.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 
 interface Installment {
   number: number;
@@ -47,7 +48,8 @@ interface Installment {
     CheckboxModule,
     TooltipModule,
     TabViewModule,
-    SuccessModalComponent
+    SuccessModalComponent,
+    ConfirmationModalComponent
   ],
   templateUrl: './service-order-form.component.html',
   styleUrls: ['./service-order-form.component.scss']
@@ -78,6 +80,15 @@ export class ServiceOrderFormComponent implements OnInit {
   addingServiceItem = signal(false);
   addingProductItem = signal(false);
   removingItemId = signal<number | null>(null);
+  cancelling = signal(false);
+  showCancelConfirmation = signal(false);
+  orderStatus = signal<OrderStatus | null>(null);
+  readonly OrderStatus = OrderStatus;
+
+  canCancelOrder = computed(() => {
+    const status = this.orderStatus();
+    return status === OrderStatus.Draft || status === OrderStatus.Open;
+  });
 
   clients = signal<ClientOption[]>([]);
   clientsLoading = signal(true);
@@ -92,8 +103,14 @@ export class ServiceOrderFormComponent implements OnInit {
   installmentsList = signal<Installment[]>([]);
 
   orderItems = signal<ServiceOrderItem[]>([]);
-  serviceLineItems = computed(() => this.orderItems().filter(item => !!item.serviceId));
-  productLineItems = computed(() => this.orderItems().filter(item => !!item.productId));
+  serviceLineItems = computed(() => {
+    const serviceIds = new Set(this.services().map(s => s.id));
+    return this.orderItems().filter(item => serviceIds.has(item.itemId));
+  });
+  productLineItems = computed(() => {
+    const productIds = new Set(this.products().map(p => p.id));
+    return this.orderItems().filter(item => productIds.has(item.itemId));
+  });
 
   private discountValue = signal<number | null>(null);
   subtotal = computed(() => this.orderItems().reduce((sum, item) => sum + item.quantity * item.unitPrice, 0));
@@ -274,11 +291,11 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   getServiceName(item: ServiceOrderItem): string {
-    return item.serviceName || this.services().find(s => s.id === item.serviceId)?.name || `Serviço #${item.serviceId}`;
+    return item.item?.name || this.services().find(s => s.id === item.itemId)?.name || `Serviço #${item.itemId}`;
   }
 
   getProductName(item: ServiceOrderItem): string {
-    return item.productName || this.products().find(p => p.id === item.productId)?.name || `Produto #${item.productId}`;
+    return item.item?.name || this.products().find(p => p.id === item.itemId)?.name || `Produto #${item.itemId}`;
   }
 
   getResponsibleName(item: ServiceOrderItem): string {
@@ -300,6 +317,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
     this.serviceOrderService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: order }) => {
+        this.orderStatus.set(order.orderStatus);
         this.orderForm.patchValue({
           clientId: order.clientId,
           discount: order.discount,
@@ -317,9 +335,9 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   private loadOrderItems(serviceOrderId: number): void {
-    this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.serviceOrderItemService.getAll(serviceOrderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        this.orderItems.set(response.data.filter(item => item.serviceOrderId === serviceOrderId));
+        this.orderItems.set(response.data);
         this.loading.set(false);
         this.isLoadingData = false;
       },
@@ -378,14 +396,15 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private persistOrderChanges(): Observable<ApiResponse<ServiceOrder>> {
     const id = this.orderId();
-    const payload = {
+    if (id === null) {
+      throw new Error('persistOrderChanges chamado sem orderId definido');
+    }
+    return this.serviceOrderService.update({
       id,
       clientId: this.orderForm.get('clientId')?.value || null,
-      discount: this.orderForm.get('discount')?.value || null,
-      notes: this.orderForm.get('notes')?.value || null,
-      total: this.total()
-    };
-    return this.serviceOrderService.update(payload as any);
+      discount: this.orderForm.get('discount')?.value || 0,
+      notes: this.orderForm.get('notes')?.value || null
+    });
   }
 
   private syncOrderTotals(): void {
@@ -408,10 +427,9 @@ export class ServiceOrderFormComponent implements OnInit {
     const value = this.serviceItemForm.value;
     const payload = {
       serviceOrderId: orderId,
-      serviceId: value.serviceId,
+      catalogItemId: value.serviceId,
       responsibleUserId: value.responsibleUserId,
-      quantity: value.quantity,
-      unitPrice: value.unitPrice
+      quantity: value.quantity
     };
 
     this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -439,9 +457,8 @@ export class ServiceOrderFormComponent implements OnInit {
     const value = this.productItemForm.value;
     const payload = {
       serviceOrderId: orderId,
-      productId: value.productId,
-      quantity: value.quantity,
-      unitPrice: value.unitPrice
+      catalogItemId: value.productId,
+      quantity: value.quantity
     };
 
     this.serviceOrderItemService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -475,5 +492,33 @@ export class ServiceOrderFormComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(['/service-orders']);
+  }
+
+  requestCancelOrder(): void {
+    this.showCancelConfirmation.set(true);
+  }
+
+  cancelOrderDismiss(): void {
+    this.showCancelConfirmation.set(false);
+  }
+
+  confirmCancelOrder(): void {
+    const id = this.orderId();
+    if (!id) return;
+
+    this.cancelling.set(true);
+    this.serviceOrderService.cancel(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: order }) => {
+        this.cancelling.set(false);
+        this.showCancelConfirmation.set(false);
+        this.orderStatus.set(order.orderStatus);
+        this.successModalService.show('Ordem de serviço cancelada com sucesso!');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cancelling.set(false);
+        this.showCancelConfirmation.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao cancelar a ordem de serviço');
+      }
+    });
   }
 }

@@ -1,0 +1,74 @@
+<div class="stock-movement-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Movimentação de Estoque</h1>
+      <p>Histórico de entradas, saídas e ajustes de estoque</p>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="filter-group">
+      <label for="search">Buscar por produto ou motivo</label>
+      <span class="p-input-icon-right w-full">
+        <input
+          id="search"
+          type="text"
+          pInputText
+          placeholder="Digite para buscar..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          class="w-full"
+        />
+      </span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="filteredMovements()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} movimentações">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Data</th>
+          <th>Produto</th>
+          <th>Tipo</th>
+          <th>Quantidade</th>
+          <th>Motivo</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-movement>
+        <tr>
+          <td data-label="Data">{{ movement.occurredAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td data-label="Produto">{{ getProductName(movement) }}</td>
+          <td data-label="Tipo">
+            <p-tag
+              [value]="getTypeLabel(movement.type)"
+              [severity]="getTypeSeverity(movement.type)">
+            </p-tag>
+          </td>
+          <td data-label="Quantidade">{{ movement.quantity }}</td>
+          <td data-label="Motivo">{{ movement.reason || '—' }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-history" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhuma movimentação encontrada</h3>
+              <p>As movimentações de estoque aparecerão aqui</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

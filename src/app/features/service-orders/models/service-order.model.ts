@@ -9,7 +9,9 @@ export interface ServiceOrder {
   notes?: string;
   registrationDate?: string;
   lastUpdate?: string;
-  status?: number;
+  completedAt?: string | null;
+  paidAt?: string | null;
+  cancelledAt?: string | null;
   createdByUser?: string;
   updatedByUser?: string;
   clientName?: string;
@@ -27,10 +29,11 @@ export interface ServiceOrderFormData {
 }
 
 export enum OrderStatus {
-  Pending = 0,
-  InProgress = 1,
-  Completed = 2,
-  Cancelled = 3
+  Draft = 0,
+  Open = 1,
+  Paid = 3,
+  Completed = 4,
+  Cancelled = 5
 }
 
 export interface ClientOption {

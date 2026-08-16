@@ -76,6 +76,17 @@
                 [disabled]="savingInfo()"
                 (click)="saveBasicInfo()">
               </button>
+
+              <button
+                *ngIf="orderId() && canCancelOrder()"
+                pButton
+                type="button"
+                label="Cancelar Ordem"
+                icon="pi pi-times-circle"
+                class="p-button-danger p-button-outlined"
+                [disabled]="cancelling()"
+                (click)="requestCancelOrder()">
+              </button>
             </div>
           </p-tabPanel>
 
@@ -440,3 +451,14 @@
 </div>
 
 <app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showCancelConfirmation()"
+  type="delete"
+  message="Tem certeza que deseja cancelar esta ordem de serviço? Essa ação não pode ser desfeita."
+  confirmLabel="Cancelar Ordem"
+  cancelLabel="Voltar"
+  [loading]="cancelling()"
+  (confirm)="confirmCancelOrder()"
+  (cancel)="cancelOrderDismiss()">
+</app-confirmation-modal>

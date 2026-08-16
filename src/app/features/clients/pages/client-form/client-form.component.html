@@ -77,7 +77,7 @@
           </div>
 
           <div class="field col-4 md:col-4">
-            <label for="cpf" class="block font-medium mb-2">CPF *</label>
+            <label for="cpf" class="block font-medium mb-2">CPF</label>
             <p-inputMask
               id="cpf"
               formControlName="cpf"
@@ -87,15 +87,10 @@
               (onFocus)="onCpfFocus($event)"
               (click)="onCpfClick($event)">
             </p-inputMask>
-            <small
-              *ngIf="clientForm.get('cpf')?.invalid && clientForm.get('cpf')?.touched"
-              class="p-error block mt-1">
-              CPF no formato 000.000.000-00
-            </small>
           </div>
 
           <div class="field col-6 md:col-4">
-            <label for="phone" class="block font-medium mb-2">Telefone *</label>
+            <label for="phone" class="block font-medium mb-2">Telefone</label>
             <p-inputMask
               id="phone"
               formControlName="phone"
@@ -105,15 +100,10 @@
               (onFocus)="onPhoneFocus($event)"
               (click)="onPhoneClick($event)">
             </p-inputMask>
-            <small
-              *ngIf="clientForm.get('phone')?.invalid && clientForm.get('phone')?.touched"
-              class="p-error block mt-1">
-              Telefone é obrigatório
-            </small>
           </div>
 
           <div class="field col-6 md:col-4">
-            <label for="email" class="block font-medium mb-2">Email *</label>
+            <label for="email" class="block font-medium mb-2">Email</label>
             <input
               id="email"
               type="email"
@@ -125,7 +115,6 @@
             <small
               *ngIf="clientForm.get('email')?.invalid && clientForm.get('email')?.touched"
               class="p-error block mt-1">
-              <span *ngIf="clientForm.get('email')?.errors?.['required']">Email é obrigatório</span>
               <span *ngIf="clientForm.get('email')?.errors?.['email']">Email inválido</span>
             </small>
           </div>
@@ -136,7 +125,7 @@
           </div>
 
           <div class="field col-12 md:col-3">
-            <label for="cep" class="block font-medium mb-2">CEP *</label>
+            <label for="cep" class="block font-medium mb-2">CEP</label>
            <p-inputMask
               id="cep"
               formControlName="cep"
@@ -150,11 +139,6 @@
               </ng-template>
             </p-inputMask>
             <small
-              *ngIf="clientForm.get('cep')?.invalid && clientForm.get('cep')?.touched"
-              class="p-error block mt-1">
-              CEP no formato 00000-000
-            </small>
-            <small
               *ngIf="cepErrorMessage()"
               class="p-error block mt-1">
               {{ cepErrorMessage() }}
@@ -162,7 +146,7 @@
           </div>
 
           <div class="field col-6 md:col-6">
-            <label for="city" class="block font-medium mb-2">Cidade *</label>
+            <label for="city" class="block font-medium mb-2">Cidade</label>
             <input
               id="city"
               type="text"
@@ -170,16 +154,10 @@
               formControlName="city"
               class="w-full"
               placeholder="Nome da cidade" />
-
-            <small
-              *ngIf="clientForm.get('city')?.invalid && clientForm.get('city')?.touched"
-              class="p-error block mt-1">
-              Cidade é obrigatória
-            </small>
           </div>
 
           <div class="field col-6 md:col-6">
-            <label for="state" class="block font-medium mb-2">Estado *</label>
+            <label for="state" class="block font-medium mb-2">Estado</label>
             <p-dropdown
               id="state"
               formControlName="state"
@@ -187,15 +165,10 @@
               placeholder="UF"
               class="w-full">
             </p-dropdown>
-            <small
-              *ngIf="clientForm.get('state')?.invalid && clientForm.get('state')?.touched"
-              class="p-error block mt-1">
-              Estado é obrigatório
-            </small>
           </div>
 
           <div class="field col-6">
-            <label for="street" class="block font-medium mb-2">Rua *</label>
+            <label for="street" class="block font-medium mb-2">Rua</label>
             <input
               id="street"
               type="text"
@@ -203,16 +176,10 @@
               formControlName="street"
               class="w-full"
               placeholder="Nome da rua" />
-
-            <small
-              *ngIf="clientForm.get('street')?.invalid && clientForm.get('street')?.touched"
-              class="p-error block mt-1">
-              Rua é obrigatória
-            </small>
           </div>
 
           <div class="field col-4 md:col-4">
-            <label for="number" class="block font-medium mb-2">Número *</label>
+            <label for="number" class="block font-medium mb-2">Número</label>
             <input
               id="number"
               type="text"
@@ -220,16 +187,10 @@
               formControlName="number"
               class="w-full"
               placeholder="Nº" />
-
-            <small
-              *ngIf="clientForm.get('number')?.invalid && clientForm.get('number')?.touched"
-              class="p-error block mt-1">
-              Número é obrigatório
-            </small>
           </div>
 
           <div class="field col-6 md:col-6">
-            <label for="neighborhood" class="block font-medium mb-2">Bairro *</label>
+            <label for="neighborhood" class="block font-medium mb-2">Bairro</label>
             <input
               id="neighborhood"
               type="text"
@@ -237,12 +198,6 @@
               formControlName="neighborhood"
               class="w-full"
               placeholder="Nome do bairro" />
-
-            <small
-              *ngIf="clientForm.get('neighborhood')?.invalid && clientForm.get('neighborhood')?.touched"
-              class="p-error block mt-1">
-              Bairro é obrigatório
-            </small>
           </div>
 
           <div class="field col-6 md:col-6">

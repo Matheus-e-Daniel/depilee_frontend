@@ -24,8 +24,12 @@ export class ServiceOrderService {
     return this.http.post<ApiResponse<ServiceOrder>>(this.apiUrl, order);
   }
 
-  update(order: Pick<ServiceOrderFormData, 'clientId' | 'discount' | 'notes' | 'total'> & { id: number }): Observable<ApiResponse<ServiceOrder>> {
+  update(order: { id: number; clientId: number | null; discount: number; notes: string | null }): Observable<ApiResponse<ServiceOrder>> {
     return this.http.put<ApiResponse<ServiceOrder>>(this.apiUrl, order);
+  }
+
+  cancel(id: number, reason?: string): Observable<ApiResponse<ServiceOrder>> {
+    return this.http.post<ApiResponse<ServiceOrder>>(`${this.apiUrl}/cancel`, { id, reason });
   }
 
   delete(id: number): Observable<ApiResponse<void>> {

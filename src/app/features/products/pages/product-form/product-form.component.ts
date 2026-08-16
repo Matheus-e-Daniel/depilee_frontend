@@ -79,7 +79,7 @@ export class ProductFormComponent implements OnInit {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      cost: [0],
+      cost: [0, [Validators.min(0)]],
       salePrice: ['', [Validators.required, Validators.min(0.01)]],
       stock: ['', [Validators.required, Validators.min(0)]],
       brandId: ['', Validators.required],
@@ -134,7 +134,7 @@ export class ProductFormComponent implements OnInit {
         this.productForm.patchValue({
           name: product.name,
           description: product.description,
-          cost: 0,
+          cost: product.cost,
           salePrice: product.price,
           stock: product.stock,
           brandId: product.brandId,
@@ -142,8 +142,17 @@ export class ProductFormComponent implements OnInit {
         });
 
         setTimeout(() => {
+          const costInput = document.getElementById('cost') as HTMLInputElement;
           const salePriceInput = document.getElementById('salePrice') as HTMLInputElement;
           const stockInput = document.getElementById('stock') as HTMLInputElement;
+
+          if (costInput) {
+            costInput.value = (product.cost || 0).toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+              minimumFractionDigits: 2
+            });
+          }
 
           if (salePriceInput && product.price) {
             salePriceInput.value = product.price.toLocaleString('pt-BR', {
@@ -180,7 +189,7 @@ export class ProductFormComponent implements OnInit {
 
   confirmSubmit(): void {
     this.confirmationLoading.set(true);
-    const formData: ProductFormData = { ...this.productForm.value, cost: 0 };
+    const formData: ProductFormData = { ...this.productForm.value, cost: this.productForm.value.cost || 0 };
 
     const operation = this.isEditMode()
       ? this.productService.update({ id: Number(this.productId()), ...formData })

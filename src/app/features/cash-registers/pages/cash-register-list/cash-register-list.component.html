@@ -94,6 +94,16 @@
               </button>
               <button
                 pButton
+                icon="pi pi-list"
+                pTooltip="Lançamentos"
+                tooltipPosition="top"
+                class="p-button-sm p-button-secondary mr-2"
+                [class.not-clickable]="!hasPermission('CashFlow.Get')"
+                [attr.disabled]="!hasPermission('CashFlow.Get') ? true : null"
+                (click)="hasPermission('CashFlow.Get') && goToCashFlows(cashRegister.id)">
+              </button>
+              <button
+                pButton
                 icon="pi pi-lock"
                 class="p-button-sm p-button-warning"
                 (click)="openCloseCashRegisterModal(cashRegister.id, cashRegister.notes)">

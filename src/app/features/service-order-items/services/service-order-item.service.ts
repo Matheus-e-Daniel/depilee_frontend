@@ -1,6 +1,6 @@
 import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ServiceOrderItem, ServiceOrderItemFormData, ProductOption, ServiceOption } from '../models/service-order-item.model';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
@@ -12,8 +12,9 @@ export class ServiceOrderItemService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'service-order-items';
 
-  getAll(): Observable<PagedApiResponse<ServiceOrderItem>> {
-    return this.http.get<PagedApiResponse<ServiceOrderItem>>(this.apiUrl);
+  getAll(serviceOrderId: number): Observable<PagedApiResponse<ServiceOrderItem>> {
+    const params = new HttpParams().set('serviceOrderId', serviceOrderId);
+    return this.http.get<PagedApiResponse<ServiceOrderItem>>(this.apiUrl, { params });
   }
 
   create(item: ServiceOrderItemFormData): Observable<ApiResponse<ServiceOrderItem>> {

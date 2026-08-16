@@ -164,6 +164,14 @@ export const routes: Routes = [
         data: { permissions: ['CashRegister.Edit'] }
       },
       {
+        path: 'cash-registers/:cashRegisterId/cash-flows',
+        loadComponent: () =>
+          import('./features/cash-flows/pages/cash-flow-list/cash-flow-list.component')
+            .then(m => m.CashFlowListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['CashFlow.Get'] }
+      },
+      {
         path: 'categories',
         loadComponent: () =>
           import('./features/categories/pages/category-list/category-list.component')
@@ -244,6 +252,14 @@ export const routes: Routes = [
         data: { permissions: ['Event.Get'] }
       },
       {
+        path: 'stock-movements',
+        loadComponent: () =>
+          import('./features/stock-movements/pages/stock-movement-list/stock-movement-list.component')
+            .then(m => m.StockMovementListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['StockMovement.Get'] }
+      },
+      {
         path: 'roles',
         loadComponent: () =>
           import('./features/roles/pages/role-list/role-list.component')
@@ -271,19 +287,25 @@ export const routes: Routes = [
         path: 'commissions/settings',
         loadComponent: () =>
           import('./features/commissions/pages/commission-settings/commission-settings.component')
-            .then(m => m.CommissionSettingsComponent)
+            .then(m => m.CommissionSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Commission.Get', 'Commission.Edit'] }
       },
       {
         path: 'commissions/apply',
         loadComponent: () =>
           import('./features/commissions/pages/commission-apply/commission-apply.component')
-            .then(m => m.CommissionApplyComponent)
+            .then(m => m.CommissionApplyComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Commission.Create'] }
       },
       {
         path: 'commissions/history',
         loadComponent: () =>
           import('./features/commissions/pages/commission-history/commission-history.component')
-            .then(m => m.CommissionHistoryComponent)
+            .then(m => m.CommissionHistoryComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Commission.Get'] }
       },
       {
         path: '',

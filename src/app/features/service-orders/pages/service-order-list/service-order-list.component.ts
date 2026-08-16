@@ -6,10 +6,11 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { ServiceOrderService } from '../../services/service-order.service';
 import { ServiceOrder, OrderStatus } from '../../models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
-import { ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
+import { ServiceOrderItem, ProductOption, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -25,6 +26,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     ButtonModule,
     TableModule,
     TagModule,
+    TooltipModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -49,8 +51,27 @@ export class ServiceOrderListComponent implements OnInit {
   expandedRows: { [key: number]: boolean } = {};
   orderItems: { [key: number]: ServiceOrderItem[] } = {};
 
+  products = signal<ProductOption[]>([]);
+  services = signal<ServiceOption[]>([]);
+
+  showCancelConfirmation = signal(false);
+  cancelLoading = signal(false);
+  orderToCancel: { id: number; orderNumber: string } | null = null;
+
   ngOnInit(): void {
     this.loadOrders();
+    this.loadCatalogOptions();
+  }
+
+  private loadCatalogOptions(): void {
+    this.serviceOrderItemService.getProducts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => this.products.set(response.data),
+      error: () => {}
+    });
+    this.serviceOrderItemService.getServices().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => this.services.set(response.data),
+      error: () => {}
+    });
   }
 
   loadOrders(): void {
@@ -113,11 +134,9 @@ export class ServiceOrderListComponent implements OnInit {
   }
 
   loadOrderItems(orderId: number): void {
-    this.serviceOrderItemService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.serviceOrderItemService.getAll(orderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        this.orderItems[orderId] = response.data.filter(
-          item => item.serviceOrderId === orderId
-        );
+        this.orderItems[orderId] = response.data;
       },
       error: (err: HttpErrorResponse) => {
         this.errorModalService.show(err.error?.message || 'Falha ao carregar itens da ordem');
@@ -126,35 +145,72 @@ export class ServiceOrderListComponent implements OnInit {
   }
 
   getItemName(item: ServiceOrderItem): string {
-    if (item.productName) return item.productName;
-    if (item.serviceName) return item.serviceName;
-    if (item.productId) return `Produto ID: ${item.productId}`;
-    if (item.serviceId) return `Serviço ID: ${item.serviceId}`;
-    return 'Sem produto/serviço';
+    return item.item?.name || `Item #${item.itemId}`;
   }
 
   getItemType(item: ServiceOrderItem): string {
-    return item.productId ? 'Produto' : 'Serviço';
+    return this.products().some(p => p.id === item.itemId) ? 'Produto' : 'Serviço';
   }
 
   getStatusLabel(status: OrderStatus): string {
     const labels = {
-      [OrderStatus.Pending]: 'Pendente',
-      [OrderStatus.InProgress]: 'Em Andamento',
-      [OrderStatus.Completed]: 'Concluído',
-      [OrderStatus.Cancelled]: 'Cancelado'
+      [OrderStatus.Draft]: 'Rascunho',
+      [OrderStatus.Open]: 'Em Aberto',
+      [OrderStatus.Paid]: 'Paga',
+      [OrderStatus.Completed]: 'Concluída',
+      [OrderStatus.Cancelled]: 'Cancelada'
     };
-    return labels[status] || 'Desconhecido';
+    return labels[status] ?? 'Desconhecido';
   }
 
   getStatusSeverity(status: OrderStatus): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
     const severities = {
-      [OrderStatus.Pending]: 'warning' as const,
-      [OrderStatus.InProgress]: 'info' as const,
+      [OrderStatus.Draft]: 'secondary' as const,
+      [OrderStatus.Open]: 'warning' as const,
+      [OrderStatus.Paid]: 'info' as const,
       [OrderStatus.Completed]: 'success' as const,
       [OrderStatus.Cancelled]: 'danger' as const
     };
-    return severities[status] || 'secondary';
+    return severities[status] ?? 'secondary';
+  }
+
+  canCancelOrder(order: ServiceOrder): boolean {
+    return order.orderStatus === OrderStatus.Draft || order.orderStatus === OrderStatus.Open;
+  }
+
+  cancelOrder(id: number, orderNumber: string): void {
+    this.orderToCancel = { id, orderNumber };
+    this.showCancelConfirmation.set(true);
+  }
+
+  confirmCancelOrder(): void {
+    if (!this.orderToCancel) return;
+
+    this.cancelLoading.set(true);
+    this.serviceOrderService.cancel(this.orderToCancel.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.cancelLoading.set(false);
+        this.showCancelConfirmation.set(false);
+        this.successModalService.show('Ordem de serviço cancelada com sucesso!');
+        this.loadOrders();
+        this.orderToCancel = null;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.cancelLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao cancelar a ordem de serviço');
+      }
+    });
+  }
+
+  cancelCancelOrder(): void {
+    this.showCancelConfirmation.set(false);
+    this.orderToCancel = null;
+  }
+
+  getCancelMessage(): string {
+    return this.orderToCancel
+      ? `Tem certeza que deseja cancelar a ordem "${this.orderToCancel.orderNumber}"?`
+      : '';
   }
 
   getDeleteMessage(): string {

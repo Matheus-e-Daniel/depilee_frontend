@@ -45,8 +45,28 @@
               placeholder="Descreva o produto (opcional)"></textarea>
           </div>
 
-          <div class="field col-12">
-            <label for="salePrice" class="block font-medium mb-2">Preço *</label>
+          <div class="field col-6">
+            <label for="cost" class="block font-medium mb-2">Custo</label>
+            <input
+              id="cost"
+              type="text"
+              pInputText
+              formControlName="cost"
+              class="w-full"
+              placeholder="R$ 0,00"
+              (focus)="onCurrencyFocus($event)"
+              (input)="onCurrencyInput($event)"
+              (blur)="formatCurrencyOnBlur($event, 'cost')" />
+
+            <small
+              *ngIf="productForm.get('cost')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              <span *ngIf="productForm.get('cost')?.errors?.['min']">Valor mínimo: R$ 0,00</span>
+            </small>
+          </div>
+
+          <div class="field col-6">
+            <label for="salePrice" class="block font-medium mb-2">Preço de Venda *</label>
             <input
               id="salePrice"
               type="text"

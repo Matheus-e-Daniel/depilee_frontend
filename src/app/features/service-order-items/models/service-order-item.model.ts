@@ -1,30 +1,31 @@
+export interface CatalogItemInfo {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  categoryId?: number;
+  status: number;
+}
+
 export interface ServiceOrderItem {
   id: number;
   serviceOrderId: number;
-  productId?: number;
-  serviceId?: number;
-  responsibleUserId?: number;
+  itemId: number;
+  item: CatalogItemInfo;
   quantity: number;
   unitPrice: number;
   registrationDate?: string;
-  lastUpdate?: string;
-  status: number;
   createdByUser?: string;
-  updatedByUser?: string;
-  productName?: string;
-  serviceName?: string;
-  serviceOrderNumber?: string;
-  totalPrice?: number;
+  responsibleUserId?: number;
   commissionPercentageApplied?: number;
   commissionAmount?: number;
+  commissionRecalculatedAt?: string | null;
 }
 
 export interface ServiceOrderItemFormData {
   serviceOrderId: number;
-  productId?: number;
-  serviceId?: number;
+  catalogItemId: number;
   quantity: number;
-  unitPrice?: number;
   responsibleUserId?: number;
 }
 

@@ -1,11 +1,11 @@
 export interface Client {
   id: number;
   name: string;
-  gender: number;
-  cpf: string;
-  phone: string;
-  email: string;
-  birth: string;
+  gender: number | null;
+  cpf: string | null;
+  phone: string | null;
+  email: string | null;
+  birth: string | null;
   address: {
     cep: string;
     state: string;
@@ -14,7 +14,7 @@ export interface Client {
     street: string;
     number: string;
     complement?: string;
-  };
+  } | null;
   status: number;
   registrationDate: string;
   lastUpdate: string | null;

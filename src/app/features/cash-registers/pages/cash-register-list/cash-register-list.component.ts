@@ -106,6 +106,10 @@ export class CashRegisterListComponent implements OnInit {
     this.router.navigate(['/cash-registers', id, 'edit']);
   }
 
+  goToCashFlows(id: number): void {
+    this.router.navigate(['/cash-registers', id, 'cash-flows']);
+  }
+
   openCloseCashRegisterModal(id: number, notes: string): void {
     this.cashRegisterToClose = { id, notes };
     this.showCloseModal.set(true);

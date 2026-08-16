@@ -18,7 +18,7 @@ import { User } from '../../../users/models/user.model';
 import { ServiceOrderService } from '../../../service-orders/services/service-order.service';
 import { ServiceOrder, OrderStatus } from '../../../service-orders/models/service-order.model';
 import { ServiceOrderItemService } from '../../../service-order-items/services/service-order-item.service';
-import { ServiceOrderItem } from '../../../service-order-items/models/service-order-item.model';
+import { ServiceOrderItem, ServiceOption } from '../../../service-order-items/models/service-order-item.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 
@@ -51,6 +51,7 @@ export class CommissionApplyComponent implements OnInit {
   users = signal<User[]>([]);
   allOrders = signal<ServiceOrder[]>([]);
   allItems = signal<ServiceOrderItem[]>([]);
+  services = signal<ServiceOption[]>([]);
   selectedUserId = signal<number | null>(null);
   selectedItemIds = signal<Set<number>>(new Set());
   applyResult = signal<CommissionResult | null>(null);
@@ -66,16 +67,11 @@ export class CommissionApplyComponent implements OnInit {
     const userId = this.selectedUserId();
     if (!userId) return [];
 
-    const completedOrderIds = new Set(
-      this.allOrders()
-        .filter(o => o.orderStatus === OrderStatus.Completed)
-        .map(o => o.id)
-    );
+    const serviceIds = new Set(this.services().map(s => s.id));
 
     return this.allItems().filter(item =>
       item.responsibleUserId === userId &&
-      item.serviceId != null &&
-      completedOrderIds.has(item.serviceOrderId)
+      serviceIds.has(item.itemId)
     );
   });
 
@@ -99,13 +95,36 @@ export class CommissionApplyComponent implements OnInit {
     forkJoin({
       users: this.userService.getAll(),
       orders: this.serviceOrderService.getAll(),
-      items: this.serviceOrderItemService.getAll()
+      services: this.serviceOrderItemService.getServices()
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ users, orders, items }) => {
+      next: ({ users, orders, services }) => {
         this.users.set(users.data);
         this.allOrders.set(orders.data);
-        this.allItems.set(items.data);
-        this.dataLoading.set(false);
+        this.services.set(services.data);
+
+        // O endpoint de itens exige serviceOrderId — não existe "listar todos os itens
+        // de todas as ordens" no backend, então buscamos por ordem concluída e juntamos.
+        const completedOrderIds = orders.data
+          .filter(o => o.orderStatus === OrderStatus.Completed)
+          .map(o => o.id);
+
+        if (completedOrderIds.length === 0) {
+          this.allItems.set([]);
+          this.dataLoading.set(false);
+          return;
+        }
+
+        forkJoin(completedOrderIds.map(id => this.serviceOrderItemService.getAll(id)))
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (responses) => {
+              this.allItems.set(responses.flatMap(r => r.data));
+              this.dataLoading.set(false);
+            },
+            error: () => {
+              this.dataLoading.set(false);
+            }
+          });
       },
       error: () => {
         this.dataLoading.set(false);
@@ -142,6 +161,10 @@ export class CommissionApplyComponent implements OnInit {
       items.forEach(i => ids.add(i.id));
     }
     this.selectedItemIds.set(ids);
+  }
+
+  getOrderNumber(item: ServiceOrderItem): string {
+    return this.allOrders().find(o => o.id === item.serviceOrderId)?.orderNumber || `OS #${item.serviceOrderId}`;
   }
 
   isAllSelected(): boolean {

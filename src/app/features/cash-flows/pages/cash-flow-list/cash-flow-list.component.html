@@ -1,0 +1,160 @@
+<div class="cash-flow-container w-full">
+  <div class="header">
+    <button
+      pButton
+      icon="pi pi-arrow-left"
+      class="p-button-text p-button-sm"
+      (click)="onBack()">
+    </button>
+    <div class="title-section">
+      <h1>Lançamentos de Caixa</h1>
+      <p *ngIf="cashRegister() as reg">Caixa #{{ reg.id }} &mdash; Saldo inicial: {{ reg.initialBalance | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</p>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <span class="summary-label">Total de Entradas</span>
+      <span class="summary-value positive">{{ totalEntradas | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Total de Saídas</span>
+      <span class="summary-value negative">{{ totalSaidas | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Saldo dos Lançamentos</span>
+      <span class="summary-value">{{ (totalEntradas - totalSaidas) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="hasPermission('CashFlow.Create')">
+    <p-card header="Novo Lançamento">
+      <form [formGroup]="entryForm" (ngSubmit)="submitEntry()" class="entry-form">
+        <div class="form-grid">
+          <div class="field col-12 md:col-3">
+            <label for="type" class="block font-medium mb-2">Tipo *</label>
+            <p-dropdown
+              id="type"
+              formControlName="type"
+              [options]="typeOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full">
+            </p-dropdown>
+          </div>
+
+          <div class="field col-12 md:col-3">
+            <label for="value" class="block font-medium mb-2">Valor *</label>
+            <p-inputNumber
+              id="value"
+              formControlName="value"
+              mode="currency"
+              currency="BRL"
+              locale="pt-BR"
+              [min]="0.01"
+              class="w-full"
+              styleClass="w-full">
+            </p-inputNumber>
+            <small
+              *ngIf="entryForm.get('value')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Informe um valor válido
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-6">
+            <label for="description" class="block font-medium mb-2">Descrição</label>
+            <input
+              id="description"
+              type="text"
+              pInputText
+              formControlName="description"
+              class="w-full"
+              placeholder="Descreva o lançamento (opcional)" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            label="Registrar Lançamento"
+            icon="pi pi-plus"
+            class="p-button-primary"
+            [loading]="saving()"
+            [disabled]="saving()">
+          </button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="cashFlows()"
+      [loading]="loading()"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="10"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} lançamentos">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Data</th>
+          <th>Tipo</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-flow>
+        <tr>
+          <td data-label="Data">{{ flow.registrationDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td data-label="Tipo">
+            <p-tag
+              [value]="getTypeLabel(flow.type)"
+              [severity]="flow.type === ECashFlowType.In ? 'success' : 'danger'">
+            </p-tag>
+          </td>
+          <td data-label="Descrição">{{ flow.description || '—' }}</td>
+          <td data-label="Valor">{{ flow.value | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+          <td data-label="Ações">
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-sm p-button-danger"
+              [class.not-clickable]="!hasPermission('CashFlow.Delete')"
+              [attr.disabled]="!hasPermission('CashFlow.Delete') ? true : null"
+              (click)="hasPermission('CashFlow.Delete') && deleteCashFlow(flow.id, flow.description)">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-wallet" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhum lançamento encontrado</h3>
+              <p>Registre entradas e saídas manuais neste caixa</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+
+<app-confirmation-modal
+  [visible]="showConfirmation()"
+  type="delete"
+  [message]="getDeleteMessage()"
+  [loading]="confirmationLoading()"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-modal>

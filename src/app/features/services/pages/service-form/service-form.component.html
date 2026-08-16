@@ -101,7 +101,7 @@
               placeholder="Ex: 10"
               styleClass="w-full"
             />
-            <small class="block mt-1 text-color-secondary">Usado no modo de cálculo "Por Serviço"</small>
+            <small class="block mt-1 text-color-secondary">Se vazio, usa o percentual do profissional responsável ou o percentual global configurado</small>
             <small
               *ngIf="serviceForm.get('commissionPercentage')?.invalid && formSubmitted()"
               class="p-error block mt-1">
