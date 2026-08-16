@@ -74,7 +74,6 @@ export class ServiceFormComponent implements OnInit {
       description: [''],
       price: ['', [Validators.required]],
       categoryId: ['', Validators.required],
-      active: [true],
       commissionPercentage: [null, [Validators.min(0), Validators.max(100)]]
     });
 
@@ -123,7 +122,6 @@ export class ServiceFormComponent implements OnInit {
           description: service.description,
           price: formattedPrice,
           categoryId: service.categoryId,
-          active: service.active,
           commissionPercentage: service.commissionPercentage ?? null
         });
 

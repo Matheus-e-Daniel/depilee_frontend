@@ -4,5 +4,5 @@ export interface CategoryFormData {
 }
 
 export interface Category extends CategoryFormData {
-  id: string;
+  id: number;
 }

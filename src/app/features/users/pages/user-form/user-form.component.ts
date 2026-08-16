@@ -74,7 +74,7 @@ export class UserFormComponent implements OnInit {
   genderOptions = [
     { label: 'Masculino', value: 1 },
     { label: 'Feminino', value: 2 },
-    { label: 'Outro', value: 3 }
+    { label: 'Outro', value: 0 }
   ];
   roles = signal<Role[]>([]);
   rolesLoading = signal(false);
@@ -88,6 +88,7 @@ export class UserFormComponent implements OnInit {
   isLoadingUserData = signal(false);
   originalFormValue: any = null;
   formModified = signal(false);
+  private pendingRoleName: string | null = null;
 
   ngOnInit(): void {
     this.loadRoles();
@@ -127,6 +128,7 @@ export class UserFormComponent implements OnInit {
       next: (roles) => {
         this.roles.set(roles);
         this.rolesLoading.set(false);
+        this.applyPendingRoleSelection();
       },
       error: (err: HttpErrorResponse) => {
         this.rolesLoading.set(false);
@@ -135,19 +137,27 @@ export class UserFormComponent implements OnInit {
     });
   }
 
+  private applyPendingRoleSelection(): void {
+    if (!this.pendingRoleName || this.roles().length === 0) return;
+    const matchedRole = this.roles().find(r => r.name === this.pendingRoleName);
+    if (matchedRole) {
+      this.userForm.patchValue({ roleId: matchedRole.id }, { emitEvent: false });
+    }
+  }
+
   private loadUser(id: string): void {
     this.loading.set(true);
     this.isLoadingUserData.set(true);
 
     this.userService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: user }) => {
+        this.pendingRoleName = user.roles?.[0] ?? null;
         this.userForm.patchValue({
           email: user.email,
           fullName: user.fullName,
           cpf: user.cpf,
           birth: this.formatDateToDDMMYYYY(user.birth),
           gender: user.gender,
-          roleId: user.roleId || user.roles?.[0]?.id || null,
           commissionPercentage: user.commissionPercentage ?? null,
           address: {
             cep: user.address?.cep || '',
@@ -159,6 +169,7 @@ export class UserFormComponent implements OnInit {
             complement: user.address?.complement || ''
           }
         }, { emitEvent: false });
+        this.applyPendingRoleSelection();
 
         this.originalFormValue = { ...this.userForm.value };
         this.formModified.set(false);
@@ -275,7 +286,7 @@ export class UserFormComponent implements OnInit {
       fullName: formValue.fullName,
       cpf: formValue.cpf,
       birth: birthISO,
-      gender: formValue.gender || 3,
+      gender: formValue.gender ?? 0,
       commissionPercentage: formValue.commissionPercentage ?? null,
       address: mappedAddress
     };
@@ -285,7 +296,7 @@ export class UserFormComponent implements OnInit {
     }
 
     const operation = this.isEditMode()
-      ? this.userService.update({ id: this.userId()!, ...userPayload })
+      ? this.userService.update({ id: Number(this.userId()), ...userPayload })
       : this.userService.create(userPayload);
 
     const successMessage = this.isEditMode()

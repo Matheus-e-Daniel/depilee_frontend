@@ -1,5 +1,5 @@
 export interface Client {
-  id: string;
+  id: number;
   name: string;
   gender: number;
   cpf: string;
@@ -15,10 +15,9 @@ export interface Client {
     number: string;
     complement?: string;
   };
-  active: boolean;
+  status: number;
   registrationDate: string;
-  createdAt: string;
-  updatedAt: string;
+  lastUpdate: string | null;
 }
 
 export interface ClientFormData {

@@ -4,6 +4,6 @@ export interface CashRegisterFormData {
 }
 
 export interface CashRegister extends CashRegisterFormData {
-  CashRegisterStatus: number;
-  id: string;
+  cashRegisterStatus: number;
+  id: number;
 }

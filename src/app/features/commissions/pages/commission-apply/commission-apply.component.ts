@@ -12,7 +12,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { CheckboxModule } from 'primeng/checkbox';
 import { CommissionService } from '../../services/commission.service';
-import { CommissionResult, CalculationMode } from '../../models/commission.model';
+import { CommissionResult } from '../../models/commission.model';
 import { UserService } from '../../../users/services/user.service';
 import { User } from '../../../users/models/user.model';
 import { ServiceOrderService } from '../../../service-orders/services/service-order.service';
@@ -51,7 +51,7 @@ export class CommissionApplyComponent implements OnInit {
   users = signal<User[]>([]);
   allOrders = signal<ServiceOrder[]>([]);
   allItems = signal<ServiceOrderItem[]>([]);
-  selectedUserId = signal<string | null>(null);
+  selectedUserId = signal<number | null>(null);
   selectedItemIds = signal<Set<number>>(new Set());
   applyResult = signal<CommissionResult | null>(null);
   dataLoading = signal(true);
@@ -73,7 +73,7 @@ export class CommissionApplyComponent implements OnInit {
     );
 
     return this.allItems().filter(item =>
-      String(item.responsibleUserId) === userId &&
+      item.responsibleUserId === userId &&
       item.serviceId != null &&
       completedOrderIds.has(item.serviceOrderId)
     );
@@ -95,17 +95,6 @@ export class CommissionApplyComponent implements OnInit {
     return `Deseja aplicar comissão para ${total} item(s) selecionado(s)?`;
   });
 
-  readonly CalculationMode = CalculationMode;
-
-  calculationModeLabel(mode: CalculationMode): string {
-    const labels: Record<CalculationMode, string> = {
-      [CalculationMode.ByService]: 'Por Serviço',
-      [CalculationMode.ByUser]: 'Por Usuário',
-      [CalculationMode.Global]: 'Global'
-    };
-    return labels[mode] ?? String(mode);
-  }
-
   ngOnInit(): void {
     forkJoin({
       users: this.userService.getAll(),
@@ -124,7 +113,7 @@ export class CommissionApplyComponent implements OnInit {
     });
   }
 
-  onUserChange(userId: string | null): void {
+  onUserChange(userId: number | null): void {
     this.selectedUserId.set(userId);
     this.selectedItemIds.set(new Set());
   }

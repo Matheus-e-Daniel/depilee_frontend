@@ -125,7 +125,7 @@ export class CashRegisterFormComponent implements OnInit {
     };
 
     const operation = this.isEditMode()
-      ? this.cashRegisterService.update({ id: this.cashRegisterId()!, ...formData })
+      ? this.cashRegisterService.update({ id: Number(this.cashRegisterId()), ...formData })
       : this.cashRegisterService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

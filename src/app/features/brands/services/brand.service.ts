@@ -24,11 +24,11 @@ export class BrandService {
     return this.http.post<ApiResponse<Brand>>(this.apiUrl, brand);
   }
 
-  update(brand: BrandFormData & { id: string }): Observable<ApiResponse<Brand>> {
+  update(brand: BrandFormData & { id: number }): Observable<ApiResponse<Brand>> {
     return this.http.put<ApiResponse<Brand>>(this.apiUrl, brand);
   }
 
-  delete(id: string): Observable<ApiResponse<void>> {
+  delete(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

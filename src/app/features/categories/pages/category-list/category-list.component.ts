@@ -62,9 +62,9 @@ export class CategoryListComponent implements OnInit {
       list = list.filter(c => c.name.toLowerCase().includes(search));
     }
     if (this.sortOrder() === 'desc') {
-      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      list = [...list].sort((a, b) => b.id - a.id);
     } else {
-      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      list = [...list].sort((a, b) => a.id - b.id);
     }
     return list;
   });
@@ -78,7 +78,7 @@ export class CategoryListComponent implements OnInit {
   categories = signal<Category[]>([]);
   loading = signal(true);
 
-  categoryToDelete: { id: string; name: string } | null = null;
+  categoryToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -100,11 +100,11 @@ export class CategoryListComponent implements OnInit {
     });
   }
 
-  editCategory(id: string): void {
+  editCategory(id: number): void {
     this.router.navigate(['/categories', id, 'edit']);
   }
 
-  deleteCategory(id: string, name: string): void {
+  deleteCategory(id: number, name: string): void {
     this.categoryToDelete = { id, name };
   }
 

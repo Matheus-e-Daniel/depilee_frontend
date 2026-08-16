@@ -296,7 +296,7 @@ export class RoleFormComponent implements OnInit {
     const rolePayload: RoleFormData = { roleName };
 
     const createOrUpdateRole = this.isEditMode()
-      ? this.roleService.update({ id: this.roleId()!, ...rolePayload })
+      ? this.roleService.update({ id: Number(this.roleId()), ...rolePayload })
       : this.roleService.create(rolePayload);
 
     createOrUpdateRole.pipe(

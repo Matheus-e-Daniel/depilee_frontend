@@ -110,7 +110,7 @@ export class BrandFormComponent implements OnInit {
     const formData: BrandFormData = this.brandForm.value;
 
     const operation = this.isEditMode()
-      ? this.brandService.update({ id: this.brandId()!, ...formData })
+      ? this.brandService.update({ id: Number(this.brandId()), ...formData })
       : this.brandService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

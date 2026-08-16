@@ -8,7 +8,7 @@ import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { CalendarModule } from 'primeng/calendar';
 import { CommissionService } from '../../services/commission.service';
-import { CommissionResult, CalculationMode } from '../../models/commission.model';
+import { CommissionResult } from '../../models/commission.model';
 import { UserService } from '../../../users/services/user.service';
 import { User } from '../../../users/models/user.model';
 
@@ -33,25 +33,14 @@ export class CommissionHistoryComponent implements OnInit {
   private userService = inject(UserService);
 
   users = signal<User[]>([]);
-  selectedUserId = signal<string | null>(null);
+  selectedUserId = signal<number | null>(null);
   startDate = signal<Date | null>(null);
   endDate = signal<Date | null>(null);
   result = signal<CommissionResult | null>(null);
   usersLoading = signal(true);
   loading = signal(false);
 
-  userOptions: { label: string; value: string }[] = [];
-
-  readonly CalculationMode = CalculationMode;
-
-  calculationModeLabel(mode: CalculationMode): string {
-    const labels: Record<CalculationMode, string> = {
-      [CalculationMode.ByService]: 'Por Serviço',
-      [CalculationMode.ByUser]: 'Por Usuário',
-      [CalculationMode.Global]: 'Global'
-    };
-    return labels[mode] ?? String(mode);
-  }
+  userOptions: { label: string; value: number }[] = [];
 
   ngOnInit(): void {
     this.userService.getAll()

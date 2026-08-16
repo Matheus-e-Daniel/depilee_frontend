@@ -3,5 +3,5 @@ export interface BrandFormData {
 }
 
 export interface Brand extends BrandFormData {
-  id: string;
+  id: number;
 }

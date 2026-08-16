@@ -73,7 +73,7 @@ export class ClientFormComponent implements OnInit {
   genderOptions = [
     { label: 'Masculino', value: 1 },
     { label: 'Feminino', value: 2 },
-    { label: 'Outro', value: 3 }
+    { label: 'Outro', value: 0 }
   ];
 
   states = [
@@ -310,7 +310,7 @@ export class ClientFormComponent implements OnInit {
 
     const formData: ClientFormData = {
       name: formValue.name,
-      gender: formValue.gender || 3,
+      gender: formValue.gender ?? 0,
       cpf: formValue.cpf.replace(/\D/g, ''),
       phone: formValue.phone,
       email: formValue.email,

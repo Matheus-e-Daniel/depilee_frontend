@@ -24,11 +24,11 @@ export class CategoryService {
     return this.http.post<ApiResponse<Category>>(this.apiUrl, category);
   }
 
-  update(category: CategoryFormData & { id: string }): Observable<ApiResponse<Category>> {
+  update(category: CategoryFormData & { id: number }): Observable<ApiResponse<Category>> {
     return this.http.put<ApiResponse<Category>>(this.apiUrl, category);
   }
 
-  delete(id: string): Observable<ApiResponse<void>> {
+  delete(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

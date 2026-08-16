@@ -11,7 +11,7 @@ import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PaymentMethodService } from '../../services/payment-method.service';
-import { PaymentMethodFormData, PaymentMethod } from '../../models/payment-method.model';
+import { PaymentMethodFormData } from '../../models/payment-method.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
@@ -51,12 +51,13 @@ export class PaymentMethodFormComponent implements OnInit {
   formSubmitted = signal(false);
 
   paymentTypes = [
-    { label: 'Dinheiro', value: 0 },
-    { label: 'Cartão de Crédito', value: 1 },
-    { label: 'Cartão de Débito', value: 2 },
-    { label: 'PIX', value: 3 },
-    { label: 'Boleto', value: 4 },
-    { label: 'Transferência', value: 5 }
+    { label: 'Dinheiro', value: 1 },
+    { label: 'Cartão de Crédito', value: 2 },
+    { label: 'Cartão de Débito', value: 3 },
+    { label: 'PIX', value: 4 },
+    { label: 'Transferência Bancária', value: 5 },
+    { label: 'Cheque', value: 6 },
+    { label: 'Outro', value: 99 }
   ];
 
   showConfirmation = signal(false);
@@ -70,7 +71,7 @@ export class PaymentMethodFormComponent implements OnInit {
   private initForm(): void {
     this.paymentMethodForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      type: [0, [Validators.required]],
+      type: [1, [Validators.required]],
       installments: [1, [Validators.required, Validators.min(1)]],
       interestRatePerInstallment: [0, [Validators.required, Validators.min(0)]],
       feePercentage: [0, [Validators.required, Validators.min(0)]],
@@ -123,9 +124,15 @@ export class PaymentMethodFormComponent implements OnInit {
     const formData: PaymentMethodFormData = this.paymentMethodForm.value;
 
     if (this.isEditMode() && this.paymentMethodId()) {
-      const updatedPaymentMethod: PaymentMethod = {
-        id: this.paymentMethodId()!,
-        ...formData
+      const updatedPaymentMethod = {
+        id: Number(this.paymentMethodId()),
+        name: formData.name,
+        type: formData.type,
+        allowInstallments: formData.installments > 1,
+        maxInstallments: formData.installments > 1 ? formData.installments : null,
+        interestRatePerInstallment: formData.interestRatePerInstallment,
+        feePercentage: formData.feePercentage,
+        description: formData.description
       };
 
       this.paymentMethodService.update(updatedPaymentMethod).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

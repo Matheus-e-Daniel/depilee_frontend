@@ -62,10 +62,10 @@ export class BrandListComponent implements OnInit {
     if (search) {
       list = list.filter(b => b.name.toLowerCase().includes(search));
     }
-    if (this.sortOrder() === 'desc') {   
-      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
+    if (this.sortOrder() === 'desc') {
+      list = [...list].sort((a, b) => b.id - a.id);
     } else {
-      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      list = [...list].sort((a, b) => a.id - b.id);
     }
     return list;
   });
@@ -81,7 +81,7 @@ export class BrandListComponent implements OnInit {
   
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
-  brandToDelete: { id: string; name: string } | null = null;
+  brandToDelete: { id: number; name: string } | null = null;
 
   ngOnInit(): void {
     this.loadBrands();
@@ -102,11 +102,11 @@ export class BrandListComponent implements OnInit {
     });
   }
 
-  editBrand(id: string): void {
+  editBrand(id: number): void {
     this.router.navigate(['/brands', id, 'edit']);
   }
 
-  deleteBrand(id: string, name: string): void {
+  deleteBrand(id: number, name: string): void {
     this.brandToDelete = { id, name };
     this.showConfirmation.set(true);
   }

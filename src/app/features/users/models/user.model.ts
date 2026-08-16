@@ -1,9 +1,3 @@
-export enum Gender {
-  Male = 'Male',
-  Female = 'Female',
-  Other = 'Other',
-}
-
 export interface Address {
   cep: string;
   state: string;
@@ -15,15 +9,14 @@ export interface Address {
 }
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   fullName: string;
   password: string;
   cpf: string;
   birth: string;
-  gender: Gender;
-  roleId?: string | null;
-  roles?: { id: string; name: string }[];
+  gender: number;
+  roles?: string[];
   address: Address;
   commissionPercentage?: number | null;
 }

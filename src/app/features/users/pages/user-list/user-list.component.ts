@@ -40,7 +40,7 @@ export class UserListComponent implements OnInit {
   users = signal<User[]>([]);
   loading = signal(true);
 
-  userToDelete: { id: string; name: string } | null = null;
+  userToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -65,11 +65,11 @@ export class UserListComponent implements OnInit {
     this.router.navigate(['/users/new']);
   }
 
-  editUser(id: string): void {
+  editUser(id: number): void {
     this.router.navigate(['/users/edit', id]);
   }
 
-  deleteUser(id: string, name: string): void {
+  deleteUser(id: number, name: string): void {
     this.userToDelete = { id, name };
   }
 

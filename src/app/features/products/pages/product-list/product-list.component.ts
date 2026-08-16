@@ -98,7 +98,7 @@ export class ProductListComponent implements OnInit {
     return sorted;
   });
 
-  productToDelete: { id: string; name: string } | null = null;
+  productToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -125,11 +125,11 @@ export class ProductListComponent implements OnInit {
   }
 
 
-  editProduct(id: string): void {
+  editProduct(id: number): void {
     this.router.navigate(['/products/edit', id]);
   }
 
-  deleteProduct(id: string, name: string): void {
+  deleteProduct(id: number, name: string): void {
     this.productToDelete = { id, name };
   }
 

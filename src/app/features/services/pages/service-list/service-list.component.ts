@@ -58,25 +58,21 @@ export class ServiceListComponent implements OnInit {
     let filtered = this.allServices();
     const searchFilter = this.searchTerm().toLowerCase().trim();
     if (searchFilter) {
-      filtered = filtered.filter(service => {
-        const nameMatch = service.name?.toLowerCase().startsWith(searchFilter);
-        const categoryMatch = (service.categoryName || '').toLowerCase().startsWith(searchFilter);
-        return nameMatch || categoryMatch;
-      });
+      filtered = filtered.filter(service => service.name?.toLowerCase().startsWith(searchFilter));
     }
     const sorted = [...filtered];
     switch (this.sortOrder()) {
       case 'newest':
         sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
           return dateB - dateA;
         });
         break;
       case 'oldest':
         sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
           return dateA - dateB;
         });
         break;
@@ -85,19 +81,17 @@ export class ServiceListComponent implements OnInit {
         break;
       case 'status':
         sorted.sort((a, b) => {
-          const aStatus = Number((a as any).status);
-          const bStatus = Number((b as any).status);
-          if (aStatus === bStatus) {
+          if (a.status === b.status) {
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
           }
-          return aStatus === 1 ? -1 : 1;
+          return a.status === 1 ? -1 : 1;
         });
         break;
     }
     return sorted;
   });
 
-  serviceToDelete: { id: string; name: string } | null = null;
+  serviceToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -123,11 +117,11 @@ export class ServiceListComponent implements OnInit {
     this.sortOrder.set('newest');
   }
 
-  editService(id: string): void {
+  editService(id: number): void {
     this.router.navigate(['/services/edit', id]);
   }
 
-  deleteService(id: string, name: string): void {
+  deleteService(id: number, name: string): void {
     this.serviceToDelete = { id, name };
   }
 

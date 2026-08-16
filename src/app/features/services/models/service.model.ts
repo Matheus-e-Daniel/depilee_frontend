@@ -1,26 +1,19 @@
 export interface Service {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   price: number;
-  categoryId: string;
-  categoryName?: string;
-  active: boolean;
+  categoryId: number;
+  status: number;
   commissionPercentage?: number;
-  createdAt: string;
-  updatedAt: string;
+  registrationDate: string;
+  lastUpdate: string | null;
 }
 
 export interface ServiceFormData {
   name: string;
   description?: string;
   price: number;
-  categoryId: string;
-  active: boolean;
+  categoryId: number;
   commissionPercentage?: number | null;
-}
-
-export interface ServiceCategory {
-  id: string;
-  name: string;
 }

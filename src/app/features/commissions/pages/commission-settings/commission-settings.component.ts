@@ -3,11 +3,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CommissionService } from '../../services/commission.service';
-import { CalculationMode } from '../../models/commission.model';
 
 @Component({
   selector: 'app-commission-settings',
@@ -16,7 +14,6 @@ import { CalculationMode } from '../../models/commission.model';
     CommonModule,
     ReactiveFormsModule,
     InputNumberModule,
-    DropdownModule,
     ButtonModule,
     CardModule
   ],
@@ -32,28 +29,13 @@ export class CommissionSettingsComponent implements OnInit {
   loading = signal(false);
   saving = signal(false);
 
-  calculationModeOptions = [
-    { label: 'Por Serviço (% cadastrado no serviço)', value: CalculationMode.ByService },
-    { label: 'Por Usuário (% cadastrado no responsável)', value: CalculationMode.ByUser },
-    { label: 'Global (% definido aqui)', value: CalculationMode.Global }
-  ];
-
-  get isGlobalMode(): boolean {
-    return this.settingsForm?.get('calculationMode')?.value === CalculationMode.Global;
-  }
-
   ngOnInit(): void {
     this.initForm();
     this.loadSettings();
-
-    this.settingsForm.get('calculationMode')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.updateGlobalPercentageValidator());
   }
 
   private initForm(): void {
     this.settingsForm = this.fb.group({
-      calculationMode: [null, Validators.required],
       globalCommissionPercentage: [null, [Validators.min(0), Validators.max(100)]]
     });
   }
@@ -65,27 +47,14 @@ export class CommissionSettingsComponent implements OnInit {
       .subscribe({
         next: ({ data: settings }) => {
           this.settingsForm.patchValue({
-            calculationMode: settings.calculationMode,
             globalCommissionPercentage: settings.globalCommissionPercentage ?? null
           }, { emitEvent: false });
-          this.updateGlobalPercentageValidator();
           this.loading.set(false);
         },
         error: () => {
           this.loading.set(false);
         }
       });
-  }
-
-  private updateGlobalPercentageValidator(): void {
-    const ctrl = this.settingsForm.get('globalCommissionPercentage');
-    if (this.isGlobalMode) {
-      ctrl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)]);
-    } else {
-      ctrl?.setValidators([Validators.min(0), Validators.max(100)]);
-      ctrl?.setValue(null);
-    }
-    ctrl?.updateValueAndValidity();
   }
 
   onSave(): void {
@@ -98,8 +67,7 @@ export class CommissionSettingsComponent implements OnInit {
     const value = this.settingsForm.value;
 
     this.commissionService.updateSettings({
-      calculationMode: value.calculationMode,
-      globalCommissionPercentage: this.isGlobalMode ? value.globalCommissionPercentage : null
+      globalCommissionPercentage: value.globalCommissionPercentage
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);

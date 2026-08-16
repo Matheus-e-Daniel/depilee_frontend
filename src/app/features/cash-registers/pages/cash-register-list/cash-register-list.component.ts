@@ -64,9 +64,9 @@ export class CashRegisterListComponent implements OnInit {
       list = list.filter(c => (c.notes || '').toLowerCase().includes(search));
     }
     if (this.sortOrder() === 'desc') {
-      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      list = [...list].sort((a, b) => b.id - a.id);
     } else {
-      list = [...list].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      list = [...list].sort((a, b) => a.id - b.id);
     }
     return list;
   });
@@ -82,7 +82,7 @@ export class CashRegisterListComponent implements OnInit {
  
   showCloseModal = signal(false);
   closeLoading = signal(false);
-  cashRegisterToClose: { id: string; notes: string } | null = null;
+  cashRegisterToClose: { id: number; notes: string } | null = null;
 
   ngOnInit(): void {
     this.loadCashRegisters();
@@ -102,11 +102,11 @@ export class CashRegisterListComponent implements OnInit {
     });
   }
 
-  editCashRegister(id: string): void {
+  editCashRegister(id: number): void {
     this.router.navigate(['/cash-registers', id, 'edit']);
   }
 
-  openCloseCashRegisterModal(id: string, notes: string): void {
+  openCloseCashRegisterModal(id: number, notes: string): void {
     this.cashRegisterToClose = { id, notes };
     this.showCloseModal.set(true);
   }
@@ -115,7 +115,7 @@ export class CashRegisterListComponent implements OnInit {
     if (!this.cashRegisterToClose) return;
     this.closeLoading.set(true);
     this.cashRegisterService.closeCashRegister({
-      cashRegisterId: Number(this.cashRegisterToClose.id),
+      cashRegisterId: this.cashRegisterToClose.id,
       finalBalance: data.finalBalance,
       notes: data.notes
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

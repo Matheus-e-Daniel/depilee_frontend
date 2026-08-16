@@ -221,7 +221,7 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
-  onPaymentMethodChange(paymentMethodId: string | null): void {
+  onPaymentMethodChange(paymentMethodId: number | null): void {
     if (!paymentMethodId) {
       this.orderForm.get('installments')?.setValue(1);
       this.orderForm.get('installments')?.disable();

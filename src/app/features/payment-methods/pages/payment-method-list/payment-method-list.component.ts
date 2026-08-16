@@ -69,11 +69,11 @@ export class PaymentMethodListComponent implements OnInit {
         sorted.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case 'oldest':
-        sorted.sort((a, b) => new Date(a.createdAt || '').getTime() - new Date(b.createdAt || '').getTime());
+        sorted.sort((a, b) => new Date(a.registrationDate || '').getTime() - new Date(b.registrationDate || '').getTime());
         break;
       case 'newest':
       default:
-        sorted.sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime());
+        sorted.sort((a, b) => new Date(b.registrationDate || '').getTime() - new Date(a.registrationDate || '').getTime());
         break;
     }
 
@@ -82,7 +82,7 @@ export class PaymentMethodListComponent implements OnInit {
 
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
-  paymentMethodToDelete: string | null = null;
+  paymentMethodToDelete: number | null = null;
 
   ngOnInit(): void {
     this.loadPaymentMethods();
@@ -153,12 +153,13 @@ export class PaymentMethodListComponent implements OnInit {
 
   getPaymentTypeLabel(type: number): string {
     const types: { [key: number]: string } = {
-      0: 'Dinheiro',
-      1: 'Cartão de Crédito',
-      2: 'Cartão de Débito',
-      3: 'PIX',
-      4: 'Boleto',
-      5: 'Transferência'
+      1: 'Dinheiro',
+      2: 'Cartão de Crédito',
+      3: 'Cartão de Débito',
+      4: 'PIX',
+      5: 'Transferência Bancária',
+      6: 'Cheque',
+      99: 'Outro'
     };
     return types[type] || 'Desconhecido';
   }

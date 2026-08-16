@@ -2,7 +2,7 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PaymentMethod, PaymentMethodFormData } from '../models/payment-method.model';
+import { PaymentMethod, PaymentMethodFormData, PaymentMethodUpdateData } from '../models/payment-method.model';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
@@ -31,18 +31,11 @@ export class PaymentMethodService {
     return this.http.post<ApiResponse<PaymentMethod>>(this.apiUrl, payload);
   }
 
-  update(paymentMethod: PaymentMethod): Observable<ApiResponse<PaymentMethod>> {
-    const payload = {
-      ...paymentMethod,
-      type: Number(paymentMethod.type),
-      installments: Number(paymentMethod.installments),
-      interestRatePerInstallment: Number(paymentMethod.interestRatePerInstallment),
-      feePercentage: Number(paymentMethod.feePercentage)
-    };
-    return this.http.put<ApiResponse<PaymentMethod>>(this.apiUrl, payload);
+  update(paymentMethod: PaymentMethodUpdateData): Observable<ApiResponse<PaymentMethod>> {
+    return this.http.put<ApiResponse<PaymentMethod>>(this.apiUrl, paymentMethod);
   }
 
-  delete(id: string): Observable<ApiResponse<void>> {
+  delete(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

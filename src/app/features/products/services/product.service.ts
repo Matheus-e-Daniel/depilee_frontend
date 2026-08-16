@@ -24,12 +24,12 @@ export class ProductService {
     return this.http.post<ApiResponse<Product>>(this.apiUrl, product);
   }
 
-  update(product: ProductFormData & { id: string }): Observable<ApiResponse<Product>> {
+  update(product: ProductFormData & { id: number }): Observable<ApiResponse<Product>> {
   return this.http.put<ApiResponse<Product>>(this.apiUrl, product);
 }
 
 
-  delete(id: string): Observable<ApiResponse<void>> {
+  delete(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 }

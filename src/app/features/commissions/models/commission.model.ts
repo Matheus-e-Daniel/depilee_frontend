@@ -1,16 +1,9 @@
-export enum CalculationMode {
-  ByService = 1,
-  ByUser = 2,
-  Global = 3
-}
-
 export interface CommissionSettings {
-  calculationMode: CalculationMode;
   globalCommissionPercentage?: number | null;
 }
 
 export interface CommissionApplyRequest {
-  userId: string;
+  userId: number;
   serviceOrderItemIds: number[];
 }
 
@@ -29,9 +22,8 @@ export interface CommissionServiceItem {
 }
 
 export interface CommissionResult {
-  userId: string;
+  userId: number;
   userName: string;
-  calculationMode: CalculationMode;
   startDate: string | null;
   endDate: string | null;
   totalServicesAmount: number;

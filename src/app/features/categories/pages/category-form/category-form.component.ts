@@ -114,7 +114,7 @@ export class CategoryFormComponent implements OnInit {
     const formData: CategoryFormData = this.categoryForm.value;
 
     const operation = this.isEditMode()
-      ? this.categoryService.update({ id: this.categoryId()!, ...formData })
+      ? this.categoryService.update({ id: Number(this.categoryId()), ...formData })
       : this.categoryService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

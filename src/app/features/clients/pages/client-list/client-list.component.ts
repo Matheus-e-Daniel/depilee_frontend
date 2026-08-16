@@ -76,15 +76,15 @@ export class ClientListComponent implements OnInit {
     switch (this.sortOrder()) {
       case 'newest':
         sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
           return dateB - dateA;
         });
         break;
       case 'oldest':
         sorted.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          const dateA = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+          const dateB = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
           return dateA - dateB;
         });
         break;
@@ -93,12 +93,10 @@ export class ClientListComponent implements OnInit {
         break;
       case 'status':
         sorted.sort((a, b) => {
-          const aStatus = Number((a as any).status);
-          const bStatus = Number((b as any).status);
-          if (aStatus === bStatus) {
+          if (a.status === b.status) {
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
           }
-          return aStatus === 1 ? -1 : 1;
+          return a.status === 1 ? -1 : 1;
         });
         break;
     }
@@ -106,7 +104,7 @@ export class ClientListComponent implements OnInit {
     return sorted;
   });
 
-  clientToDelete: { id: string; name: string } | null = null;
+  clientToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -132,11 +130,11 @@ export class ClientListComponent implements OnInit {
     this.sortOrder.set('newest');
   }
 
-  editClient(id: string): void {
+  editClient(id: number): void {
     this.router.navigate(['/clients/edit', id]);
   }
 
-  deleteClient(id: string, name: string): void {
+  deleteClient(id: number, name: string): void {
     this.clientToDelete = { id, name };
   }
 
@@ -180,9 +178,9 @@ export class ClientListComponent implements OnInit {
     const labels: { [key: number]: string } = {
       1: 'Masculino',
       2: 'Feminino',
-      3: 'Outro'
+      0: 'Outro'
     };
-    return labels[gender] || 'Não informado';
+    return labels[gender] ?? 'Não informado';
   }
 
   formatPhone(phone: string): string {

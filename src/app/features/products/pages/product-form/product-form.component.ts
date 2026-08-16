@@ -183,7 +183,7 @@ export class ProductFormComponent implements OnInit {
     const formData: ProductFormData = { ...this.productForm.value, cost: 0 };
 
     const operation = this.isEditMode()
-      ? this.productService.update({ id: this.productId()!, ...formData })
+      ? this.productService.update({ id: Number(this.productId()), ...formData })
       : this.productService.create(formData);
 
     operation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
