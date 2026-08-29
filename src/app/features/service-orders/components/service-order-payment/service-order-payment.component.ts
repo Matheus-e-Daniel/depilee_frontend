@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CashRegisterService } from '../../../cash-registers/services/cash-register.service';
 import { CashRegister } from '../../../cash-registers/models/cash-register.model';
-import { ServiceOrderPaymentService, PaymentMethod } from './service-order-payment.service';
+import { ServiceOrderPaymentService } from './service-order-payment.service';
+import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';

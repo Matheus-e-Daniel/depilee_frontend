@@ -329,6 +329,14 @@
               </div>
             </div>
 
+            <div
+              class="p-message p-message-warn"
+              style="margin-bottom: 1rem; padding: 0.75rem 1rem;"
+              *ngIf="!cashRegisterLoading() && !openCashRegister()">
+              <i class="pi pi-exclamation-triangle mr-2"></i>
+              Nenhum caixa aberto. Abra um caixa em "Caixas" antes de registrar ou pagar um pagamento.
+            </div>
+
             <div class="form-grid">
               <div class="field col-12 md:col-6">
                 <label for="paymentMethodId" class="block font-medium mb-2">Forma de Pagamento</label>
@@ -341,6 +349,7 @@
                   placeholder="Selecione"
                   [loading]="paymentMethodsLoading()"
                   [showClear]="true"
+                  [disabled]="!!payment()"
                   class="w-full">
                   <ng-template pTemplate="empty">
                     <div class="p-2">Nenhuma forma encontrada</div>
@@ -366,10 +375,12 @@
                   <button
                     pButton
                     type="button"
-                    icon="pi pi-calculator"
-                    label="Gerar Parcelas"
+                    icon="pi pi-check-circle"
+                    label="Registrar Pagamento"
                     class="add-item-btn"
-                    (click)="generateInstallments()">
+                    [loading]="creatingPayment()"
+                    [disabled]="!!payment() || !orderForm.get('paymentMethodId')?.value || orderItems().length === 0 || !openCashRegister()"
+                    (click)="createPayment()">
                   </button>
                 </div>
               </div>
@@ -397,34 +408,46 @@
                 </small>
               </div>
 
-              <div class="field col-12" *ngIf="installmentsList().length > 0">
+              <div class="field col-12" *ngIf="payment() as currentPayment">
                 <label class="block font-medium mb-3">
-                  <i class="pi pi-list mr-2"></i>Parcelas Geradas ({{ installmentsList().length }})
+                  <i class="pi pi-list mr-2"></i>Parcelas ({{ currentPayment.paymentInstallments.length }})
                 </label>
                 <div class="installments-table">
                   <div class="installments-header">
                     <div class="installment-col">Nº</div>
                     <div class="installment-col">Valor</div>
                     <div class="installment-col">Status</div>
+                    <div class="installment-col">Ações</div>
                   </div>
                   <div class="installments-body">
                     <div
-                      *ngFor="let installment of installmentsList(); let i = index"
+                      *ngFor="let installment of currentPayment.paymentInstallments"
                       class="installment-row"
-                      [class.paid]="installment.paid">
+                      [class.paid]="installment.status === PaymentStatus.Paid">
                       <div class="installment-col">
-                        <span class="installment-number">{{ i + 1 }}ª</span>
+                        <span class="installment-number">{{ installment.installmentNumber }}ª</span>
                       </div>
                       <div class="installment-col">
                         <span class="installment-value">{{ installment.value | currency:'BRL':'symbol':'1.2-2' }}</span>
                       </div>
                       <div class="installment-col">
-                        <p-checkbox
-                          [(ngModel)]="installment.paid"
-                          [ngModelOptions]="{standalone: true}"
-                          [binary]="true"
-                          label="Paga">
-                        </p-checkbox>
+                        <p-tag
+                          [value]="installment.status === PaymentStatus.Paid ? 'Paga' : installment.status === PaymentStatus.Cancelled ? 'Cancelada' : installment.status === PaymentStatus.Overdue ? 'Vencida' : 'Pendente'"
+                          [severity]="installment.status === PaymentStatus.Paid ? 'success' : installment.status === PaymentStatus.Pending ? 'warning' : 'danger'">
+                        </p-tag>
+                      </div>
+                      <div class="installment-col">
+                        <button
+                          pButton
+                          type="button"
+                          icon="pi pi-dollar"
+                          label="Pagar"
+                          class="p-button-sm p-button-success"
+                          *ngIf="installment.status === PaymentStatus.Pending"
+                          [loading]="payingInstallmentId() === installment.id"
+                          [disabled]="!openCashRegister()"
+                          (click)="payInstallment(installment)">
+                        </button>
                       </div>
                     </div>
                   </div>

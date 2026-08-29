@@ -1,4 +1,4 @@
-import { Component, output, inject, signal, ViewChild, OnInit, DestroyRef } from '@angular/core';
+import { Component, output, inject, ViewChild, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -11,14 +11,13 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService, Notification } from '../../notifications/services/notification.service';
-import { ProfileComponent } from '../../profile/profile.component';
 import { ErrorModalService } from '../../../shared/components/error-modal/error-modal.service';
 import { interval, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule, ProfileComponent],
+  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
@@ -34,18 +33,12 @@ export class HeaderComponent implements OnInit {
 
   toggleSidebar = output<void>();
   notificationCount = 0;
-  showProfileCard = signal(false);
 
   userMenuItems: MenuItem[] = [
     {
       label: 'Perfil',
       icon: 'pi pi-user',
       command: () => this.goToProfile()
-    },
-    {
-      label: 'Configurações',
-      icon: 'pi pi-cog',
-      command: () => this.goToSettings()
     },
     { separator: true },
     {
@@ -126,11 +119,7 @@ export class HeaderComponent implements OnInit {
   }
 
   private goToProfile(): void {
-    this.showProfileCard.set(true);
-  }
-
-  private goToSettings(): void {
-    this.router.navigate(['/commissions/settings']);
+    this.router.navigate(['/profile']);
   }
 
   viewNotification(_id: number): void { }

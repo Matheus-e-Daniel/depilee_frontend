@@ -1,16 +1,17 @@
-import { Component, inject, signal, Input, Output, EventEmitter, OnChanges, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TooltipModule } from 'primeng/tooltip';
+import { CardModule } from 'primeng/card';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ProfileService } from './services/profile.service';
+import { ProfileService, ProfileData } from './services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SuccessModalComponent } from '../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../shared/components/success-modal/success-modal.service';
+import { ChangePasswordModalComponent } from './components/change-password-modal/change-password-modal.component';
 
 @Component({
   selector: 'app-profile',
@@ -20,16 +21,14 @@ import { SuccessModalService } from '../../shared/components/success-modal/succe
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
-    TooltipModule,
-    SuccessModalComponent
+    CardModule,
+    SuccessModalComponent,
+    ChangePasswordModalComponent
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnChanges {
-  @Input() visible = false;
-  @Output() closed = new EventEmitter<void>();
-
+export class ProfileComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private profileService = inject(ProfileService);
@@ -37,43 +36,26 @@ export class ProfileComponent implements OnChanges {
   errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
+  profile = signal<ProfileData | null>(null);
+  loading = signal(false);
+  saving = signal(false);
+  editing = signal(false);
+  showChangePassword = signal(false);
+
   profileForm = this.fb.group({
     fullName: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    newPassword: [''],
-    confirmPassword: ['']
-  }, { validators: this.passwordMatchValidator });
+    email: ['', [Validators.required, Validators.email]]
+  });
 
-  loading = signal(false);
-  formSubmitted = signal(false);
-  showNewPassword = signal(false);
-  showConfirmPassword = signal(false);
-
-  ngOnChanges(): void {
-    if (this.visible) {
-      this.formSubmitted.set(false);
-      this.showNewPassword.set(false);
-      this.showConfirmPassword.set(false);
-      this.loadProfile();
-    }
-  }
-
-  toggleNewPasswordVisibility(): void {
-    this.showNewPassword.update(v => !v);
-  }
-
-  toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword.update(v => !v);
+  ngOnInit(): void {
+    this.loadProfile();
   }
 
   private loadProfile(): void {
     this.loading.set(true);
     this.profileService.getOwnProfile().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ data: profile }) => {
-        this.profileForm.patchValue({
-          fullName: profile.fullName,
-          email: profile.email
-        });
+      next: ({ data }) => {
+        this.profile.set(data);
         this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
@@ -83,55 +65,54 @@ export class ProfileComponent implements OnChanges {
     });
   }
 
-  private passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
-    const newPassword = group.get('newPassword')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    if (newPassword && newPassword !== confirmPassword) {
-      return { passwordMismatch: true };
-    }
-    return null;
+  startEditing(): void {
+    const current = this.profile();
+    this.profileForm.patchValue({
+      fullName: current?.fullName ?? '',
+      email: current?.email ?? ''
+    });
+    this.editing.set(true);
   }
 
-  onSubmit(): void {
-    this.formSubmitted.set(true);
+  cancelEditing(): void {
+    this.editing.set(false);
+  }
 
+  saveProfile(): void {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
       return;
     }
 
-    const { fullName, email, newPassword } = this.profileForm.value;
+    const { fullName, email } = this.profileForm.value;
 
-    const payload: any = {
-      fullName: fullName!,
-      email: email!
-    };
-
-    if (newPassword) {
-      payload.newPassword = newPassword;
-    }
-
-    this.loading.set(true);
-    this.profileService.updateOwnProfile(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.saving.set(true);
+    this.profileService.updateOwnProfile({ fullName: fullName!, email: email! }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.loading.set(false);
+        this.saving.set(false);
+        this.editing.set(false);
+        this.profile.update(p => p && { ...p, fullName: fullName!, email: email! });
+
         const userData = this.authService.getUserData();
         if (userData) {
           this.authService.setUserData({ ...userData, email: email!, userName: email! });
         }
-        this.profileForm.patchValue({ newPassword: '', confirmPassword: '' });
-        this.formSubmitted.set(false);
+
         this.successModalService.show('Perfil atualizado com sucesso!');
         setTimeout(() => this.successModalService.hide(), 2000);
       },
       error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
+        this.saving.set(false);
         this.errorModalService.show(err.error?.message || 'Falha ao atualizar perfil');
       }
     });
   }
 
-  onCancel(): void {
-    this.closed.emit();
+  openChangePassword(): void {
+    this.showChangePassword.set(true);
+  }
+
+  closeChangePassword(): void {
+    this.showChangePassword.set(false);
   }
 }

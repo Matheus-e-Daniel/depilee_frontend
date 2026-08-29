@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, Observable } from 'rxjs';
@@ -10,7 +10,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { CheckboxModule } from 'primeng/checkbox';
+import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { TabViewModule } from 'primeng/tabview';
 import { ServiceOrderService } from '../../services/service-order.service';
@@ -26,12 +26,10 @@ import { SuccessModalComponent } from '../../../../shared/components/success-mod
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
-
-interface Installment {
-  number: number;
-  value: number;
-  paid: boolean;
-}
+import { ServiceOrderPaymentService } from '../../components/service-order-payment/service-order-payment.service';
+import { Payment, PaymentInstallment, PaymentStatus } from '../../components/service-order-payment/payment.model';
+import { CashRegisterService } from '../../../cash-registers/services/cash-register.service';
+import { CashRegister } from '../../../cash-registers/models/cash-register.model';
 
 @Component({
   selector: 'app-service-order-form',
@@ -39,13 +37,12 @@ interface Installment {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule,
     InputNumberModule,
     InputTextareaModule,
     DropdownModule,
     ButtonModule,
     CardModule,
-    CheckboxModule,
+    TagModule,
     TooltipModule,
     TabViewModule,
     SuccessModalComponent,
@@ -60,6 +57,8 @@ export class ServiceOrderFormComponent implements OnInit {
   private serviceOrderService = inject(ServiceOrderService);
   private serviceOrderItemService = inject(ServiceOrderItemService);
   private paymentMethodService = inject(PaymentMethodService);
+  private serviceOrderPaymentService = inject(ServiceOrderPaymentService);
+  private cashRegisterService = inject(CashRegisterService);
   private userService = inject(UserService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -84,6 +83,7 @@ export class ServiceOrderFormComponent implements OnInit {
   showCancelConfirmation = signal(false);
   orderStatus = signal<OrderStatus | null>(null);
   readonly OrderStatus = OrderStatus;
+  readonly PaymentStatus = PaymentStatus;
 
   canCancelOrder = computed(() => {
     const status = this.orderStatus();
@@ -100,7 +100,11 @@ export class ServiceOrderFormComponent implements OnInit {
   paymentMethodsLoading = signal(true);
   users = signal<User[]>([]);
   usersLoading = signal(true);
-  installmentsList = signal<Installment[]>([]);
+  openCashRegister = signal<CashRegister | null>(null);
+  cashRegisterLoading = signal(true);
+  payment = signal<Payment | null>(null);
+  creatingPayment = signal(false);
+  payingInstallmentId = signal<number | null>(null);
 
   orderItems = signal<ServiceOrderItem[]>([]);
   serviceLineItems = computed(() => {
@@ -120,8 +124,6 @@ export class ServiceOrderFormComponent implements OnInit {
     return sub - (sub * discountPercent / 100);
   });
 
-  private isLoadingData = false;
-
   ngOnInit(): void {
     this.initForm();
     this.loadClients();
@@ -129,7 +131,34 @@ export class ServiceOrderFormComponent implements OnInit {
     this.loadServices();
     this.loadPaymentMethods();
     this.loadUsers();
+    this.loadOpenCashRegister();
     this.checkEditMode();
+  }
+
+  private loadOpenCashRegister(): void {
+    this.cashRegisterLoading.set(true);
+    this.cashRegisterService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        this.openCashRegister.set(response.data.find(c => c.cashRegisterStatus === 1) ?? null);
+        this.cashRegisterLoading.set(false);
+      },
+      error: () => {
+        this.openCashRegister.set(null);
+        this.cashRegisterLoading.set(false);
+      }
+    });
+  }
+
+  private loadPayment(serviceOrderId: number): void {
+    this.serviceOrderPaymentService.getByServiceOrder(serviceOrderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        const activePayment = response.data.find(p => p.paymentStatus !== PaymentStatus.Cancelled) ?? null;
+        this.payment.set(activePayment);
+        if (activePayment) {
+          this.orderForm.get('paymentMethodId')?.setValue(activePayment.paymentMethodId, { emitEvent: false });
+        }
+      }
+    });
   }
 
   private loadUsers(): void {
@@ -176,9 +205,7 @@ export class ServiceOrderFormComponent implements OnInit {
       debounceTime(600),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
-      if (!this.isLoadingData) {
-        this.syncOrderTotals();
-      }
+      this.syncOrderTotals();
     });
 
     this.orderForm.get('paymentMethodId')?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(paymentMethodId => {
@@ -254,22 +281,79 @@ export class ServiceOrderFormComponent implements OnInit {
     }
   }
 
-  generateInstallments(): void {
-    const total = this.total();
-    const installments = this.orderForm.get('installments')?.value || 1;
+  createPayment(): void {
+    const orderId = this.orderId();
+    const paymentMethodId = this.orderForm.get('paymentMethodId')?.value;
 
-    if (total <= 0 || installments <= 0) {
+    if (!orderId || !paymentMethodId) {
       return;
     }
 
-    const installmentValue = total / installments;
-    const newInstallments = Array.from({ length: installments }, (_, i) => ({
-      number: i + 1,
-      value: installmentValue,
-      paid: false
-    }));
+    const cashRegister = this.openCashRegister();
+    if (!cashRegister) {
+      this.errorModalService.show('Nenhum caixa aberto. Abra um caixa antes de registrar o pagamento.');
+      return;
+    }
 
-    this.installmentsList.set(newInstallments);
+    this.creatingPayment.set(true);
+    this.serviceOrderPaymentService.create({
+      cashRegisterId: cashRegister.id,
+      serviceOrderId: orderId,
+      paymentMethodId,
+      amount: this.total()
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: createdPayment }) => {
+        this.creatingPayment.set(false);
+        this.payment.set(createdPayment);
+        this.successModalService.show('Pagamento registrado! Agora pague cada parcela.');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.creatingPayment.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao registrar pagamento');
+      }
+    });
+  }
+
+  payInstallment(installment: PaymentInstallment): void {
+    const currentPayment = this.payment();
+    if (!currentPayment) {
+      return;
+    }
+
+    const cashRegister = this.openCashRegister();
+    if (!cashRegister) {
+      this.errorModalService.show('Nenhum caixa aberto. Abra um caixa antes de pagar a parcela.');
+      return;
+    }
+
+    this.payingInstallmentId.set(installment.id);
+    this.serviceOrderPaymentService.payInstallment({
+      paymentId: currentPayment.id,
+      cashRegisterId: cashRegister.id,
+      installmentId: installment.id
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: paidInstallment }) => {
+        this.payingInstallmentId.set(null);
+        this.payment.update(p => p && {
+          ...p,
+          paymentInstallments: p.paymentInstallments.map(i => i.id === paidInstallment.id ? paidInstallment : i)
+        });
+        this.successModalService.show('Parcela paga com sucesso!');
+        this.refreshOrderStatus();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.payingInstallmentId.set(null);
+        this.errorModalService.show(err.error?.message || 'Falha ao pagar parcela');
+      }
+    });
+  }
+
+  private refreshOrderStatus(): void {
+    const id = this.orderId();
+    if (!id) return;
+    this.serviceOrderService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: order }) => this.orderStatus.set(order.orderStatus)
+    });
   }
 
   onProductChange(productId: number): void {
@@ -313,22 +397,24 @@ export class ServiceOrderFormComponent implements OnInit {
 
   private loadOrder(id: number): void {
     this.loading.set(true);
-    this.isLoadingData = true;
 
     this.serviceOrderService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: order }) => {
         this.orderStatus.set(order.orderStatus);
+        // emitEvent:false porque isso é dados vindos do servidor, não uma edição do
+        // usuário — não deve disparar o auto-save (debounced) do campo discount.
         this.orderForm.patchValue({
           clientId: order.clientId,
           discount: order.discount,
           notes: order.notes || ''
-        });
+        }, { emitEvent: false });
+        this.discountValue.set(order.discount ?? null);
 
         this.loadOrderItems(id);
+        this.loadPayment(id);
       },
       error: () => {
         this.loading.set(false);
-        this.isLoadingData = false;
         this.router.navigate(['/service-orders']);
       }
     });
@@ -339,11 +425,9 @@ export class ServiceOrderFormComponent implements OnInit {
       next: (response) => {
         this.orderItems.set(response.data);
         this.loading.set(false);
-        this.isLoadingData = false;
       },
       error: () => {
         this.loading.set(false);
-        this.isLoadingData = false;
       }
     });
   }
