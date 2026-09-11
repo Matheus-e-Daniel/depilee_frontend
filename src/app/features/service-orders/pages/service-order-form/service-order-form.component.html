@@ -21,18 +21,47 @@
             <div class="form-grid">
               <div class="field col-12 md:col-6">
                 <label for="clientId" class="block font-medium mb-2">Cliente (opcional)</label>
+                <div class="dropdown-with-action">
+                  <p-dropdown
+                    id="clientId"
+                    formControlName="clientId"
+                    [options]="clients()"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Selecione o cliente"
+                    [loading]="clientsLoading()"
+                    [showClear]="true"
+                    class="w-full">
+                    <ng-template pTemplate="empty">
+                      <div class="p-2">Nenhum cliente encontrado</div>
+                    </ng-template>
+                  </p-dropdown>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-plus"
+                    pTooltip="Cadastrar novo cliente"
+                    tooltipPosition="top"
+                    class="p-button-outlined p-button-sm"
+                    (click)="openQuickCreateClient()">
+                  </button>
+                </div>
+              </div>
+
+              <div class="field col-12 md:col-6">
+                <label for="sellerUserId" class="block font-medium mb-2">Vendedor (opcional)</label>
                 <p-dropdown
-                  id="clientId"
-                  formControlName="clientId"
-                  [options]="clients()"
-                  optionLabel="name"
+                  id="sellerUserId"
+                  formControlName="sellerUserId"
+                  [options]="users()"
+                  optionLabel="fullName"
                   optionValue="id"
-                  placeholder="Selecione o cliente"
-                  [loading]="clientsLoading()"
+                  placeholder="Selecione quem vendeu/agendou"
+                  [loading]="usersLoading()"
                   [showClear]="true"
                   class="w-full">
                   <ng-template pTemplate="empty">
-                    <div class="p-2">Nenhum cliente encontrado</div>
+                    <div class="p-2">Nenhum usuário encontrado</div>
                   </ng-template>
                 </p-dropdown>
               </div>
@@ -104,21 +133,32 @@
                   <div class="form-grid">
                     <div class="field col-12 md:col-6">
                       <label for="newServiceId" class="block font-medium mb-2">Serviço *</label>
-                      <p-dropdown
-                        id="newServiceId"
-                        formControlName="serviceId"
-                        [options]="services()"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Selecione um serviço"
-                        [loading]="servicesLoading()"
-                        [showClear]="true"
-                        (onChange)="onServiceChange($event.value)"
-                        class="w-full">
-                        <ng-template pTemplate="empty">
-                          <div class="p-2">Nenhum serviço encontrado</div>
-                        </ng-template>
-                      </p-dropdown>
+                      <div class="dropdown-with-action">
+                        <p-dropdown
+                          id="newServiceId"
+                          formControlName="serviceId"
+                          [options]="services()"
+                          optionLabel="name"
+                          optionValue="id"
+                          placeholder="Selecione um serviço"
+                          [loading]="servicesLoading()"
+                          [showClear]="true"
+                          (onChange)="onServiceChange($event.value)"
+                          class="w-full">
+                          <ng-template pTemplate="empty">
+                            <div class="p-2">Nenhum serviço encontrado</div>
+                          </ng-template>
+                        </p-dropdown>
+                        <button
+                          pButton
+                          type="button"
+                          icon="pi pi-plus"
+                          pTooltip="Cadastrar novo serviço"
+                          tooltipPosition="top"
+                          class="p-button-outlined p-button-sm"
+                          (click)="openQuickCreateService()">
+                        </button>
+                      </div>
                       <small
                         *ngIf="serviceItemForm.get('serviceId')?.invalid && serviceItemForm.get('serviceId')?.touched"
                         class="p-error block mt-1">
@@ -230,21 +270,32 @@
                   <div class="form-grid">
                     <div class="field col-12 md:col-6">
                       <label for="newProductId" class="block font-medium mb-2">Produto *</label>
-                      <p-dropdown
-                        id="newProductId"
-                        formControlName="productId"
-                        [options]="products()"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Selecione um produto"
-                        [loading]="productsLoading()"
-                        [showClear]="true"
-                        (onChange)="onProductChange($event.value)"
-                        class="w-full">
-                        <ng-template pTemplate="empty">
-                          <div class="p-2">Nenhum produto encontrado</div>
-                        </ng-template>
-                      </p-dropdown>
+                      <div class="dropdown-with-action">
+                        <p-dropdown
+                          id="newProductId"
+                          formControlName="productId"
+                          [options]="products()"
+                          optionLabel="name"
+                          optionValue="id"
+                          placeholder="Selecione um produto"
+                          [loading]="productsLoading()"
+                          [showClear]="true"
+                          (onChange)="onProductChange($event.value)"
+                          class="w-full">
+                          <ng-template pTemplate="empty">
+                            <div class="p-2">Nenhum produto encontrado</div>
+                          </ng-template>
+                        </p-dropdown>
+                        <button
+                          pButton
+                          type="button"
+                          icon="pi pi-plus"
+                          pTooltip="Cadastrar novo produto"
+                          tooltipPosition="top"
+                          class="p-button-outlined p-button-sm"
+                          (click)="openQuickCreateProduct()">
+                        </button>
+                      </div>
                       <small
                         *ngIf="productItemForm.get('productId')?.invalid && productItemForm.get('productId')?.touched"
                         class="p-error block mt-1">
@@ -329,6 +380,14 @@
               </div>
             </div>
 
+            <div
+              class="p-message p-message-warn"
+              style="margin-bottom: 1rem; padding: 0.75rem 1rem;"
+              *ngIf="!cashRegisterLoading() && !openCashRegister()">
+              <i class="pi pi-exclamation-triangle mr-2"></i>
+              Nenhum caixa aberto. Abra um caixa em "Caixas" antes de registrar ou pagar um pagamento.
+            </div>
+
             <div class="form-grid">
               <div class="field col-12 md:col-6">
                 <label for="paymentMethodId" class="block font-medium mb-2">Forma de Pagamento</label>
@@ -341,6 +400,7 @@
                   placeholder="Selecione"
                   [loading]="paymentMethodsLoading()"
                   [showClear]="true"
+                  [disabled]="!!payment()"
                   class="w-full">
                   <ng-template pTemplate="empty">
                     <div class="p-2">Nenhuma forma encontrada</div>
@@ -366,10 +426,12 @@
                   <button
                     pButton
                     type="button"
-                    icon="pi pi-calculator"
-                    label="Gerar Parcelas"
+                    icon="pi pi-check-circle"
+                    label="Registrar Pagamento"
                     class="add-item-btn"
-                    (click)="generateInstallments()">
+                    [loading]="creatingPayment()"
+                    [disabled]="!!payment() || !orderForm.get('paymentMethodId')?.value || orderItems().length === 0 || !openCashRegister()"
+                    (click)="createPayment()">
                   </button>
                 </div>
               </div>
@@ -397,34 +459,82 @@
                 </small>
               </div>
 
-              <div class="field col-12" *ngIf="installmentsList().length > 0">
+              <div class="field col-12 md:col-6" *ngIf="orderId() && selectedClientCredit() !== null">
+                <label for="creditToApply" class="block font-medium mb-2">
+                  Usar Haver (saldo disponível: {{ selectedClientCredit() | currency:'BRL':'symbol':'1.2-2' }})
+                </label>
+                <div class="dropdown-with-action">
+                  <p-inputNumber
+                    id="creditToApply"
+                    [ngModel]="creditAmountToApply()"
+                    (ngModelChange)="creditAmountToApply.set($event)"
+                    [ngModelOptions]="{standalone: true}"
+                    mode="currency"
+                    currency="BRL"
+                    locale="pt-BR"
+                    [min]="0"
+                    [max]="selectedClientCredit() || 0"
+                    class="w-full"
+                    styleClass="w-full">
+                  </p-inputNumber>
+                  <button
+                    pButton
+                    type="button"
+                    label="Aplicar"
+                    class="p-button-outlined p-button-sm"
+                    [loading]="applyingCredit()"
+                    [disabled]="!creditAmountToApply() || !!payment()"
+                    (click)="applyCreditToOrder()">
+                  </button>
+                </div>
+                <small *ngIf="creditApplied() > 0" class="block mt-1">
+                  Haver já aplicado nesta OS: {{ creditApplied() | currency:'BRL':'symbol':'1.2-2' }}
+                </small>
+                <small *ngIf="payment()" class="p-error block mt-1">
+                  Não é possível alterar o Haver com pagamento já registrado.
+                </small>
+              </div>
+
+              <div class="field col-12" *ngIf="payment() as currentPayment">
                 <label class="block font-medium mb-3">
-                  <i class="pi pi-list mr-2"></i>Parcelas Geradas ({{ installmentsList().length }})
+                  <i class="pi pi-list mr-2"></i>Parcelas ({{ currentPayment.paymentInstallments.length }})
                 </label>
                 <div class="installments-table">
                   <div class="installments-header">
                     <div class="installment-col">Nº</div>
                     <div class="installment-col">Valor</div>
                     <div class="installment-col">Status</div>
+                    <div class="installment-col">Ações</div>
                   </div>
                   <div class="installments-body">
                     <div
-                      *ngFor="let installment of installmentsList(); let i = index"
+                      *ngFor="let installment of currentPayment.paymentInstallments"
                       class="installment-row"
-                      [class.paid]="installment.paid">
+                      [class.paid]="installment.status === PaymentStatus.Paid">
                       <div class="installment-col">
-                        <span class="installment-number">{{ i + 1 }}ª</span>
+                        <span class="installment-number">{{ installment.installmentNumber }}ª</span>
                       </div>
                       <div class="installment-col">
                         <span class="installment-value">{{ installment.value | currency:'BRL':'symbol':'1.2-2' }}</span>
                       </div>
                       <div class="installment-col">
-                        <p-checkbox
-                          [(ngModel)]="installment.paid"
-                          [ngModelOptions]="{standalone: true}"
-                          [binary]="true"
-                          label="Paga">
-                        </p-checkbox>
+                        <p-tag
+                          [value]="installment.status === PaymentStatus.Paid ? 'Paga' : installment.status === PaymentStatus.Cancelled ? 'Cancelada' : installment.status === PaymentStatus.Overdue ? 'Vencida' : 'Pendente'"
+                          [severity]="installment.status === PaymentStatus.Paid ? 'success' : installment.status === PaymentStatus.Pending ? 'warning' : 'danger'">
+                        </p-tag>
+                      </div>
+                      <div class="installment-col">
+                        <button
+                          pButton
+                          type="button"
+                          icon="pi pi-dollar"
+                          label="Pagar"
+                          class="p-button-sm p-button-success"
+                          *ngIf="installment.status === PaymentStatus.Pending"
+                          [loading]="payingInstallmentId() === installment.id"
+                          [disabled]="!openCashRegister()"
+                          (click)="payInstallment(installment)">
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -450,7 +560,8 @@
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showCancelConfirmation()"
@@ -460,5 +571,129 @@
   cancelLabel="Voltar"
   [loading]="cancelling()"
   (confirm)="confirmCancelOrder()"
-  (cancel)="cancelOrderDismiss()">
+  (cancelled)="cancelOrderDismiss()">
 </app-confirmation-modal>
+
+<p-dialog
+  header="Cadastrar Produto"
+  [(visible)]="showQuickCreateProduct"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [closable]="true">
+  <form [formGroup]="quickProductForm" class="quick-create-form">
+    <div class="field">
+      <label for="quickProductName" class="block font-medium mb-2">Nome *</label>
+      <input id="quickProductName" pInputText formControlName="name" class="w-full" placeholder="Nome do produto" />
+      <small *ngIf="quickProductForm.get('name')?.invalid && quickProductForm.get('name')?.touched" class="p-error block mt-1">
+        Mínimo 3 caracteres
+      </small>
+    </div>
+    <div class="field">
+      <label for="quickProductBrand" class="block font-medium mb-2">Marca *</label>
+      <p-dropdown
+        id="quickProductBrand"
+        formControlName="brandId"
+        [options]="brands()"
+        optionLabel="name"
+        optionValue="id"
+        [loading]="brandsLoading()"
+        placeholder="Selecione a marca"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    <div class="field">
+      <label for="quickProductCategory" class="block font-medium mb-2">Categoria *</label>
+      <p-dropdown
+        id="quickProductCategory"
+        formControlName="categoryId"
+        [options]="categories()"
+        optionLabel="name"
+        optionValue="id"
+        [loading]="categoriesLoading()"
+        placeholder="Selecione a categoria"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    <div class="field">
+      <label for="quickProductPrice" class="block font-medium mb-2">Preço de Venda *</label>
+      <p-inputNumber id="quickProductPrice" formControlName="salePrice" mode="currency" currency="BRL" locale="pt-BR" [min]="0.01" class="w-full" styleClass="w-full"></p-inputNumber>
+    </div>
+    <div class="field">
+      <label for="quickProductStock" class="block font-medium mb-2">Estoque Inicial *</label>
+      <p-inputNumber id="quickProductStock" formControlName="stock" [min]="0" class="w-full" styleClass="w-full"></p-inputNumber>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeQuickCreateProduct()">
+    </button>
+    <button pButton type="button" label="Cadastrar" [loading]="creatingQuickProduct()" (click)="submitQuickProduct()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Cadastrar Serviço"
+  [(visible)]="showQuickCreateService"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [closable]="true">
+  <form [formGroup]="quickServiceForm" class="quick-create-form">
+    <div class="field">
+      <label for="quickServiceName" class="block font-medium mb-2">Nome *</label>
+      <input id="quickServiceName" pInputText formControlName="name" class="w-full" placeholder="Nome do serviço" />
+      <small *ngIf="quickServiceForm.get('name')?.invalid && quickServiceForm.get('name')?.touched" class="p-error block mt-1">
+        Mínimo 3 caracteres
+      </small>
+    </div>
+    <div class="field">
+      <label for="quickServiceCategory" class="block font-medium mb-2">Categoria *</label>
+      <p-dropdown
+        id="quickServiceCategory"
+        formControlName="categoryId"
+        [options]="categories()"
+        optionLabel="name"
+        optionValue="id"
+        [loading]="categoriesLoading()"
+        placeholder="Selecione a categoria"
+        class="w-full">
+      </p-dropdown>
+    </div>
+    <div class="field">
+      <label for="quickServicePrice" class="block font-medium mb-2">Preço *</label>
+      <p-inputNumber id="quickServicePrice" formControlName="price" mode="currency" currency="BRL" locale="pt-BR" [min]="0.01" class="w-full" styleClass="w-full"></p-inputNumber>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeQuickCreateService()">
+    </button>
+    <button pButton type="button" label="Cadastrar" [loading]="creatingQuickService()" (click)="submitQuickService()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Cadastrar Cliente"
+  [(visible)]="showQuickCreateClient"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [closable]="true">
+  <form [formGroup]="quickClientForm" class="quick-create-form">
+    <div class="field">
+      <label for="quickClientName" class="block font-medium mb-2">Nome *</label>
+      <input id="quickClientName" pInputText formControlName="name" class="w-full" placeholder="Nome do cliente" />
+      <small *ngIf="quickClientForm.get('name')?.invalid && quickClientForm.get('name')?.touched" class="p-error block mt-1">
+        Mínimo 3 caracteres
+      </small>
+    </div>
+    <div class="field">
+      <label for="quickClientPhone" class="block font-medium mb-2">Telefone</label>
+      <input id="quickClientPhone" pInputText formControlName="phone" class="w-full" placeholder="(00) 00000-0000" />
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeQuickCreateClient()">
+    </button>
+    <button pButton type="button" label="Cadastrar" [loading]="creatingQuickClient()" (click)="submitQuickClient()">
+    </button>
+  </ng-template>
+</p-dialog>

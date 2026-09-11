@@ -11,21 +11,35 @@
     <h2 class="modal-title">Fechar Caixa</h2>
 
     <form [formGroup]="form" (ngSubmit)="onConfirm()" class="close-form">
-      <div class="field">
-        <label for="finalBalance" class="block font-medium mb-2">Saldo Final *</label>
-        <input
-          id="finalBalance"
-          type="number"
-          step="0.01"
-          pInputText
-          formControlName="finalBalance"
-          class="w-full"
-          placeholder="R$ 0,00" />
-        <small
-          *ngIf="form.get('finalBalance')?.invalid && form.get('finalBalance')?.touched"
-          class="p-error block mt-1">
-          <span *ngIf="form.get('finalBalance')?.errors?.['required']">Saldo final é obrigatório</span>
+      <div class="field" formArrayName="declarations">
+        <span class="block font-medium mb-2">Valores Declarados por Forma de Pagamento *</span>
+
+        <div *ngIf="loadingPaymentMethods()" class="p-error block mt-1" style="background:none;border:none;color:#64748b;">
+          Carregando formas de pagamento...
+        </div>
+
+        <div
+          *ngFor="let declaration of declarations.controls; let i = index"
+          [formGroupName]="i"
+          class="declaration-row">
+          <span class="declaration-label">{{ declaration.get('paymentMethodName')?.value }}</span>
+          <input
+            type="number"
+            step="0.01"
+            pInputText
+            formControlName="declaredAmount"
+            class="declaration-input"
+            placeholder="R$ 0,00" />
+        </div>
+
+        <small *ngIf="!loadingPaymentMethods() && declarations.length === 0" class="p-error block mt-1">
+          Nenhuma forma de pagamento cadastrada
         </small>
+
+        <div class="declared-total">
+          <span>Total Declarado</span>
+          <strong>{{ getTotal() | currency:'BRL' }}</strong>
+        </div>
       </div>
 
       <div class="field">
@@ -40,8 +54,10 @@
       </div>
 
       <div class="actions">
-        <button pButton type="button" label="Cancelar" class="p-button-text" [disabled]="loading" (click)="onCancel()"></button>
-        <button pButton type="submit" label="Fechar Caixa" class="p-button-primary" [disabled]="form.invalid || loading" [loading]="loading"></button>
+        <button pButton type="button" label="Cancelar" class="p-button-text" [disabled]="loading" (click)="onCancel()">
+        </button>
+        <button pButton type="submit" label="Fechar Caixa" class="p-button-primary" [disabled]="form.invalid || loading || declarations.length === 0" [loading]="loading">
+        </button>
       </div>
     </form>
   </div>

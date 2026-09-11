@@ -124,7 +124,7 @@ export class CategoryListComponent implements OnInit {
 
         setTimeout(() => {
           this.successModalService.hide();
-        }, 2500);
+        }, 1500);
 
         this.loadCategories();
       },

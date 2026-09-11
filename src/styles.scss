@@ -63,6 +63,18 @@ body {
   to { opacity: 1; }
 }
 
+.p-tooltip {
+  max-width: none;
+
+  .p-tooltip-text {
+    white-space: nowrap;
+    max-width: none;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+}
+
 .p-menu {
   .p-menuitem {
     .p-menuitem-link {

@@ -27,8 +27,8 @@
         icon="pi pi-times"
         label="Limpar Filtros"
         class="p-button-text p-button-sm clear-filters-btn"
-        (click)="searchValue = ''; sortOrderValue = 'desc';"
-      ></button>
+        (click)="searchValue = ''; sortOrderValue = 'desc';">
+      </button>
     </div>
     <div class="filters-content">
       <div class="filter-group">
@@ -86,6 +86,8 @@
               <button
                 pButton
                 icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
                 class="p-button-sm p-button-primary mr-2"
                 [class.not-clickable]="!hasPermission('Identity.Edit')"
                 [attr.disabled]="!hasPermission('Identity.Edit') ? true : null"
@@ -94,6 +96,8 @@
               <button
                 pButton
                 icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
                 class="p-button-sm p-button-danger"
                 [class.not-clickable]="!hasPermission('Identity.Delete')"
                 [attr.disabled]="!hasPermission('Identity.Delete') ? true : null"
@@ -136,11 +140,12 @@
   cancelLabel="Cancelar"
   [loading]="confirmationLoading()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

@@ -81,11 +81,12 @@
   cancelLabel="Cancelar"
   [loading]="confirmationLoading()"
   (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
+  (cancelled)="cancelSubmit()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

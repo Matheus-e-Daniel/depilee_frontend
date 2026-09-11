@@ -1,87 +1,125 @@
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  backdrop-filter: blur(4px);
+.profile-page-container {
+  padding: 2rem;
+  margin: 0 auto;
+  max-width: 720px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+  animation: slideIn 0.4s ease-out;
+
+  .header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 0 0 3px 3px;
+    }
+
+    .title-section {
+      h1 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        background: linear-gradient(90deg, #1e293b 0%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      p {
+        margin: 0.5rem 0 0 0;
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 400;
+      }
+    }
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+
+    ::ng-deep .p-card-body {
+      padding: 2rem;
+    }
+  }
 }
 
-.confirmation-modal-card.profile-modal-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 2.5rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+.profile-view {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  min-width: 350px;
-  max-width: 480px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  margin: 0 auto;
-  animation: slideIn 0.3s ease-out;
-}
+  gap: 1.5rem;
 
-.close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 10px;
-  color: #64748b;
-  cursor: pointer;
-  z-index: 2;
-  transition: all 0.2s ease;
+  .profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
 
-  .pi {
-    font-size: 1rem;
-    line-height: 1;
+    .profile-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .profile-value {
+      font-size: 1.1rem;
+      color: #1e293b;
+      font-weight: 500;
+    }
   }
 
-  &:hover {
-    background: #e2e8f0;
-    color: #334155;
+  .profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 0.5rem;
+
+    ::ng-deep .p-button {
+      border-radius: 12px;
+      padding: 0.875rem 1.75rem;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &.p-button-outlined {
+        border: 2px solid #e2e8f0;
+        color: #334155;
+
+        &:hover {
+          border-color: #3b82f6;
+          color: #3b82f6;
+          background: rgba(59, 130, 246, 0.05);
+        }
+      }
+
+      &:not(.p-button-outlined):not(.p-button-text) {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+      }
+    }
   }
-}
-
-.icon-container {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
-  background: rgba(59, 130, 246, 0.12);
-
-  i {
-    font-size: 1.75rem;
-    color: #3b82f6;
-  }
-}
-
-.modal-title {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  width: 100%;
-  text-align: center;
 }
 
 .profile-form {
@@ -92,21 +130,6 @@
     margin-bottom: 1.5rem;
     width: 100%;
 
-    &.section-divider {
-      margin-top: 0.5rem;
-      padding-top: 1.5rem;
-      margin-bottom: 1.5rem;
-      border-top: 1px solid #e2e8f0;
-
-      .section-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-    }
-
     label {
       display: block;
       color: #334155;
@@ -115,7 +138,9 @@
       margin-bottom: 0.75rem;
     }
 
-    ::ng-deep input.p-inputtext {
+    ::ng-deep input.p-inputtext,
+    ::ng-deep .p-inputmask,
+    ::ng-deep .p-dropdown {
       width: 100%;
       padding: 0.875rem 1rem;
       border: 2px solid #e2e8f0;
@@ -124,7 +149,6 @@
       color: #1e293b;
       background: white;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 
       &::placeholder {
         color: #94a3b8;
@@ -142,47 +166,14 @@
 
       &.ng-invalid.ng-touched {
         border-color: #ef4444;
-
-        &:focus {
-          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-        }
       }
     }
 
-    .password-field {
-      position: relative;
-      display: flex;
-      align-items: center;
+    ::ng-deep .p-dropdown {
+      padding: 0;
 
-      ::ng-deep input.p-inputtext {
-        padding-right: 3rem;
-      }
-
-      .toggle-password-btn {
-        position: absolute;
-        right: 0.5rem;
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-        color: #94a3b8;
-        cursor: pointer;
-        transition: all 0.2s ease;
-
-        .pi {
-          font-size: 1rem;
-          line-height: 1;
-        }
-
-        &:hover {
-          background: #f1f5f9;
-          color: #334155;
-        }
+      .p-dropdown-label {
+        padding: 0.875rem 1rem;
       }
     }
 
@@ -205,6 +196,20 @@
     }
   }
 
+  .address-fieldset {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 0 0 1.5rem 0;
+
+    legend {
+      padding: 0 0.5rem;
+      color: #334155;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -213,38 +218,28 @@
     margin-top: 0.5rem;
 
     ::ng-deep .p-button {
-      padding: 0.875rem 1.75rem;
       border-radius: 12px;
+      padding: 0.875rem 1.75rem;
       font-weight: 600;
-      font-size: 1rem;
-      min-width: 120px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       &.p-button-text {
-        background: transparent;
         color: #64748b;
-        border: 2px solid #e2e8f0;
 
         &:hover {
           background: #f1f5f9;
           color: #334155;
-          border-color: #cbd5e1;
         }
       }
 
       &:not(.p-button-text) {
         background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         border: none;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 
         &:hover {
-          transform: translateY(-1px);
+          transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        &:disabled {
-          background: #cbd5e1;
-          transform: none;
-          box-shadow: none;
         }
       }
     }
@@ -254,34 +249,24 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @media (max-width: 480px) {
-  .confirmation-modal-card.profile-modal-card {
-    min-width: 280px;
-    padding: 1.75rem;
-    margin: 1rem;
-  }
+  .profile-page-container {
+    padding: 1.25rem;
 
-  .icon-container {
-    width: 56px;
-    height: 56px;
-
-    i {
-      font-size: 1.5rem;
+    .card ::ng-deep .p-card-body {
+      padding: 1.25rem;
     }
   }
 
-  .modal-title {
-    font-size: 1.25rem;
-  }
-
+  .profile-view .profile-actions,
   .profile-form .form-actions {
     flex-direction: column-reverse;
 

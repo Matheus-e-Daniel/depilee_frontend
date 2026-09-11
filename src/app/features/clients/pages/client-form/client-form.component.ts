@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
@@ -13,16 +13,34 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
+import { TabViewModule } from 'primeng/tabview';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ClientService } from '../../services/client.service';
+import { Client } from '../../models/client.model';
+import { ServiceOrderService } from '../../../service-orders/services/service-order.service';
+import { ServiceOrder, OrderStatus } from '../../../service-orders/models/service-order.model';
 
 const CEP_DEBOUNCE_TIME = 800;
 const FOCUS_NUMBER_DELAY = 0;
 const SUCCESS_REDIRECT_DELAY = 2500;
+
 import { ClientFormData } from '../../models/client.model';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { ErrorModalService } from '../../../../shared/components/error-modal/error-modal.service';
+
+interface ViaCepResponse {
+  erro?: boolean;
+  uf?: string;
+  localidade?: string;
+  bairro?: string;
+  logradouro?: string;
+  complemento?: string;
+}
 
 @Component({
   selector: 'app-client-form',
@@ -38,6 +56,11 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
     ButtonModule,
     CardModule,
     CheckboxModule,
+    TabViewModule,
+    TableModule,
+    TagModule,
+    DialogModule,
+    InputNumberModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
@@ -49,6 +72,7 @@ export class ClientFormComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
   private clientService = inject(ClientService);
+  private serviceOrderService = inject(ServiceOrderService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private http = inject(HttpClient);
@@ -62,13 +86,22 @@ export class ClientFormComponent implements OnInit {
   maxDate: Date = new Date();
   loadingCep = signal(false);
   isLoadingClientData = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
   formModified = signal(false);
   cepErrorMessage = signal('');
   formSubmitted = signal(false);
 
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
+
+  clientOrders = signal<ServiceOrder[]>([]);
+  clientOrdersLoading = signal(false);
+  OrderStatus = OrderStatus;
+
+  client = signal<Client | null>(null);
+  showAdjustCredit = signal(false);
+  adjustingCredit = signal(false);
+  adjustCreditForm!: FormGroup;
 
   genderOptions = [
     { label: 'Masculino', value: 1 },
@@ -112,13 +145,18 @@ export class ClientFormComponent implements OnInit {
   }
 
   private initForm(): void {
+    this.adjustCreditForm = this.fb.group({
+      amount: [0, [Validators.required]],
+      reason: ['']
+    });
+
     this.clientForm = this.fb.group({
       name: ['', [Validators.required]],
-      gender: [''],
+      gender: ['', [Validators.required]],
       cpf: [''],
       phone: [''],
       email: [''],
-      birth: ['', [Validators.required, this.birthDateValidator]],
+      birth: ['', [this.birthDateValidator]],
       cep: [''],
       state: [''],
       city: [''],
@@ -146,7 +184,7 @@ export class ClientFormComponent implements OnInit {
     });
   }
 
-  private birthDateValidator(control: any): { [key: string]: boolean } | null {
+  private birthDateValidator(control: AbstractControl): Record<string, boolean> | null {
     if (!control.value) {
       return null;
     }
@@ -213,8 +251,8 @@ export class ClientFormComponent implements OnInit {
 
     this.loadingCep.set(true);
 
-    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data: any) => {
+    this.http.get<ViaCepResponse>(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
         if (data.erro) {
           this.errorModalService.show('O CEP informado não foi encontrado');
           this.cepErrorMessage.set('Por favor, digite um CEP válido');
@@ -244,6 +282,82 @@ export class ClientFormComponent implements OnInit {
     });
   }
 
+  private loadClientOrders(clientId: number): void {
+    this.clientOrdersLoading.set(true);
+    this.serviceOrderService.getAll(clientId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data }) => {
+        this.clientOrders.set(data);
+        this.clientOrdersLoading.set(false);
+      },
+      error: () => {
+        this.clientOrdersLoading.set(false);
+      }
+    });
+  }
+
+  getOrderStatusLabel(status: OrderStatus): string {
+    const labels: Record<OrderStatus, string> = {
+      [OrderStatus.Draft]: 'Rascunho',
+      [OrderStatus.Open]: 'Aberta',
+      [OrderStatus.Paid]: 'Paga',
+      [OrderStatus.Completed]: 'Concluída',
+      [OrderStatus.Cancelled]: 'Cancelada'
+    };
+    return labels[status] ?? 'Desconhecido';
+  }
+
+  openAdjustCredit(): void {
+    this.adjustCreditForm.reset({ amount: 0, reason: '' });
+    this.showAdjustCredit.set(true);
+  }
+
+  closeAdjustCredit(): void {
+    this.showAdjustCredit.set(false);
+  }
+
+  submitAdjustCredit(): void {
+    const clientId = this.clientId();
+    if (!clientId || this.adjustCreditForm.invalid) {
+      this.adjustCreditForm.markAllAsTouched();
+      return;
+    }
+
+    const { amount, reason } = this.adjustCreditForm.value;
+    if (!amount) {
+      return;
+    }
+
+    this.adjustingCredit.set(true);
+    this.clientService.adjustCredit(parseInt(clientId, 10), amount, reason || undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: ({ data: updatedClient }) => {
+          this.adjustingCredit.set(false);
+          this.showAdjustCredit.set(false);
+          this.client.set(updatedClient);
+          this.successModalService.show('Saldo de Haver atualizado!');
+          setTimeout(() => this.successModalService.hide(), 1500);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.adjustingCredit.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao ajustar saldo de Haver');
+        }
+      });
+  }
+
+  getOrderStatusSeverity(status: OrderStatus): 'success' | 'info' | 'warning' | 'danger' {
+    switch (status) {
+      case OrderStatus.Paid:
+      case OrderStatus.Completed:
+        return 'success';
+      case OrderStatus.Cancelled:
+        return 'danger';
+      case OrderStatus.Open:
+        return 'info';
+      default:
+        return 'warning';
+    }
+  }
+
   private checkEditMode(): void {
     const id = this.route.snapshot.paramMap.get('id');
 
@@ -260,6 +374,7 @@ export class ClientFormComponent implements OnInit {
 
     this.clientService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: client }) => {
+        this.client.set(client);
         this.clientForm.patchValue({
           name: client.name,
           gender: client.gender,
@@ -280,6 +395,7 @@ export class ClientFormComponent implements OnInit {
         this.formModified.set(false);
         this.loading.set(false);
         this.isLoadingClientData.set(false);
+        this.loadClientOrders(parseInt(id, 10));
       },
       error: (err: HttpErrorResponse) => {
         this.errorModalService.show(err.error?.message || 'Falha ao carregar cliente');
@@ -287,7 +403,7 @@ export class ClientFormComponent implements OnInit {
         this.loading.set(false);
         setTimeout(() => {
           this.router.navigate(['/clients']);
-        }, 2000);
+        }, 1500);
       }
     });
   }
@@ -416,7 +532,7 @@ export class ClientFormComponent implements OnInit {
     });
   }
 
-  onCepFocus(event: any): void {
+  onCepFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -425,7 +541,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onCepClick(event: any): void {
+  onCepClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -434,7 +550,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onCpfFocus(event: any): void {
+  onCpfFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -443,7 +559,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onCpfClick(event: any): void {
+  onCpfClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -452,7 +568,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onPhoneFocus(event: any): void {
+  onPhoneFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -461,7 +577,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onPhoneClick(event: any): void {
+  onPhoneClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -470,7 +586,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onBirthFocus(event: any): void {
+  onBirthFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -479,7 +595,7 @@ export class ClientFormComponent implements OnInit {
     }, 0);
   }
 
-  onBirthClick(event: any): void {
+  onBirthClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;

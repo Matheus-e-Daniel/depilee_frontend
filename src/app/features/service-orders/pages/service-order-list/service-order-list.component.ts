@@ -48,8 +48,8 @@ export class ServiceOrderListComponent implements OnInit {
   deleteLoading = signal(false);
   orderToDelete: { id: number; orderNumber: string } | null = null;
   OrderStatus = OrderStatus;
-  expandedRows: { [key: number]: boolean } = {};
-  orderItems: { [key: number]: ServiceOrderItem[] } = {};
+  expandedRows: Record<number, boolean> = {};
+  orderItems: Record<number, ServiceOrderItem[]> = {};
 
   products = signal<ProductOption[]>([]);
   services = signal<ServiceOption[]>([]);
@@ -57,6 +57,10 @@ export class ServiceOrderListComponent implements OnInit {
   showCancelConfirmation = signal(false);
   cancelLoading = signal(false);
   orderToCancel: { id: number; orderNumber: string } | null = null;
+
+  showCompleteConfirmation = signal(false);
+  completeLoading = signal(false);
+  orderToComplete: { id: number; orderNumber: string } | null = null;
 
   ngOnInit(): void {
     this.loadOrders();
@@ -66,11 +70,11 @@ export class ServiceOrderListComponent implements OnInit {
   private loadCatalogOptions(): void {
     this.serviceOrderItemService.getProducts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => this.products.set(response.data),
-      error: () => {}
+      error: (err) => this.errorModalService.show(err.error?.message || 'Falha ao carregar produtos')
     });
     this.serviceOrderItemService.getServices().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => this.services.set(response.data),
-      error: () => {}
+      error: (err) => this.errorModalService.show(err.error?.message || 'Falha ao carregar serviços')
     });
   }
 
@@ -106,6 +110,7 @@ export class ServiceOrderListComponent implements OnInit {
         this.deleteLoading.set(false);
         this.showDeleteConfirmation.set(false);
         this.successModalService.show('Ordem de serviço excluída com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadOrders();
         this.orderToDelete = null;
       },
@@ -178,6 +183,10 @@ export class ServiceOrderListComponent implements OnInit {
     return order.orderStatus === OrderStatus.Draft || order.orderStatus === OrderStatus.Open;
   }
 
+  canCompleteOrder(order: ServiceOrder): boolean {
+    return order.orderStatus === OrderStatus.Paid;
+  }
+
   cancelOrder(id: number, orderNumber: string): void {
     this.orderToCancel = { id, orderNumber };
     this.showCancelConfirmation.set(true);
@@ -192,6 +201,7 @@ export class ServiceOrderListComponent implements OnInit {
         this.cancelLoading.set(false);
         this.showCancelConfirmation.set(false);
         this.successModalService.show('Ordem de serviço cancelada com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadOrders();
         this.orderToCancel = null;
       },
@@ -205,6 +215,42 @@ export class ServiceOrderListComponent implements OnInit {
   cancelCancelOrder(): void {
     this.showCancelConfirmation.set(false);
     this.orderToCancel = null;
+  }
+
+  completeOrder(id: number, orderNumber: string): void {
+    this.orderToComplete = { id, orderNumber };
+    this.showCompleteConfirmation.set(true);
+  }
+
+  confirmCompleteOrder(): void {
+    if (!this.orderToComplete) return;
+
+    this.completeLoading.set(true);
+    this.serviceOrderService.complete(this.orderToComplete.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.completeLoading.set(false);
+        this.showCompleteConfirmation.set(false);
+        this.successModalService.show('Ordem de serviço concluída com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
+        this.loadOrders();
+        this.orderToComplete = null;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.completeLoading.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao concluir a ordem de serviço');
+      }
+    });
+  }
+
+  cancelCompleteOrder(): void {
+    this.showCompleteConfirmation.set(false);
+    this.orderToComplete = null;
+  }
+
+  getCompleteMessage(): string {
+    return this.orderToComplete
+      ? `Tem certeza que deseja concluir a ordem "${this.orderToComplete.orderNumber}"? Isso permitirá a aplicação de comissão.`
+      : '';
   }
 
   getCancelMessage(): string {

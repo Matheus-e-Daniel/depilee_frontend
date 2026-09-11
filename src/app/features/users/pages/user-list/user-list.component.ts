@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { User } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -23,6 +24,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     ButtonModule,
     TableModule,
     TagModule,
+    TooltipModule,
     ConfirmationModalComponent,
     SuccessModalComponent,
   ],
@@ -89,7 +91,7 @@ export class UserListComponent implements OnInit {
 
         setTimeout(() => {
           this.successModalService.hide();
-        }, 2500);
+        }, 1500);
 
         this.loadUsers();
       },

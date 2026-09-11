@@ -2,7 +2,9 @@ export interface ServiceOrder {
   id: number;
   orderNumber: string;
   clientId: number;
+  sellerUserId?: number | null;
   discount: number;
+  creditApplied?: number;
   total: number;
   orderStatus: OrderStatus;
   cashRegisterId: number;
@@ -21,6 +23,7 @@ export interface ServiceOrder {
 export interface ServiceOrderFormData {
   orderNumber: string;
   clientId: number | null;
+  sellerUserId?: number | null;
   discount: number | null;
   total: number;
   orderStatus: OrderStatus;

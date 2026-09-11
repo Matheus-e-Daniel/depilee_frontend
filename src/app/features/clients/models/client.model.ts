@@ -16,8 +16,14 @@ export interface Client {
     complement?: string;
   } | null;
   status: number;
+  creditBalance: number;
   registrationDate: string;
   lastUpdate: string | null;
+}
+
+export interface ClientQuickCreateData {
+  name: string;
+  phone?: string;
 }
 
 export interface ClientFormData {

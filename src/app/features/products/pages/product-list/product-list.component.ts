@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { DropdownModule } from 'primeng/dropdown';
+import { TooltipModule } from 'primeng/tooltip';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -27,6 +28,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TableModule,
     TagModule,
     DropdownModule,
+    TooltipModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -149,7 +151,7 @@ export class ProductListComponent implements OnInit {
 
         setTimeout(() => {
           this.successModalService.hide();
-        }, 2500);
+        }, 1500);
 
         this.loadProducts();
       },

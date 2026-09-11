@@ -1,0 +1,22 @@
+<div class="commissions-container w-full">
+  <div class="header">
+    <h1>Comissão</h1>
+    <p>Configure, aplique e acompanhe as comissões dos profissionais</p>
+  </div>
+
+  <div class="card">
+    <p-tabView>
+      <p-tabPanel *ngIf="canViewSettings" header="Configuração" leftIcon="pi pi-sliders-h">
+        <app-commission-settings></app-commission-settings>
+      </p-tabPanel>
+
+      <p-tabPanel *ngIf="canApply" header="Aplicar Comissão" leftIcon="pi pi-percentage">
+        <app-commission-apply></app-commission-apply>
+      </p-tabPanel>
+
+      <p-tabPanel *ngIf="canViewHistory" header="Histórico" leftIcon="pi pi-chart-bar">
+        <app-commission-history></app-commission-history>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>

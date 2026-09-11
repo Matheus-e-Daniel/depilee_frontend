@@ -1,118 +1,212 @@
-<div class="modal-backdrop" *ngIf="visible">
-  <div class="confirmation-modal-card profile-modal-card">
-    <button type="button" class="close-btn" (click)="onCancel()" pButton pTooltip="Fechar" tooltipPosition="left">
-      <i class="pi pi-times"></i>
-    </button>
-
-    <div class="icon-container">
-      <i class="pi pi-user"></i>
+<div class="profile-page-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Meu Perfil</h1>
+      <p>Visualize e edite suas informações de conta</p>
     </div>
+  </div>
 
-    <h2 class="modal-title">Meu Perfil</h2>
+  <div class="card">
+    <p-card>
+      <ng-container *ngIf="!editing()">
+        <div class="profile-view">
+          <div class="profile-field">
+            <span class="profile-label">Nome completo</span>
+            <span class="profile-value">{{ profile()?.fullName || '—' }}</span>
+          </div>
 
-    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
-      <div class="field">
-        <label for="fullName">Nome completo *</label>
-        <input
-          id="fullName"
-          formControlName="fullName"
-          type="text"
-          pInputText
-          class="w-full"
-          placeholder="Digite o nome completo" />
-        <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error block mt-1">
-          Nome completo é obrigatório
-        </small>
-      </div>
+          <div class="profile-field">
+            <span class="profile-label">Email (login)</span>
+            <span class="profile-value">{{ profile()?.email || '—' }}</span>
+          </div>
 
-      <div class="field">
-        <label for="email">Email (login) *</label>
-        <input
-          id="email"
-          formControlName="email"
-          type="email"
-          pInputText
-          class="w-full"
-          placeholder="Digite o email" />
-        <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="p-error block mt-1">
-          <span *ngIf="profileForm.get('email')?.errors?.['required']">Email é obrigatório</span>
-          <span *ngIf="profileForm.get('email')?.errors?.['email']">Email inválido</span>
-        </small>
-      </div>
+          <div class="profile-field">
+            <span class="profile-label">CPF</span>
+            <span class="profile-value">{{ profile()?.cpf || '—' }}</span>
+          </div>
 
-      <div class="field section-divider">
-        <span class="section-label">Alterar senha (opcional)</span>
-      </div>
+          <div class="profile-field">
+            <span class="profile-label">Data de nascimento</span>
+            <span class="profile-value">{{ profile()?.birth ? (profile()?.birth | date:'dd/MM/yyyy') : '—' }}</span>
+          </div>
 
-      <div class="field">
-        <label for="newPassword">Nova senha</label>
-        <div class="password-field">
+          <div class="profile-field">
+            <span class="profile-label">Endereço</span>
+            <span class="profile-value">{{ formattedAddress() }}</span>
+          </div>
+
+          <div class="profile-actions">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-key"
+              label="Alterar Senha"
+              class="p-button-outlined"
+              [disabled]="loading()"
+              (click)="openChangePassword()">
+            </button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              label="Editar"
+              [disabled]="loading()"
+              (click)="startEditing()">
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <form *ngIf="editing()" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+        <div class="field">
+          <label for="fullName">Nome completo *</label>
           <input
-            id="newPassword"
-            formControlName="newPassword"
-            [type]="showNewPassword() ? 'text' : 'password'"
+            id="fullName"
+            formControlName="fullName"
+            type="text"
             pInputText
             class="w-full"
-            placeholder="Deixe em branco para não alterar" />
-          <button
-            type="button"
-            class="toggle-password-btn"
-            pButton
-            pTooltip="{{ showNewPassword() ? 'Ocultar senha' : 'Mostrar senha' }}"
-            tooltipPosition="top"
-            (click)="toggleNewPasswordVisibility()">
-            <i class="pi" [ngClass]="showNewPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
-          </button>
+            placeholder="Digite o nome completo" />
+          <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error block mt-1">
+            Nome completo é obrigatório
+          </small>
         </div>
-        <small *ngIf="profileForm.get('newPassword')?.value && profileForm.get('newPassword')!.value!.length < 6" class="p-error block mt-1">
-          A senha deve ter pelo menos 6 caracteres
-        </small>
-      </div>
 
-      <div class="field">
-        <label for="confirmPassword">Confirmar nova senha</label>
-        <div class="password-field">
+        <div class="field">
+          <label for="email">Email (login) *</label>
           <input
-            id="confirmPassword"
-            formControlName="confirmPassword"
-            [type]="showConfirmPassword() ? 'text' : 'password'"
+            id="email"
+            formControlName="email"
+            type="email"
             pInputText
             class="w-full"
-            placeholder="Repita a nova senha" />
+            placeholder="Digite o email" />
+          <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="p-error block mt-1">
+            <span *ngIf="profileForm.get('email')?.errors?.['required']">Email é obrigatório</span>
+            <span *ngIf="profileForm.get('email')?.errors?.['email']">Email inválido</span>
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="cpf">CPF *</label>
+          <p-inputMask
+            id="cpf"
+            formControlName="cpf"
+            mask="999.999.999-99"
+            placeholder="000.000.000-00"
+            class="w-full">
+          </p-inputMask>
+          <small *ngIf="profileForm.get('cpf')?.invalid && profileForm.get('cpf')?.touched" class="p-error block mt-1">
+            CPF é obrigatório
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="birth">Data de nascimento *</label>
+          <p-inputMask
+            id="birth"
+            formControlName="birth"
+            mask="99/99/9999"
+            placeholder="dd/mm/aaaa"
+            class="w-full">
+          </p-inputMask>
+          <small *ngIf="profileForm.get('birth')?.invalid && profileForm.get('birth')?.touched" class="p-error block mt-1">
+            Data de nascimento é obrigatória
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="gender">Gênero *</label>
+          <p-dropdown
+            id="gender"
+            formControlName="gender"
+            [options]="genderOptions"
+            placeholder="Selecione"
+            class="w-full">
+          </p-dropdown>
+          <small *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched" class="p-error block mt-1">
+            Gênero é obrigatório
+          </small>
+        </div>
+
+        <fieldset formGroupName="address" class="address-fieldset">
+          <legend>Endereço</legend>
+          <div class="field">
+            <label for="cep">CEP *</label>
+            <p-inputMask
+              id="cep"
+              formControlName="cep"
+              mask="99999-999"
+              placeholder="00000-000"
+              class="w-full">
+              <ng-template pTemplate="suffix">
+                <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
+              </ng-template>
+            </p-inputMask>
+            <small *ngIf="profileForm.get('address.cep')?.invalid && profileForm.get('address.cep')?.touched" class="p-error block mt-1">
+              CEP é obrigatório
+            </small>
+            <small *ngIf="cepErrorMessage()" class="p-error block mt-1">
+              {{ cepErrorMessage() }}
+            </small>
+          </div>
+          <div class="field">
+            <label for="state">Estado *</label>
+            <input id="state" formControlName="state" type="text" pInputText class="w-full" placeholder="Digite o estado" />
+          </div>
+          <div class="field">
+            <label for="city">Cidade *</label>
+            <input id="city" formControlName="city" type="text" pInputText class="w-full" placeholder="Digite a cidade" />
+          </div>
+          <div class="field">
+            <label for="street">Rua *</label>
+            <input id="street" formControlName="street" type="text" pInputText class="w-full" placeholder="Digite a rua" />
+          </div>
+          <div class="field">
+            <label for="number">Número *</label>
+            <input id="number" formControlName="number" type="text" pInputText class="w-full" placeholder="Digite o número" />
+          </div>
+          <div class="field">
+            <label for="neighborhood">Bairro *</label>
+            <input id="neighborhood" formControlName="neighborhood" type="text" pInputText class="w-full" placeholder="Digite o bairro" />
+          </div>
+          <div class="field">
+            <label for="complement">Complemento</label>
+            <input id="complement" formControlName="complement" type="text" pInputText class="w-full" placeholder="Digite o complemento (opcional)" />
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
           <button
-            type="button"
-            class="toggle-password-btn"
             pButton
-            pTooltip="{{ showConfirmPassword() ? 'Ocultar senha' : 'Mostrar senha' }}"
-            tooltipPosition="top"
-            (click)="toggleConfirmPasswordVisibility()">
-            <i class="pi" [ngClass]="showConfirmPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+            type="button"
+            label="Cancelar"
+            class="p-button-text"
+            [disabled]="saving()"
+            (click)="cancelEditing()">
+          </button>
+          <button
+            pButton
+            type="submit"
+            label="Salvar"
+            [loading]="saving()"
+            [disabled]="saving()">
           </button>
         </div>
-        <small *ngIf="profileForm.errors?.['passwordMismatch'] && profileForm.get('confirmPassword')?.touched" class="p-error block mt-1">
-          As senhas não coincidem
-        </small>
-      </div>
-
-      <div class="form-actions">
-        <button
-          pButton
-          type="button"
-          label="Cancelar"
-          class="p-button-text"
-          [disabled]="loading()"
-          (click)="onCancel()">
-        </button>
-        <button
-          pButton
-          type="submit"
-          label="Salvar"
-          [loading]="loading()"
-          [disabled]="loading()">
-        </button>
-      </div>
-    </form>
+      </form>
+    </p-card>
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-change-password-modal
+  [visible]="showChangePassword()"
+  [profile]="profile()"
+  (closed)="closeChangePassword()">
+</app-change-password-modal>
+
+<app-success-modal
+  [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
+  [message]="successModalService.message()"
+  (visibleChange)="successModalService.hide()">
+</app-success-modal>

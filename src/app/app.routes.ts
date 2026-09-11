@@ -20,6 +20,17 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(m => m.ProfileComponent)
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/pages/notification-list/notification-list.component')
+            .then(m => m.NotificationListComponent)
+      },
+      {
         path: 'products',
         loadComponent: () =>
           import('./features/products/pages/product-list/product-list.component')
@@ -284,28 +295,12 @@ export const routes: Routes = [
         data: { permissions: ['Identity.Edit'] }
       },
       {
-        path: 'commissions/settings',
+        path: 'commissions',
         loadComponent: () =>
-          import('./features/commissions/pages/commission-settings/commission-settings.component')
-            .then(m => m.CommissionSettingsComponent),
+          import('./features/commissions/pages/commissions/commissions.component')
+            .then(m => m.CommissionsComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['Commission.Get', 'Commission.Edit'] }
-      },
-      {
-        path: 'commissions/apply',
-        loadComponent: () =>
-          import('./features/commissions/pages/commission-apply/commission-apply.component')
-            .then(m => m.CommissionApplyComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['Commission.Create'] }
-      },
-      {
-        path: 'commissions/history',
-        loadComponent: () =>
-          import('./features/commissions/pages/commission-history/commission-history.component')
-            .then(m => m.CommissionHistoryComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['Commission.Get'] }
+        data: { permissions: ['Commission.Get', 'Commission.Create', 'Commission.Edit'] }
       },
       {
         path: '',

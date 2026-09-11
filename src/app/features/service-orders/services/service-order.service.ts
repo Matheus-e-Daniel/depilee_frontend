@@ -12,24 +12,33 @@ export class ServiceOrderService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl + 'service-orders';
 
-  getAll(): Observable<PagedApiResponse<ServiceOrder>> {
-    return this.http.get<PagedApiResponse<ServiceOrder>>(this.apiUrl);
+  getAll(clientId?: number): Observable<PagedApiResponse<ServiceOrder>> {
+    const params: Record<string, string> = clientId ? { clientId: String(clientId) } : {};
+    return this.http.get<PagedApiResponse<ServiceOrder>>(this.apiUrl, { params });
   }
 
   getById(id: number): Observable<ApiResponse<ServiceOrder>> {
     return this.http.get<ApiResponse<ServiceOrder>>(`${this.apiUrl}/${id}`);
   }
 
-  create(order: ServiceOrderFormData): Observable<ApiResponse<ServiceOrder>> {
+  create(order: Partial<ServiceOrderFormData>): Observable<ApiResponse<ServiceOrder>> {
     return this.http.post<ApiResponse<ServiceOrder>>(this.apiUrl, order);
   }
 
-  update(order: { id: number; clientId: number | null; discount: number; notes: string | null }): Observable<ApiResponse<ServiceOrder>> {
+  update(order: { id: number; clientId: number | null; sellerUserId?: number | null; discount: number; notes: string | null }): Observable<ApiResponse<ServiceOrder>> {
     return this.http.put<ApiResponse<ServiceOrder>>(this.apiUrl, order);
+  }
+
+  applyCredit(id: number, amount: number): Observable<ApiResponse<ServiceOrder>> {
+    return this.http.post<ApiResponse<ServiceOrder>>(`${this.apiUrl}/${id}/apply-credit`, { amount });
   }
 
   cancel(id: number, reason?: string): Observable<ApiResponse<ServiceOrder>> {
     return this.http.post<ApiResponse<ServiceOrder>>(`${this.apiUrl}/cancel`, { id, reason });
+  }
+
+  complete(id: number): Observable<ApiResponse<ServiceOrder>> {
+    return this.http.post<ApiResponse<ServiceOrder>>(`${this.apiUrl}/complete`, { id });
   }
 
   delete(id: number): Observable<ApiResponse<void>> {

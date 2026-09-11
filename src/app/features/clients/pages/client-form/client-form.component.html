@@ -14,6 +14,57 @@
 
   <div class="card">
     <p-card>
+      <p-tabView *ngIf="isEditMode(); else formOnly">
+        <p-tabPanel header="Dados">
+          <ng-container *ngTemplateOutlet="formOnly"></ng-container>
+        </p-tabPanel>
+        <p-tabPanel header="Financeiro">
+          <div class="financial-tab">
+            <div class="credit-balance-card">
+              <div>
+                <span class="credit-balance-label">Saldo de Haver</span>
+                <span class="credit-balance-value">{{ (client()?.creditBalance ?? 0) | currency:'BRL':'symbol':'1.2-2' }}</span>
+              </div>
+              <button pButton type="button" icon="pi pi-pencil" label="Ajustar Haver" class="p-button-outlined p-button-sm" (click)="openAdjustCredit()">
+              </button>
+            </div>
+
+            <h3>Ordens de Serviço</h3>
+            <p-table
+              [value]="clientOrders()"
+              [loading]="clientOrdersLoading()"
+              [paginator]="true"
+              [rows]="10"
+              styleClass="p-datatable-striped">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Número</th>
+                  <th>Data</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-order>
+                <tr>
+                  <td data-label="Número">{{ order.orderNumber }}</td>
+                  <td data-label="Data">{{ order.registrationDate | date:'dd/MM/yyyy' }}</td>
+                  <td data-label="Status">
+                    <p-tag [value]="getOrderStatusLabel(order.orderStatus)" [severity]="getOrderStatusSeverity(order.orderStatus)"></p-tag>
+                  </td>
+                  <td data-label="Total">{{ order.total | currency:'BRL':'symbol':'1.2-2' }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="4" class="text-center py-5">Nenhuma ordem de serviço encontrada para este cliente</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+
+      <ng-template #formOnly>
       <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="client-form">
         <div class="form-grid">
           <!-- Dados Pessoais -->
@@ -49,14 +100,14 @@
               class="w-full">
             </p-dropdown>
             <small
-              *ngIf="clientForm.get('gender')?.invalid && clientForm.get('gender')?.touched"
+              *ngIf="clientForm.get('gender')?.invalid && formSubmitted()"
               class="p-error block mt-1">
               Gênero é obrigatório
             </small>
           </div>
 
           <div class="field col-4 md:col-3">
-            <label for="birth" class="block font-medium mb-2">Data de Nascimento *</label>
+            <label for="birth" class="block font-medium mb-2">Data de Nascimento</label>
             <p-inputMask
               id="birth"
               formControlName="birth"
@@ -69,7 +120,6 @@
             <small
               *ngIf="clientForm.get('birth')?.invalid && formSubmitted()"
               class="p-error block mt-1">
-              <span *ngIf="clientForm.get('birth')?.errors?.['required']">Data de nascimento é obrigatória</span>
               <span *ngIf="clientForm.get('birth')?.errors?.['futureDate']">A data de nascimento não pode ser no futuro</span>
               <span *ngIf="clientForm.get('birth')?.errors?.['invalidMonth']">Mês inválido (deve ser entre 1 e 12)</span>
               <span *ngIf="clientForm.get('birth')?.errors?.['invalidDay']">Dia inválido</span>
@@ -233,16 +283,42 @@
           </button>
         </div>
       </form>
+      </ng-template>
     </p-card>
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showConfirmation()"
   [type]="isEditMode() ? 'update' : 'create'"
   [loading]="confirmationLoading()"
   (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
+  (cancelled)="cancelSubmit()">
 </app-confirmation-modal>
+
+<p-dialog
+  header="Ajustar Saldo de Haver"
+  [(visible)]="showAdjustCredit"
+  [modal]="true"
+  [style]="{width: '380px'}"
+  [closable]="true">
+  <form [formGroup]="adjustCreditForm" class="quick-create-form">
+    <div class="field">
+      <label for="creditAmount" class="block font-medium mb-2">Valor (use negativo para debitar)</label>
+      <p-inputNumber id="creditAmount" formControlName="amount" mode="currency" currency="BRL" locale="pt-BR" class="w-full" styleClass="w-full"></p-inputNumber>
+    </div>
+    <div class="field">
+      <label for="creditReason" class="block font-medium mb-2">Motivo (opcional)</label>
+      <input id="creditReason" pInputText formControlName="reason" class="w-full" placeholder="Ex: reembolso, cortesia" />
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeAdjustCredit()">
+    </button>
+    <button pButton type="button" label="Salvar" [loading]="adjustingCredit()" (click)="submitAdjustCredit()">
+    </button>
+  </ng-template>
+</p-dialog>

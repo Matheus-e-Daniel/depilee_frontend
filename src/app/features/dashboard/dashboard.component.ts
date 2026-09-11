@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
+import { ChartData, ChartOptions } from 'chart.js';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ListboxModule } from 'primeng/listbox';
 import { TagModule } from 'primeng/tag';
@@ -76,8 +77,8 @@ export class DashboardComponent implements OnInit {
     { label: '90 dias', value: '90d' }
   ];
 
-  chartData: any;
-  chartOptions: any;
+  chartData: ChartData<'line'> | undefined;
+  chartOptions: ChartOptions<'line'> | undefined;
 
   proximosAgendamentos: UpcomingEvent[] = [];
 
@@ -186,7 +187,7 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    const statusMap: { [key: number]: { label: string; cssClass: string } } = {
+    const statusMap: Record<number, { label: string; cssClass: string }> = {
       [EEventStatus.Done]: { label: 'Concluído', cssClass: 'done' },
       [EEventStatus.Pending]: { label: 'Pendente', cssClass: 'pending' },
       [EEventStatus.Cancelled]: { label: 'Cancelado', cssClass: 'cancelled' },

@@ -11,6 +11,7 @@ import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
 import { CashFlowService } from '../../services/cash-flow.service';
 import { CashFlow, ECashFlowType } from '../../models/cash-flow.model';
 import { CashRegisterService } from '../../../cash-registers/services/cash-register.service';
@@ -35,6 +36,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     DropdownModule,
     InputNumberModule,
     InputTextModule,
+    TooltipModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -90,7 +92,7 @@ export class CashFlowListComponent implements OnInit {
   private loadCashRegister(): void {
     this.cashRegisterService.getById(this.cashRegisterId.toString()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data }) => this.cashRegister.set(data),
-      error: () => {}
+      error: (err) => this.errorModalService.show(err.error?.message || 'Falha ao carregar caixa')
     });
   }
 
@@ -141,6 +143,7 @@ export class CashFlowListComponent implements OnInit {
         this.formSubmitted.set(false);
         this.entryForm.reset({ type: ECashFlowType.In, value: null, description: '' });
         this.successModalService.show('Lançamento registrado com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadCashFlows();
       },
       error: (err: HttpErrorResponse) => {
@@ -164,6 +167,7 @@ export class CashFlowListComponent implements OnInit {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
         this.successModalService.show('Lançamento excluído com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.cashFlowToDelete = null;
         this.loadCashFlows();
       },

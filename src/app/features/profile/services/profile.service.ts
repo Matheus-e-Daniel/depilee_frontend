@@ -3,16 +3,26 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
+import { Address } from '../../users/models/user.model';
 
 export interface ProfileData {
   id: number;
   fullName: string;
   email: string;
+  cpf: string;
+  birth: string;
+  gender: number;
+  address: Address;
+  commissionPercentage?: number | null;
 }
 
 export interface UpdateProfileRequest {
   fullName: string;
   email: string;
+  cpf: string;
+  birth: string;
+  gender: number;
+  address: Address;
   newPassword?: string;
 }
 

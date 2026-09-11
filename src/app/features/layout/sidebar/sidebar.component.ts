@@ -36,9 +36,7 @@ export class SidebarComponent {
     { label: 'Métodos de Pagamento', icon: 'pi pi-credit-card', route: '/payment-methods', permissions: ['PaymentMethod.Get'] },
     { label: 'Movimentação de Estoque', icon: 'pi pi-history', route: '/stock-movements', permissions: ['StockMovement.Get'] },
     { label: 'Cargos', icon: 'pi pi-id-card', route: '/roles', permissions: ['Identity.Get'] },
-    { label: 'Config. Comissão', icon: 'pi pi-sliders-h', route: '/commissions/settings', permissions: ['Commission.Get', 'Commission.Edit'] },
-    { label: 'Aplicar Comissão', icon: 'pi pi-percentage', route: '/commissions/apply', permissions: ['Commission.Create'] },
-    { label: 'Histórico Comissão', icon: 'pi pi-chart-bar', route: '/commissions/history', permissions: ['Commission.Get'] },
+    { label: 'Comissão', icon: 'pi pi-percentage', route: '/commissions', permissions: ['Commission.Get', 'Commission.Create', 'Commission.Edit'] },
   ];
 
   menuItems = computed(() =>

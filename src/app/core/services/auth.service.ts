@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { map, catchError, of } from 'rxjs';
 
 export interface LoginRequest {
   email: string;
@@ -76,6 +77,33 @@ export class AuthService {
   getPermissions(): Permission[] {
     this.getUserData();
     return this._permissions;
+  }
+
+  /**
+   * Refetches the current user's permissions from the backend so the
+   * client-side cache reflects any change made server-side (e.g. a role's
+   * permissions were revoked) without requiring a new login.
+   */
+  refreshPermissions(): Observable<Permission[]> {
+    return this.http.get<{ data: string[] }>(
+      environment.apiBaseUrl + 'identity/users/me/permissions',
+      { withCredentials: true }
+    ).pipe(
+      map(response => {
+        const permissionNames = response.data || [];
+        const permissions = permissionNames.map(name => ({ id: 0, name }));
+
+        this.getUserData();
+        this._permissions = permissions;
+        if (this._user) {
+          this._user = { ...this._user, permissions };
+          localStorage.setItem(this.USER_KEY, JSON.stringify(this._user));
+        }
+
+        return permissions;
+      }),
+      catchError(() => of(this._permissions))
+    );
   }
 
   userPermissions(): string[] {

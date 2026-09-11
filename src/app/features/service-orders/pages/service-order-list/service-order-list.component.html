@@ -66,6 +66,8 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
+                pTooltip="Editar"
+                tooltipPosition="top"
                 [class.not-clickable]="!hasPermission('ServiceOrder.Edit')"
                 [attr.disabled]="!hasPermission('ServiceOrder.Edit') ? true : null"
                 (click)="hasPermission('ServiceOrder.Edit') && editOrder(order.id)">
@@ -73,6 +75,8 @@
               <button
                 pButton
                 icon="pi pi-trash"
+                pTooltip="Excluir"
+                tooltipPosition="top"
                 class="p-button-sm p-button-danger mr-2"
                 [class.not-clickable]="!hasPermission('ServiceOrder.Delete')"
                 [attr.disabled]="!hasPermission('ServiceOrder.Delete') ? true : null"
@@ -88,6 +92,17 @@
                 [class.not-clickable]="!hasPermission('ServiceOrder.Edit')"
                 [attr.disabled]="!hasPermission('ServiceOrder.Edit') ? true : null"
                 (click)="hasPermission('ServiceOrder.Edit') && cancelOrder(order.id, order.orderNumber)">
+              </button>
+              <button
+                *ngIf="canCompleteOrder(order)"
+                pButton
+                icon="pi pi-check-circle"
+                pTooltip="Concluir ordem"
+                tooltipPosition="top"
+                class="p-button-sm p-button-success"
+                [class.not-clickable]="!hasPermission('ServiceOrder.Edit')"
+                [attr.disabled]="!hasPermission('ServiceOrder.Edit') ? true : null"
+                (click)="hasPermission('ServiceOrder.Edit') && completeOrder(order.id, order.orderNumber)">
               </button>
             </div>
           </td>
@@ -159,7 +174,8 @@
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showDeleteConfirmation()"
@@ -167,16 +183,28 @@
   [message]="getDeleteMessage()"
   [loading]="deleteLoading()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>
 
 <app-confirmation-modal
   [visible]="showCancelConfirmation()"
-  [type]="'delete'"
+  [type]="'warning'"
+  [title]="'Confirmar Cancelamento'"
   [message]="getCancelMessage()"
   confirmLabel="Cancelar Ordem"
   cancelLabel="Voltar"
   [loading]="cancelLoading()"
   (confirm)="confirmCancelOrder()"
-  (cancel)="cancelCancelOrder()">
+  (cancelled)="cancelCancelOrder()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="showCompleteConfirmation()"
+  [type]="'update'"
+  [message]="getCompleteMessage()"
+  confirmLabel="Concluir Ordem"
+  cancelLabel="Voltar"
+  [loading]="completeLoading()"
+  (confirm)="confirmCompleteOrder()"
+  (cancelled)="cancelCompleteOrder()">
 </app-confirmation-modal>

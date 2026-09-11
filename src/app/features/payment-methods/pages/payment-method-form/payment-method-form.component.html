@@ -152,12 +152,13 @@
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showConfirmation()"
   [type]="isEditMode() ? 'update' : 'create'"
   [loading]="confirmationLoading()"
   (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
+  (cancelled)="cancelSubmit()">
 </app-confirmation-modal>

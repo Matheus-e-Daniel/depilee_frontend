@@ -1,4 +1,4 @@
-import { Component, output, inject, signal, ViewChild, OnInit, DestroyRef } from '@angular/core';
+import { Component, output, inject, ViewChild, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -7,18 +7,18 @@ import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { MenuModule } from 'primeng/menu';
 import { BadgeModule } from 'primeng/badge';
+import { TooltipModule } from 'primeng/tooltip';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService, Notification } from '../../notifications/services/notification.service';
-import { ProfileComponent } from '../../profile/profile.component';
 import { ErrorModalService } from '../../../shared/components/error-modal/error-modal.service';
-import { interval, forkJoin } from 'rxjs';
+import { interval } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule, ProfileComponent],
+  imports: [CommonModule, ButtonModule, RippleModule, MenuModule, BadgeModule, TooltipModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
@@ -34,18 +34,12 @@ export class HeaderComponent implements OnInit {
 
   toggleSidebar = output<void>();
   notificationCount = 0;
-  showProfileCard = signal(false);
 
   userMenuItems: MenuItem[] = [
     {
       label: 'Perfil',
       icon: 'pi pi-user',
       command: () => this.goToProfile()
-    },
-    {
-      label: 'Configurações',
-      icon: 'pi pi-cog',
-      command: () => this.goToSettings()
     },
     { separator: true },
     {
@@ -57,6 +51,7 @@ export class HeaderComponent implements OnInit {
 
   notificationItems: MenuItem[] = [];
   private unreadIds: number[] = [];
+  private markingAllAsRead = false;
 
   ngOnInit(): void {
     this.fetchNotifications();
@@ -64,9 +59,9 @@ export class HeaderComponent implements OnInit {
   }
 
   private fetchNotifications(): void {
-    this.notificationService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.notificationService.getAll(1, 10, true).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        const unread = response.data.filter(n => n.notificationStatus === 0);
+        const unread = response.data;
         this.unreadIds = unread.map(n => n.id);
         this.notificationCount = unread.length;
         this.notificationItems = [
@@ -126,34 +121,35 @@ export class HeaderComponent implements OnInit {
   }
 
   private goToProfile(): void {
-    this.showProfileCard.set(true);
+    this.router.navigate(['/profile']);
   }
 
-  private goToSettings(): void {
-    this.router.navigate(['/commissions/settings']);
+  viewNotification(id: number): void {
+    this.notificationService.markAsRead(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.fetchNotifications(),
+      error: (err: HttpErrorResponse) => this.errorModalService.show(err.error?.message || 'Falha ao marcar notificação como lida')
+    });
+    this.router.navigate(['/notifications']);
   }
 
-  viewNotification(_id: number): void { }
-
-  viewAllNotifications(): void { }
+  viewAllNotifications(): void {
+    this.router.navigate(['/notifications']);
+  }
 
   markAllAsRead(): void {
-    const ids = [...this.unreadIds];
-    if (ids.length === 0) return;
+    if (this.markingAllAsRead || this.unreadIds.length === 0) return;
 
-    forkJoin(ids.map(id => this.notificationService.markAsRead(id)))
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.unreadIds = [];
-          this.notificationCount = 0;
-          const removedIds = ids.map(String);
-          this.notificationItems = this.notificationItems.filter((item: MenuItem) => !removedIds.includes(item.id!));
-        },
-        error: (err: HttpErrorResponse) => {
-          this.errorModalService.show(err.error?.message || 'Falha ao marcar notificações como lidas');
-        }
-      });
+    this.markingAllAsRead = true;
+    this.notificationService.markAllAsRead().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.markingAllAsRead = false;
+        this.fetchNotifications();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.markingAllAsRead = false;
+        this.errorModalService.show(err.error?.message || 'Falha ao marcar notificações como lidas');
+      }
+    });
   }
 
   markNotificationAsRead(id: number, event: Event): void {

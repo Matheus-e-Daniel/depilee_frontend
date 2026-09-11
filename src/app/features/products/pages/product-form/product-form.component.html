@@ -107,19 +107,30 @@
 
           <div class="field col-6">
             <label for="brandId" class="block font-medium mb-2">Marca *</label>
-            <p-dropdown
-              id="brandId"
-              formControlName="brandId"
-              [options]="brands()"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Selecione uma marca"
-              [loading]="brandsLoading()"
-              class="w-full">
-              <ng-template pTemplate="empty">
-                <div class="p-2">Nenhuma marca encontrada</div>
-              </ng-template>
-            </p-dropdown>
+            <div class="dropdown-with-action">
+              <p-dropdown
+                id="brandId"
+                formControlName="brandId"
+                [options]="brands()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione uma marca"
+                [loading]="brandsLoading()"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhuma marca encontrada</div>
+                </ng-template>
+              </p-dropdown>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-plus"
+                pTooltip="Cadastrar nova marca"
+                tooltipPosition="top"
+                class="p-button-outlined p-button-sm"
+                (click)="openQuickCreateBrand()">
+              </button>
+            </div>
 
             <small
               *ngIf="productForm.get('brandId')?.invalid && formSubmitted()"
@@ -130,19 +141,30 @@
 
           <div class="field col-6">
             <label for="categoryId" class="block font-medium mb-2">Categoria *</label>
-            <p-dropdown
-              id="categoryId"
-              formControlName="categoryId"
-              [options]="categories()"
-              optionLabel="name"
-              optionValue="id"
-              placeholder="Selecione uma categoria"
-              [loading]="categoriesLoading()"
-              class="w-full">
-              <ng-template pTemplate="empty">
-                <div class="p-2">Nenhuma categoria encontrada</div>
-              </ng-template>
-            </p-dropdown>
+            <div class="dropdown-with-action">
+              <p-dropdown
+                id="categoryId"
+                formControlName="categoryId"
+                [options]="categories()"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Selecione uma categoria"
+                [loading]="categoriesLoading()"
+                class="w-full">
+                <ng-template pTemplate="empty">
+                  <div class="p-2">Nenhuma categoria encontrada</div>
+                </ng-template>
+              </p-dropdown>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-plus"
+                pTooltip="Cadastrar nova categoria"
+                tooltipPosition="top"
+                class="p-button-outlined p-button-sm"
+                (click)="openQuickCreateCategory()">
+              </button>
+            </div>
 
             <small
               *ngIf="productForm.get('categoryId')?.invalid && formSubmitted()"
@@ -177,12 +199,69 @@
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showConfirmation()"
   [type]="isEditMode() ? 'update' : 'create'"
   [loading]="confirmationLoading()"
   (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
+  (cancelled)="cancelSubmit()">
 </app-confirmation-modal>
+
+<p-dialog
+  header="Cadastrar Marca"
+  [(visible)]="showQuickCreateBrand"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [closable]="true">
+  <form [formGroup]="quickBrandForm" class="quick-create-form">
+    <div class="field">
+      <label for="quickBrandName" class="block font-medium mb-2">Nome *</label>
+      <input id="quickBrandName" pInputText formControlName="name" class="w-full" placeholder="Nome da marca" />
+      <small *ngIf="quickBrandForm.get('name')?.invalid && quickBrandForm.get('name')?.touched" class="p-error block mt-1">
+        Mínimo 2 caracteres
+      </small>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeQuickCreateBrand()">
+    </button>
+    <button pButton type="button" label="Cadastrar" [loading]="creatingQuickBrand()" (click)="submitQuickBrand()">
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Cadastrar Categoria"
+  [(visible)]="showQuickCreateCategory"
+  [modal]="true"
+  [style]="{width: '420px'}"
+  [closable]="true">
+  <form [formGroup]="quickCategoryForm" class="quick-create-form">
+    <div class="field">
+      <label for="quickCategoryName" class="block font-medium mb-2">Nome *</label>
+      <input id="quickCategoryName" pInputText formControlName="name" class="w-full" placeholder="Nome da categoria" />
+      <small *ngIf="quickCategoryForm.get('name')?.invalid && quickCategoryForm.get('name')?.touched" class="p-error block mt-1">
+        Mínimo 2 caracteres
+      </small>
+    </div>
+    <div class="field">
+      <label for="quickCategoryDescription" class="block font-medium mb-2">Descrição</label>
+      <textarea
+        id="quickCategoryDescription"
+        pInputTextarea
+        formControlName="description"
+        rows="2"
+        class="w-full"
+        placeholder="Descrição (opcional)"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="closeQuickCreateCategory()">
+    </button>
+    <button pButton type="button" label="Cadastrar" [loading]="creatingQuickCategory()" (click)="submitQuickCategory()">
+    </button>
+  </ng-template>
+</p-dialog>

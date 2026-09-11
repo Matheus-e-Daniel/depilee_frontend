@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { of } from 'rxjs';
@@ -22,6 +22,15 @@ import { switchMap } from 'rxjs/operators';
 
 const CEP_DEBOUNCE_TIME = 800;
 const FOCUS_NUMBER_DELAY = 0;
+
+interface ViaCepResponse {
+  erro?: boolean;
+  uf?: string;
+  localidade?: string;
+  bairro?: string;
+  logradouro?: string;
+  complemento?: string;
+}
 
 @Component({
   selector: 'app-user-form',
@@ -86,7 +95,7 @@ export class UserFormComponent implements OnInit {
   isEditMode = signal(false);
   userId = signal<string | null>(null);
   isLoadingUserData = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
   formModified = signal(false);
   private pendingRoleName: string | null = null;
 
@@ -182,7 +191,7 @@ export class UserFormComponent implements OnInit {
         this.loading.set(false);
         setTimeout(() => {
           this.router.navigate(['/users']);
-        }, 2000);
+        }, 1500);
       }
     });
   }
@@ -207,7 +216,7 @@ export class UserFormComponent implements OnInit {
     this.formModified.set(hasChanges);
   }
 
-  private birthDateValidator(control: any): { [key: string]: boolean } | null {
+  private birthDateValidator(control: AbstractControl): Record<string, boolean> | null {
     if (!control.value) {
       return null;
     }
@@ -330,7 +339,7 @@ export class UserFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/users']);
-        }, 2000);
+        }, 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
@@ -366,8 +375,8 @@ export class UserFormComponent implements OnInit {
 
     this.loadingCep.set(true);
 
-    this.http.get(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data: any) => {
+    this.http.get<ViaCepResponse>(`https://viacep.com.br/ws/${cepLimpo}/json/`).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
         if (data.erro) {
           this.errorModalService.show('O CEP informado não foi encontrado');
           this.cepErrorMessage.set('Por favor, digite um CEP válido');
@@ -398,7 +407,7 @@ export class UserFormComponent implements OnInit {
     });
   }
 
-  onCepFocus(event: any): void {
+  onCepFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -407,7 +416,7 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
-  onCepClick(event: any): void {
+  onCepClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -416,7 +425,7 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
-  onCpfFocus(event: any): void {
+  onCpfFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -425,7 +434,7 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
-  onCpfClick(event: any): void {
+  onCpfClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -434,7 +443,7 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
-  onBirthFocus(event: any): void {
+  onBirthFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;
@@ -443,7 +452,7 @@ export class UserFormComponent implements OnInit {
     }, 0);
   }
 
-  onBirthClick(event: any): void {
+  onBirthClick(event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = input.value.replace(/\D/g, '');
     const firstEmptyPosition = value.length;

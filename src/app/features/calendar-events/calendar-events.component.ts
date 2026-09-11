@@ -7,11 +7,14 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
+import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CalendarEventService } from './services/calendar-event.service';
 import { CalendarEvent, EEventStatus, EVENT_STATUS_OPTIONS, CATEGORY_COLOR_OPTIONS } from './models/calendar-event.model';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
+import { UserService } from '../users/services/user.service';
+import { User } from '../users/models/user.model';
 
 interface TimeSlot {
   hour: string;
@@ -26,6 +29,14 @@ interface DayColumn {
   events: CalendarEvent[];
 }
 
+interface LayoutedEvent {
+  event: CalendarEvent;
+  top: number;
+  height: number;
+  left: number;
+  width: number;
+}
+
 @Component({
   selector: 'app-calendar-events',
   standalone: true,
@@ -37,6 +48,7 @@ interface DayColumn {
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
+    TooltipModule,
     FormsModule
   ],
   templateUrl: './calendar-events.component.html',
@@ -45,12 +57,19 @@ interface DayColumn {
 export class CalendarEventsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private calendarEventService = inject(CalendarEventService);
+  private userService = inject(UserService);
   errorModalService = inject(ErrorModalService);
+
+  users = signal<User[]>([]);
 
   selectedDate = signal<Date>(new Date());
   weekDays = signal<DayColumn[]>([]);
- 
+
   timeSlots: TimeSlot[] = [];
+
+  readonly ROW_HEIGHT = 60;
+  readonly FIRST_HOUR = 6;
+  readonly LAST_HOUR = 22;
 
   statusOptions = EVENT_STATUS_OPTIONS;
   categoryColorOptions = CATEGORY_COLOR_OPTIONS;
@@ -67,15 +86,15 @@ export class CalendarEventsComponent implements OnInit {
     startDate: '',
     endDate: '',
     allDay: false,
-    categoryColor: CATEGORY_COLOR_OPTIONS[0].value
+    categoryColor: CATEGORY_COLOR_OPTIONS[0].value,
+    targetUserId: null as number | null
   };
 
   eventDate: Date = new Date();
-  eventStartTime: string = '09:00';
-  eventEndTime: string = '10:00';
+  eventStartTime = '09:00';
+  eventEndTime = '10:00';
 
   draggedEvent: CalendarEvent | null = null;
-  dragOverEvent: CalendarEvent | null = null;
 
   loading = signal(false);
 
@@ -83,6 +102,19 @@ export class CalendarEventsComponent implements OnInit {
     this.initTimeSlots();
     this.updateWeekView();
     this.loadEvents();
+    this.loadUsers();
+  }
+
+  private loadUsers(): void {
+    this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => this.users.set(response.data),
+      error: (err) => this.errorModalService.show(err.error?.message || 'Erro ao carregar usuários.')
+    });
+  }
+
+  getTargetUserName(event: CalendarEvent): string {
+    if (!event.targetUserId) return '';
+    return this.users().find(u => u.id === event.targetUserId)?.fullName || '';
   }
 
   private initTimeSlots(): void {
@@ -184,7 +216,8 @@ export class CalendarEventsComponent implements OnInit {
       startDate: startDateTime,
       endDate: endDateTime,
       allDay: false,
-      categoryColor: CATEGORY_COLOR_OPTIONS[0].value
+      categoryColor: CATEGORY_COLOR_OPTIONS[0].value,
+      targetUserId: null
     };
     this.showEventDialog.set(true);
   }
@@ -209,7 +242,8 @@ export class CalendarEventsComponent implements OnInit {
       startDate: event.startDate || '',
       endDate: event.endDate || '',
       allDay: event.allDay,
-      categoryColor: event.categoryColor || CATEGORY_COLOR_OPTIONS[0].value
+      categoryColor: event.categoryColor || CATEGORY_COLOR_OPTIONS[0].value,
+      targetUserId: event.targetUserId ?? null
     };
 
     this.showEventDialog.set(true);
@@ -230,6 +264,16 @@ export class CalendarEventsComponent implements OnInit {
     const minuteStr = (minute || 0).toString().padStart(2, '0');
     
     return `${year}-${month}-${day}T${hourStr}:${minuteStr}:00`;
+  }
+
+  private formatLocalDateTime(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const minute = date.getMinutes().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hour}:${minute}:00`;
   }
 
   saveEvent(): void {
@@ -285,8 +329,7 @@ export class CalendarEventsComponent implements OnInit {
       next: () => {
         this.loadEvents();
       },
-      error: () => {
-      }
+      error: (err) => this.errorModalService.show(err.error?.message || 'Erro ao excluir evento.')
     });
   }
 
@@ -298,79 +341,45 @@ export class CalendarEventsComponent implements OnInit {
     $event.preventDefault();
   }
 
-  onEventDragOver(event: CalendarEvent, $event: DragEvent): void {
+  onEventDragOver(_event: CalendarEvent, $event: DragEvent): void {
     $event.preventDefault();
     $event.stopPropagation();
-    this.dragOverEvent = event;
   }
 
   onEventDrop(targetEvent: CalendarEvent, $event: DragEvent): void {
-    $event.preventDefault();
     $event.stopPropagation();
 
-    if (!this.draggedEvent || this.draggedEvent.id === targetEvent.id) {
-      this.dragOverEvent = null;
-      return;
-    }
- 
-    const draggedStartDate = this.parseLocalDate(this.draggedEvent.startDate || '');
-    const targetStartDate = this.parseLocalDate(targetEvent.startDate || '');
-
-    if (!this.isSameDay(draggedStartDate, targetStartDate) ||
-        draggedStartDate.getHours() !== targetStartDate.getHours()) {   
-      this.dragOverEvent = null;
+    if (!this.draggedEvent || this.draggedEvent.id === targetEvent.id || !targetEvent.startDate) {
       this.draggedEvent = null;
       return;
     }
-    
-    const tempOrder = this.draggedEvent.displayOrder || 0;
 
-    const updatedDraggedEvent: CalendarEvent = {
-      ...this.draggedEvent,
-      displayOrder: targetEvent.displayOrder || 0
-    };
-
-    const updatedTargetEvent: CalendarEvent = {
-      ...targetEvent,
-      displayOrder: tempOrder
-    };
-    
-    this.loading.set(true);
-    this.calendarEventService.update(updatedDraggedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.calendarEventService.update(updatedTargetEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-          next: () => {
-            this.loadEvents();
-          },
-          error: () => {
-            this.loading.set(false);
-          }
-        });
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
-
-    this.draggedEvent = null;
-    this.dragOverEvent = null;
+    const targetDate = this.parseLocalDate(targetEvent.startDate);
+    const hour = `${targetDate.getHours().toString().padStart(2, '0')}:00`;
+    this.onDrop($event, targetDate, hour);
   }
 
   onDrop($event: DragEvent, date: Date, time: string): void {
     $event.preventDefault();
 
     if (!this.draggedEvent) return;
- 
-    if (this.dragOverEvent) {
-      this.dragOverEvent = null;
-      return;
+
+    const original = this.draggedEvent;
+    const startDateTime = this.combineDateAndTime(date, time);
+    let endDateTime: string;
+
+    if (original.startDate && original.endDate) {
+      const originalStart = this.parseLocalDate(original.startDate);
+      const originalEnd = this.parseLocalDate(original.endDate);
+      const durationMs = Math.max(0, originalEnd.getTime() - originalStart.getTime());
+      const newStart = this.parseLocalDate(startDateTime);
+      endDateTime = this.formatLocalDateTime(new Date(newStart.getTime() + durationMs));
+    } else {
+      endDateTime = this.combineDateAndTime(date, this.calculateEndTime(time));
     }
 
-    const startDateTime = this.combineDateAndTime(date, time);
-    const endDateTime = this.combineDateAndTime(date, this.calculateEndTime(time));
-
     const updatedEvent: CalendarEvent = {
-      ...this.draggedEvent,
+      ...original,
       startDate: startDateTime,
       endDate: endDateTime
     };
@@ -379,28 +388,94 @@ export class CalendarEventsComponent implements OnInit {
       next: () => {
         this.loadEvents();
       },
-      error: () => {
-      }
+      error: (err) => this.errorModalService.show(err.error?.message || 'Erro ao mover evento.')
     });
 
     this.draggedEvent = null;
   }
 
-  getEventsForSlot(day: DayColumn, time: string): CalendarEvent[] {   
-    const normalEvents = day.events.filter(event => {
-      if (!event.startDate) return false;
-      if (event.allDay) return false;
-      const startDate = this.parseLocalDate(event.startDate);
-      const eventHour = `${startDate.getHours().toString().padStart(2, '0')}:00`;
-      return eventHour === time;
-    });
-  
-    const allDayEvent = day.events.find(event => event.allDay);
-    
-    const result: CalendarEvent[] = [];
-    if (allDayEvent) result.push(allDayEvent);
-    result.push(...normalEvents);
-    return result.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  getAllDayEvents(day: DayColumn): CalendarEvent[] {
+    return day.events.filter(event => event.allDay);
+  }
+
+  getLayoutedEvents(day: DayColumn): LayoutedEvent[] {
+    const totalHours = this.LAST_HOUR - this.FIRST_HOUR + 1;
+
+    const items = day.events
+      .filter(event => !event.allDay && event.startDate)
+      .map(event => {
+        const start = this.parseLocalDate(event.startDate!);
+        const end = event.endDate ? this.parseLocalDate(event.endDate) : new Date(start.getTime() + 60 * 60 * 1000);
+
+        let startFrac = (start.getHours() + start.getMinutes() / 60) - this.FIRST_HOUR;
+        let endFrac = (end.getHours() + end.getMinutes() / 60) - this.FIRST_HOUR;
+        startFrac = Math.max(0, Math.min(totalHours, startFrac));
+        endFrac = Math.max(startFrac + 0.5, Math.min(totalHours, endFrac));
+
+        return { event, startFrac, endFrac };
+      })
+      .sort((a, b) => a.startFrac - b.startFrac || a.event.id.localeCompare(b.event.id));
+
+    const result: LayoutedEvent[] = [];
+    let cluster: typeof items = [];
+    let clusterEnd = -Infinity;
+
+    const flushCluster = () => {
+      if (cluster.length === 0) return;
+
+      const lanesEnd: number[] = [];
+      const laneByItem = new Map<typeof items[number], number>();
+
+      for (const it of cluster) {
+        let lane = lanesEnd.findIndex(end => end <= it.startFrac);
+        if (lane === -1) {
+          lane = lanesEnd.length;
+          lanesEnd.push(it.endFrac);
+        } else {
+          lanesEnd[lane] = it.endFrac;
+        }
+        laneByItem.set(it, lane);
+      }
+
+      const columnCount = lanesEnd.length;
+      for (const it of cluster) {
+        const lane = laneByItem.get(it)!;
+        result.push({
+          event: it.event,
+          top: it.startFrac * this.ROW_HEIGHT,
+          height: (it.endFrac - it.startFrac) * this.ROW_HEIGHT,
+          left: (lane / columnCount) * 100,
+          width: (1 / columnCount) * 100
+        });
+      }
+      cluster = [];
+    };
+
+    for (const it of items) {
+      if (it.startFrac >= clusterEnd) {
+        flushCluster();
+        clusterEnd = it.endFrac;
+      } else {
+        clusterEnd = Math.max(clusterEnd, it.endFrac);
+      }
+      cluster.push(it);
+    }
+    flushCluster();
+
+    return result;
+  }
+
+  getStatusIcon(event: CalendarEvent): string {
+    switch (event.status) {
+      case EEventStatus.Done: return 'pi pi-check-circle';
+      case EEventStatus.Cancelled: return 'pi pi-times-circle';
+      case EEventStatus.Other: return 'pi pi-info-circle';
+      default: return 'pi pi-clock';
+    }
+  }
+
+  getStatusLabel(event: CalendarEvent): string {
+    return this.statusOptions.find(opt => opt.value === event.status)?.label || 'Pendente';
   }
 
   previousWeek(): void {
@@ -427,10 +502,20 @@ export class CalendarEventsComponent implements OnInit {
     this.updateWeekView();
   }
 
-  getEventStyle(event: CalendarEvent): any {
+  getEventStyle(event: CalendarEvent): Record<string, string> {
     return {
       'background-color': event.categoryColor || '#3b82f6',
       'border-left': `4px solid ${this.darkenColor(event.categoryColor || '#3b82f6')}`
+    };
+  }
+
+  getPositionedEventStyle(item: LayoutedEvent): Record<string, string> {
+    return {
+      ...this.getEventStyle(item.event),
+      top: `${item.top}px`,
+      height: `${item.height}px`,
+      left: `${item.left}%`,
+      width: `${item.width}%`
     };
   }
 
@@ -494,25 +579,5 @@ export class CalendarEventsComponent implements OnInit {
 
   getDialogTitle(): string {
     return this.isEditingEvent() ? 'Editar Evento' : 'Novo Evento';
-  }
-
-  isFirstSlot(day: DayColumn, hour: string): boolean {
-    const allDayEvent = day.events.find(event => event.allDay);
-    if (!allDayEvent) return false;
-    return hour === this.timeSlots[0].hour;
-  }
-
-  isMiddleSlot(day: DayColumn, hour: string): boolean {
-    const allDayEvent = day.events.find(event => event.allDay);
-    if (!allDayEvent) return false;
-    const firstHour = this.timeSlots[0].hour;
-    const lastHour = this.timeSlots[this.timeSlots.length - 1].hour;
-    return hour !== firstHour && hour !== lastHour;
-  }
-
-  isLastSlot(day: DayColumn, hour: string): boolean {
-    const allDayEvent = day.events.find(event => event.allDay);
-    if (!allDayEvent) return false;
-    return hour === this.timeSlots[this.timeSlots.length - 1].hour;
   }
 }

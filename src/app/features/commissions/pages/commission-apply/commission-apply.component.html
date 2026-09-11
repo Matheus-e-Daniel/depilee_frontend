@@ -106,8 +106,9 @@
       </div>
       <div class="filters-content">
         <div class="filter-group">
-          <label>Selecione o colaborador responsável</label>
+          <label for="selectedUser">Selecione o colaborador responsável</label>
           <p-dropdown
+            inputId="selectedUser"
             [options]="userOptions()"
             [ngModel]="selectedUserId()"
             (ngModelChange)="onUserChange($event)"
@@ -195,7 +196,7 @@
                   <td data-label="Preço Unit.">{{ item.unitPrice | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
                   <td data-label="Total">{{ (item.quantity * item.unitPrice) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
                   <td data-label="Status">
-                    @if (item.commissionAmount != null) {
+                    @if (item.commissionAmount !== null) {
                       <span class="status-badge commissioned"
                         [pTooltip]="'Será recalculado ao reaplicar'" tooltipPosition="top">
                         <i class="pi pi-check-circle"></i>
@@ -231,5 +232,5 @@
   confirmLabel="Aplicar"
   [loading]="applying()"
   (confirm)="confirmApply()"
-  (cancel)="cancelApply()"
+  (cancelled)="cancelApply()"
 />

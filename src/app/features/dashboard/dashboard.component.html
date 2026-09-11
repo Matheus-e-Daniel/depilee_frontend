@@ -22,7 +22,8 @@
               [label]="loading() ? 'Atualizando...' : 'Atualizar'"
               (click)="refreshData()"
               [disabled]="loading()"
-              [loading]="loading()"></button>
+              [loading]="loading()">
+      </button>
     </div>
   </div>
 
@@ -193,7 +194,8 @@
         </ng-template>
 
         <div class="list-footer">
-          <button pButton label="Ver todos" icon="pi pi-list" class="view-all-btn" (click)="goToCalendar()"></button>
+          <button pButton label="Ver todos" icon="pi pi-list" class="view-all-btn" (click)="goToCalendar()">
+          </button>
         </div>
       </ng-container>
     </p-card>
