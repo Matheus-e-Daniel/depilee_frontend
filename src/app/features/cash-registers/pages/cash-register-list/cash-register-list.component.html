@@ -26,8 +26,8 @@
         icon="pi pi-times"
         label="Limpar Filtros"
         class="p-button-text p-button-sm clear-filters-btn"
-        (click)="searchValue = ''; sortOrderValue = 'desc';"
-      ></button>
+        (click)="searchValue = ''; sortOrderValue = 'desc';">
+      </button>
     </div>
     <div class="filters-content">
       <div class="filter-group">
@@ -87,6 +87,8 @@
               <button
                 pButton
                 icon="pi pi-pencil"
+                pTooltip="Editar"
+                tooltipPosition="top"
                 class="p-button-sm p-button-primary mr-2"
                 [class.not-clickable]="!hasPermission('CashRegister.Edit')"
                 [attr.disabled]="!hasPermission('CashRegister.Edit') ? true : null"
@@ -103,10 +105,22 @@
                 (click)="hasPermission('CashFlow.Get') && goToCashFlows(cashRegister.id)">
               </button>
               <button
+                *ngIf="cashRegister.cashRegisterStatus === 1"
                 pButton
                 icon="pi pi-lock"
+                pTooltip="Fechar caixa"
+                tooltipPosition="top"
                 class="p-button-sm p-button-warning"
                 (click)="openCloseCashRegisterModal(cashRegister.id, cashRegister.notes)">
+              </button>
+              <button
+                *ngIf="cashRegister.cashRegisterStatus !== 1"
+                pButton
+                icon="pi pi-chart-bar"
+                pTooltip="Ver detalhamento do fechamento"
+                tooltipPosition="top"
+                class="p-button-sm p-button-secondary"
+                (click)="openDetailModal(cashRegister.id)">
               </button>
             </div>
           </td>
@@ -143,11 +157,59 @@
   [loading]="closeLoading()"
   [cashRegisterId]="cashRegisterToClose && cashRegisterToClose.id ? +cashRegisterToClose.id : 0"
   (confirm)="confirmCloseCashRegister($event)"
-  (cancel)="cancelCloseCashRegister()">
+  (cancelled)="cancelCloseCashRegister()">
 </app-cash-register-close-form>
+
+<div class="modal-backdrop" *ngIf="showDetailModal()">
+  <div class="detail-modal-card">
+    <button type="button" class="close-btn" (click)="closeDetailModal()" pButton pTooltip="Fechar" tooltipPosition="left">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <h2 class="modal-title">Detalhamento do Fechamento</h2>
+
+    <div *ngIf="detailLoading()" class="text-center py-4">Carregando...</div>
+
+    <ng-container *ngIf="!detailLoading() && cashRegisterDetail() as detail">
+      <p-table [value]="detail.closingDetails" styleClass="p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Forma de Pagamento</th>
+            <th>Apurado</th>
+            <th>Declarado</th>
+            <th>Diferença</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.paymentMethod?.name || 'N/A' }}</td>
+            <td>{{ item.calculatedAmount | currency:'BRL' }}</td>
+            <td>{{ item.declaredAmount | currency:'BRL' }}</td>
+            <td [class.text-danger]="item.difference !== 0">{{ item.difference | currency:'BRL' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center py-3">Nenhum detalhamento registrado para este fechamento</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div class="detail-summary">
+        <span>Saldo Final</span>
+        <strong>{{ detail.finalBalance | currency:'BRL' }}</strong>
+      </div>
+      <div class="detail-summary" [class.text-danger]="(detail.difference || 0) !== 0">
+        <span>Diferença Total</span>
+        <strong>{{ (detail.difference || 0) | currency:'BRL' }}</strong>
+      </div>
+    </ng-container>
+  </div>
+</div>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

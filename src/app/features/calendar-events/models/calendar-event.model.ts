@@ -14,8 +14,16 @@ export const EVENT_STATUS_OPTIONS = [
 
 export const CATEGORY_COLOR_OPTIONS = [
   { label: 'Vermelho', value: '#ef4444' },
-  { label: 'Amarelo', value: '#f59e0b' },
+  { label: 'Laranja', value: '#f97316' },
+  { label: 'Âmbar', value: '#f59e0b' },
+  { label: 'Amarelo', value: '#eab308' },
   { label: 'Verde', value: '#10b981' },
+  { label: 'Esmeralda', value: '#14b8a6' },
+  { label: 'Azul', value: '#3b82f6' },
+  { label: 'Índigo', value: '#6366f1' },
+  { label: 'Roxo', value: '#8b5cf6' },
+  { label: 'Rosa', value: '#ec4899' },
+  { label: 'Cinza', value: '#64748b' },
 ];
 
 export interface CalendarEvent {
@@ -29,6 +37,7 @@ export interface CalendarEvent {
   categoryColor: string;
   status?: EEventStatus;
   displayOrder?: number;
+  targetUserId?: number | null;
 }
 
 export interface CalendarEventFormData {
@@ -40,4 +49,5 @@ export interface CalendarEventFormData {
   allDay: boolean;
   categoryColor: string;
   status?: EEventStatus;
+  targetUserId?: number | null;
 }

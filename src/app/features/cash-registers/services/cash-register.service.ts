@@ -2,7 +2,7 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CashRegister, CashRegisterFormData } from '../models/cash-register.model';
+import { CashRegister, CashRegisterFormData, PaymentMethodDeclaration } from '../models/cash-register.model';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
@@ -32,7 +32,7 @@ export class CashRegisterService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
 
-  closeCashRegister(data: { cashRegisterId: number; finalBalance: number; notes?: string }): Observable<ApiResponse<CashRegister>> {
+  closeCashRegister(data: { cashRegisterId: number; declaredAmounts: PaymentMethodDeclaration[]; notes?: string }): Observable<ApiResponse<CashRegister>> {
     return this.http.post<ApiResponse<CashRegister>>(`${this.apiUrl}/close`, data);
   }
 }
