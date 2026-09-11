@@ -139,11 +139,12 @@
   [loading]="confirmationLoading()"
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

@@ -100,6 +100,8 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
+                pTooltip="Editar"
+                tooltipPosition="top"
                 [class.not-clickable]="!hasPermission('Product.Edit')"
                 [attr.disabled]="!hasPermission('Product.Edit') ? true : null"
                 (click)="hasPermission('Product.Edit') && editProduct(product.id)">
@@ -108,6 +110,8 @@
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
+                pTooltip="Excluir"
+                tooltipPosition="top"
                 [class.not-clickable]="!hasPermission('Product.Delete')"
                 [attr.disabled]="!hasPermission('Product.Delete') ? true : null"
                 (click)="hasPermission('Product.Delete') && deleteProduct(product.id, product.name)">
@@ -147,11 +151,12 @@
   [loading]="confirmationLoading()"
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

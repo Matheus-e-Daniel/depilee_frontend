@@ -31,8 +31,8 @@ import { ButtonModule } from 'primeng/button';
   ]
 })
 export class ErrorModalComponent {
-  @Input() message: string = 'Ocorreu um erro!';
-  @Input() visible: boolean = false;
+  @Input() message = 'Ocorreu um erro!';
+  @Input() visible = false;
   @Output() visibleChange = new EventEmitter<boolean>();
 
   onClose(): void {

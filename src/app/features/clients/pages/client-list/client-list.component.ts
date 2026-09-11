@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
+import { TooltipModule } from 'primeng/tooltip';
 import { ClientService } from '../../services/client.service';
 import { Client } from '../../models/client.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -29,6 +30,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TagModule,
     InputTextModule,
     DropdownModule,
+    TooltipModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -154,7 +156,7 @@ export class ClientListComponent implements OnInit {
 
         setTimeout(() => {
           this.successModalService.hide();
-        }, 2500);
+        }, 1500);
 
         this.loadClients();
       },
@@ -175,7 +177,7 @@ export class ClientListComponent implements OnInit {
   }
 
   getGenderLabel(gender: number): string {
-    const labels: { [key: number]: string } = {
+    const labels: Record<number, string> = {
       1: 'Masculino',
       2: 'Feminino',
       0: 'Outro'

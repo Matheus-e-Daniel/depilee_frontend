@@ -219,7 +219,8 @@
     align-items: end;
 
     .filter-group {
-      label {
+      label,
+      .filter-action-spacer {
         display: block;
         font-weight: 600;
         font-size: 0.9rem;

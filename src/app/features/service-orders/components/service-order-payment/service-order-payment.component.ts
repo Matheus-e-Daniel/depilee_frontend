@@ -27,7 +27,12 @@ export class ServiceOrderPaymentComponent implements OnInit {
   private paymentService = inject(ServiceOrderPaymentService);
 
   @Input() parentForm?: FormGroup;
-  @Output() paymentChange = new EventEmitter<any>();
+  @Output() paymentChange = new EventEmitter<{
+    cashRegisterId: number | null;
+    paymentMethodId: number | null;
+    amount: number | null;
+    notes: string | null;
+  }>();
 
   paymentForm!: FormGroup;
   paymentMethods = signal<PaymentMethod[]>([]);

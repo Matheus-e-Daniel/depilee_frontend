@@ -125,6 +125,7 @@ export class PaymentMethodListComponent implements OnInit {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
         this.successModalService.show('Método de pagamento excluído com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadPaymentMethods();
       },
       error: (err: HttpErrorResponse) => {
@@ -152,7 +153,7 @@ export class PaymentMethodListComponent implements OnInit {
   }
 
   getPaymentTypeLabel(type: number): string {
-    const types: { [key: number]: string } = {
+    const types: Record<number, string> = {
       1: 'Dinheiro',
       2: 'Cartão de Crédito',
       3: 'Cartão de Débito',

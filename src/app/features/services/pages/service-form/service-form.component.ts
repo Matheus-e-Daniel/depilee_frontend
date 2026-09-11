@@ -57,7 +57,7 @@ export class ServiceFormComponent implements OnInit {
   categoriesLoading = signal(true);
   formSubmitted = signal(false);
   formModified = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
 
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
@@ -172,7 +172,7 @@ export class ServiceFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/services']);
-        }, 2500);
+        }, 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.showConfirmation.set(false);

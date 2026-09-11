@@ -10,6 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { ProductFormData } from '../../models/product.model';
@@ -35,6 +37,8 @@ import { Category } from '../../../categories/models/category.model';
     CardModule,
     DropdownModule,
     CheckboxModule,
+    DialogModule,
+    TooltipModule,
     SuccessModalComponent,
     ConfirmationModalComponent
   ],
@@ -57,7 +61,7 @@ export class ProductFormComponent implements OnInit {
   isEditMode = signal(false);
   productId = signal<string | null>(null);
   formSubmitted = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
   formModified = signal(false);
 
   showConfirmation = signal(false);
@@ -67,6 +71,13 @@ export class ProductFormComponent implements OnInit {
   categories = signal<Category[]>([]);
   brandsLoading = signal(true);
   categoriesLoading = signal(true);
+
+  showQuickCreateBrand = signal(false);
+  showQuickCreateCategory = signal(false);
+  creatingQuickBrand = signal(false);
+  creatingQuickCategory = signal(false);
+  quickBrandForm!: FormGroup;
+  quickCategoryForm!: FormGroup;
 
   ngOnInit(): void {
     this.initForm();
@@ -88,6 +99,80 @@ export class ProductFormComponent implements OnInit {
 
     this.productForm.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.checkFormModified();
+    });
+
+    this.quickBrandForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]]
+    });
+
+    this.quickCategoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      description: ['']
+    });
+  }
+
+  openQuickCreateBrand(): void {
+    this.quickBrandForm.reset({ name: '' });
+    this.showQuickCreateBrand.set(true);
+  }
+
+  closeQuickCreateBrand(): void {
+    this.showQuickCreateBrand.set(false);
+  }
+
+  submitQuickBrand(): void {
+    if (this.quickBrandForm.invalid) {
+      this.quickBrandForm.markAllAsTouched();
+      return;
+    }
+
+    this.creatingQuickBrand.set(true);
+    this.brandService.create({ name: this.quickBrandForm.value.name }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: created }) => {
+        this.creatingQuickBrand.set(false);
+        this.showQuickCreateBrand.set(false);
+        this.loadBrands();
+        this.productForm.patchValue({ brandId: created.id });
+        this.successModalService.show('Marca cadastrada com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.creatingQuickBrand.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao cadastrar marca');
+      }
+    });
+  }
+
+  openQuickCreateCategory(): void {
+    this.quickCategoryForm.reset({ name: '', description: '' });
+    this.showQuickCreateCategory.set(true);
+  }
+
+  closeQuickCreateCategory(): void {
+    this.showQuickCreateCategory.set(false);
+  }
+
+  submitQuickCategory(): void {
+    if (this.quickCategoryForm.invalid) {
+      this.quickCategoryForm.markAllAsTouched();
+      return;
+    }
+
+    this.creatingQuickCategory.set(true);
+    const value = this.quickCategoryForm.value;
+    this.categoryService.create({ name: value.name, description: value.description || '' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data: created }) => {
+        this.creatingQuickCategory.set(false);
+        this.showQuickCreateCategory.set(false);
+        this.loadCategories();
+        this.productForm.patchValue({ categoryId: created.id });
+        this.successModalService.show('Categoria cadastrada com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.creatingQuickCategory.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao cadastrar categoria');
+      }
     });
   }
 
@@ -208,7 +293,7 @@ export class ProductFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/products']);
-        }, 2500);
+        }, 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.showConfirmation.set(false);
@@ -243,7 +328,7 @@ export class ProductFormComponent implements OnInit {
     this.formModified.set(isModified);
   }
 
-  onCurrencyFocus(event: any): void {
+  onCurrencyFocus(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.value || input.value.trim() === '') {
       input.value = 'R$ ';
@@ -253,7 +338,7 @@ export class ProductFormComponent implements OnInit {
     }
   }
 
-  onCurrencyInput(event: any): void {
+  onCurrencyInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     let value = input.value;
 
@@ -265,8 +350,9 @@ export class ProductFormComponent implements OnInit {
     }
   }
 
-  formatCurrencyOnBlur(event: any, fieldName: string): void {
-    let value = event.target.value;
+  formatCurrencyOnBlur(event: Event, fieldName: string): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
 
     value = value.replace(/R\$\s*/g, '');
 
@@ -274,7 +360,7 @@ export class ProductFormComponent implements OnInit {
 
     if (!value) {
       this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
-      event.target.value = '';
+      input.value = '';
       return;
     }
 
@@ -283,7 +369,7 @@ export class ProductFormComponent implements OnInit {
 
     if (isNaN(numericValue)) {
       this.productForm.get(fieldName)?.setValue('', { emitEvent: false });
-      event.target.value = '';
+      input.value = '';
       return;
     }
 
@@ -293,19 +379,20 @@ export class ProductFormComponent implements OnInit {
       minimumFractionDigits: 2
     });
 
-    event.target.value = formatted;
+    input.value = formatted;
 
     this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
   }
 
-  formatNumberOnBlur(event: any, fieldName: string): void {
-    let value = event.target.value;
+  formatNumberOnBlur(event: Event, fieldName: string): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value;
 
     value = value.replace(/\D/g, '');
 
     if (!value) {
       this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
-      event.target.value = '';
+      input.value = '';
       return;
     }
 
@@ -313,13 +400,13 @@ export class ProductFormComponent implements OnInit {
 
     if (isNaN(numericValue)) {
       this.productForm.get(fieldName)?.setValue(0, { emitEvent: false });
-      event.target.value = '';
+      input.value = '';
       return;
     }
 
     const formatted = numericValue.toLocaleString('pt-BR');
 
-    event.target.value = formatted;
+    input.value = formatted;
 
     this.productForm.get(fieldName)?.setValue(numericValue, { emitEvent: false });
   }

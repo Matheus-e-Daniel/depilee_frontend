@@ -77,7 +77,8 @@
         margin-bottom: 2rem;
 
         .field {
-          label {
+          label,
+          > span:first-child {
             color: #475569;
             font-weight: 700;
             margin-bottom: 0.5rem;

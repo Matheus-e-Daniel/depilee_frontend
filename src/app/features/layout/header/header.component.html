@@ -3,6 +3,8 @@
     pButton
     pRipple
     icon="pi pi-bars"
+    pTooltip="Abrir menu"
+    tooltipPosition="bottom"
     class="menu-button"
     (click)="onMenuClick()">
   </button>
@@ -16,6 +18,8 @@
           pButton
           pRipple
           icon="pi pi-bell"
+          pTooltip="Notificações"
+          tooltipPosition="bottom"
           class="notification-button"
           (click)="toggleNotificationMenu($event)"
           aria-haspopup="true"
@@ -61,7 +65,7 @@
 
   <ng-template pTemplate="item" let-item>
     <div class="notification-item-wrapper">
-      <a class="notification-item" (click)="item.command?.()">
+      <a class="notification-item" tabindex="0" (click)="item.command?.()" (keydown.enter)="item.command?.()">
         <i [class]="item.icon" class="notification-icon"></i>
         <div class="notification-content">
           <div class="notification-title">{{item.label}}</div>

@@ -141,6 +141,7 @@ export class PaymentMethodFormComponent implements OnInit {
           this.showConfirmation.set(false);
           this.successModalService.show('Método de pagamento atualizado com sucesso!');
           setTimeout(() => {
+            this.successModalService.hide();
             this.router.navigate(['/payment-methods']);
           }, 1500);
         },
@@ -156,6 +157,7 @@ export class PaymentMethodFormComponent implements OnInit {
           this.showConfirmation.set(false);
           this.successModalService.show('Método de pagamento criado com sucesso!');
           setTimeout(() => {
+            this.successModalService.hide();
             this.router.navigate(['/payment-methods']);
           }, 1500);
         },

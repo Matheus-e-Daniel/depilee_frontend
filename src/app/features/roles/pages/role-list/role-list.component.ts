@@ -128,6 +128,7 @@ export class RoleListComponent implements OnInit {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
         this.successModalService.show('Cargo excluído com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadRoles();
         this.roleToDelete = null;
       },

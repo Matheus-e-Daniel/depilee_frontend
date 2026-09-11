@@ -35,7 +35,7 @@
           </div>
 
           <div class="field col-12">
-            <label class="block font-medium mb-2">Permissões</label>
+            <span class="block font-medium mb-2">Permissões</span>
 
             <div class="permissions-table-container">
               <table class="permissions-table">
@@ -142,11 +142,12 @@
   cancelLabel="Cancelar"
   [loading]="confirmationLoading()"
   (confirm)="confirmSubmit()"
-  (cancel)="cancelSubmit()">
+  (cancelled)="cancelSubmit()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

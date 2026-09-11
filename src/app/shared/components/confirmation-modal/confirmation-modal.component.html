@@ -1,4 +1,4 @@
-<div class="modal-backdrop" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
+<div class="modal-backdrop" role="presentation" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
   <div class="confirmation-modal-card" @cardAnimation>
     <div class="icon-container" [style.background]="getIconColor() + '15'">
       <i class="pi" [ngClass]="getIcon()" [style.color]="getIconColor()"></i>

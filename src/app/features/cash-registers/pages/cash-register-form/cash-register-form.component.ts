@@ -46,7 +46,7 @@ export class CashRegisterFormComponent implements OnInit {
   cashRegisterId = signal<string | null>(null);
   formSubmitted = signal(false);
   formModified = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
 
   
   showConfirmation = signal(false);
@@ -140,7 +140,7 @@ export class CashRegisterFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/cash-registers']);
-        }, 2500);
+        }, 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);

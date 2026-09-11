@@ -208,6 +208,7 @@
         </div>
         <app-success-modal
           [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
           [message]="successModalService.message()"
           (visibleChange)="successModalService.hide()">
         </app-success-modal>

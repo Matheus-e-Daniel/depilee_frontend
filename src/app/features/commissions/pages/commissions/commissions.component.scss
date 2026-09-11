@@ -1,0 +1,120 @@
+.commissions-container {
+  padding: 2rem;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+  animation: slideIn 0.4s ease-out;
+
+  .header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 120px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 0 0 3px 3px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      background: linear-gradient(90deg, #1e293b 0%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      margin: 0.5rem 0 0 0;
+      color: #64748b;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+
+    ::ng-deep .p-tabview-nav {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-bottom: 2px solid #e2e8f0;
+      padding: 0 1rem;
+
+      li .p-tabview-nav-link {
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.05);
+          color: #3b82f6;
+        }
+      }
+
+      li.p-highlight .p-tabview-nav-link {
+        color: #3b82f6;
+        box-shadow: inset 0 -3px 0 0 #3b82f6;
+        background: white;
+      }
+    }
+
+    ::ng-deep .p-tabview-panels {
+      padding: 0;
+      background: transparent;
+    }
+
+    // Os componentes de cada aba já são "páginas" completas, com o próprio
+    // fundo em gradiente, min-height e cabeçalho — aqui viram apenas o
+    // conteúdo da aba, então essa moldura duplicada é removida.
+    ::ng-deep .commission-settings-container,
+    ::ng-deep .commission-apply-container,
+    ::ng-deep .commission-history-container {
+      padding: 1.75rem;
+      background: none;
+      min-height: 0;
+
+      > .header {
+        display: none;
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .commissions-container {
+    padding: 1.25rem;
+
+    .card ::ng-deep .commission-settings-container,
+    .card ::ng-deep .commission-apply-container,
+    .card ::ng-deep .commission-history-container {
+      padding: 1rem;
+    }
+  }
+}

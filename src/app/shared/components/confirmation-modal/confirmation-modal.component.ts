@@ -33,16 +33,16 @@ export type ConfirmationType = 'delete' | 'update' | 'create' | 'warning';
   ]
 })
 export class ConfirmationModalComponent {
-  @Input() visible: boolean = false;
+  @Input() visible = false;
   @Input() type: ConfirmationType = 'delete';
-  @Input() title: string = '';
-  @Input() message: string = '';
-  @Input() confirmLabel: string = 'Confirmar';
-  @Input() cancelLabel: string = 'Cancelar';
-  @Input() loading: boolean = false;
+  @Input() title = '';
+  @Input() message = '';
+  @Input() confirmLabel = 'Confirmar';
+  @Input() cancelLabel = 'Cancelar';
+  @Input() loading = false;
 
   @Output() confirm = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() cancelled = new EventEmitter<void>();
   @Output() visibleChange = new EventEmitter<boolean>();
 
   getIcon(): string {
@@ -97,7 +97,7 @@ export class ConfirmationModalComponent {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.cancelled.emit();
     this.close();
   }
 

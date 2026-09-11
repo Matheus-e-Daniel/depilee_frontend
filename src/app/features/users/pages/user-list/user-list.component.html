@@ -43,6 +43,8 @@
                 pButton
                 icon="pi pi-pencil"
                 class="p-button-sm p-button-primary mr-2"
+                pTooltip="Editar"
+                tooltipPosition="top"
                 [class.not-clickable]="!hasPermission('Identity.Edit')"
                 [attr.disabled]="!hasPermission('Identity.Edit') ? true : null"
                 (click)="hasPermission('Identity.Edit') && editUser(user.id)">
@@ -51,6 +53,8 @@
                 pButton
                 icon="pi pi-trash"
                 class="p-button-sm p-button-danger"
+                pTooltip="Excluir"
+                tooltipPosition="top"
                 [class.not-clickable]="!hasPermission('Identity.Delete')"
                 [attr.disabled]="!hasPermission('Identity.Delete') ? true : null"
                 (click)="hasPermission('Identity.Delete') && deleteUser(user.id, user.fullName)">
@@ -90,11 +94,12 @@
   [loading]="confirmationLoading()"
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

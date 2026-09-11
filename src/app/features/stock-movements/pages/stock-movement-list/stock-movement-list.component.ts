@@ -58,7 +58,7 @@ export class StockMovementListComponent implements OnInit {
   private loadProducts(): void {
     this.productService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => this.products.set(response.data),
-      error: () => {}
+      error: (err) => this.errorModalService.show(err.error?.message || 'Falha ao carregar produtos')
     });
   }
 

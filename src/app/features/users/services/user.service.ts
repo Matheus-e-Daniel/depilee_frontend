@@ -35,7 +35,7 @@ export class UserService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/users/${id}`);
   }
 
-  assignRole(userId: string | number, roleName: string): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/user/${userId}/role`, { roleName });
+  assignRole(userId: string | number, roleName: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.apiUrl}/user/${userId}/role`, { roleName });
   }
 }

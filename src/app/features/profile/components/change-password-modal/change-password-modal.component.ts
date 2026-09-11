@@ -74,12 +74,16 @@ export class ChangePasswordModalComponent implements OnChanges {
     this.profileService.updateOwnProfile({
       fullName: this.profile.fullName,
       email: this.profile.email,
+      cpf: this.profile.cpf,
+      birth: this.profile.birth,
+      gender: this.profile.gender,
+      address: this.profile.address,
       newPassword: newPassword!
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
         this.successModalService.show('Senha alterada com sucesso!');
-        setTimeout(() => this.successModalService.hide(), 2000);
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.onCancel();
       },
       error: (err: HttpErrorResponse) => {

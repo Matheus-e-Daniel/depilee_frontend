@@ -21,7 +21,7 @@ import { switchMap } from 'rxjs/operators';
 interface PermissionModule {
   name: string;
   displayName: string;
-  permissions: { [action: string]: Permission | null };
+  permissions: Record<string, Permission | null>;
 }
 
 @Component({
@@ -58,13 +58,13 @@ export class RoleFormComponent implements OnInit {
   roleId = signal<string | null>(null);
   formSubmitted = signal(false);
   formModified = signal(false);
-  originalFormValue: any = null;
+  originalFormValue: string | null = null;
 
   availablePermissions = signal<Permission[]>([]);
   selectedPermissionIds = signal<Set<number>>(new Set());
 
   actions = ['Create', 'Edit', 'Get', 'Delete'];
-  actionLabels: { [key: string]: string } = {
+  actionLabels: Record<string, string> = {
     'Create': 'Criar',
     'Edit': 'Editar',
     'Get': 'Visualizar',
@@ -75,13 +75,15 @@ export class RoleFormComponent implements OnInit {
     const permissions = this.availablePermissions();
     const modulesMap = new Map<string, PermissionModule>();
 
-    const moduleDisplayNames: { [key: string]: string } = {
+    const moduleDisplayNames: Record<string, string> = {
       'Brand': 'Marcas',
       'CashFlow': 'Fluxo de Caixa',
       'CashRegister': 'Caixas',
       'Category': 'Categorias',
       'Client': 'Clientes',
+      'Commission': 'Comissão',
       'Event': 'Eventos',
+      'Identity': 'Usuário do Sistema',
       'Notification': 'Notificações',
       'Payment': 'Pagamentos',
       'PaymentMethod': 'Métodos de Pagamento',
@@ -250,7 +252,7 @@ export class RoleFormComponent implements OnInit {
 
     this.roleService.getRolePermissionsById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (permissions) => {
-        const selectedIds = new Set(permissions.map((p: any) => p.id));
+        const selectedIds = new Set(permissions.map((p) => p.id));
         this.selectedPermissionIds.set(selectedIds);
 
         this.roleService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -315,7 +317,7 @@ export class RoleFormComponent implements OnInit {
         setTimeout(() => {
           this.successModalService.hide();
           this.router.navigate(['/roles']);
-        }, 2500);
+        }, 1500);
       },
       error: (err: HttpErrorResponse) => {
         this.confirmationLoading.set(false);

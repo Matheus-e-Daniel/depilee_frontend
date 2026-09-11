@@ -1,7 +1,7 @@
-<div class="modal-backdrop" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
+<div class="modal-backdrop" role="presentation" *ngIf="visible" @backdropAnimation (click)="onBackdropClick($event)">
   <div class="success-modal-card" @cardAnimation>
     <div class="icon-container">
-      <div class="spinner-check" [class.transform-to-check]="showSuccess()">
+      <div class="spinner-check" [class.transform-to-check]="!loading">
         <svg class="spinner-svg" viewBox="0 0 50 50">
           <circle class="spinner-circle" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
         </svg>
@@ -13,6 +13,6 @@
       </div>
     </div>
 
-    <p class="success-message" *ngIf="showSuccess()">{{ message }}</p>
+    <p class="success-message" *ngIf="!loading">{{ message }}</p>
   </div>
 </div>

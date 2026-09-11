@@ -3,6 +3,8 @@
     <button
       pButton
       icon="pi pi-arrow-left"
+      pTooltip="Voltar"
+      tooltipPosition="bottom"
       class="p-button-text p-button-sm"
       (click)="onBack()">
     </button>
@@ -124,6 +126,8 @@
             <button
               pButton
               icon="pi pi-trash"
+              pTooltip="Excluir"
+              tooltipPosition="top"
               class="p-button-sm p-button-danger"
               [class.not-clickable]="!hasPermission('CashFlow.Delete')"
               [attr.disabled]="!hasPermission('CashFlow.Delete') ? true : null"
@@ -148,7 +152,8 @@
   </div>
 </div>
 
-<app-success-modal [visible]="successModalService.visible()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
+<app-success-modal [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()" [message]="successModalService.message()" (visibleChange)="successModalService.hide()"></app-success-modal>
 
 <app-confirmation-modal
   [visible]="showConfirmation()"
@@ -156,5 +161,5 @@
   [message]="getDeleteMessage()"
   [loading]="confirmationLoading()"
   (confirm)="confirmDelete()"
-  (cancel)="cancelDelete()">
+  (cancelled)="cancelDelete()">
 </app-confirmation-modal>

@@ -120,6 +120,7 @@ export class BrandListComponent implements OnInit {
         this.confirmationLoading.set(false);
         this.showConfirmation.set(false);
         this.successModalService.show('Marca excluída com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadBrands();
         this.brandToDelete = null;
       },

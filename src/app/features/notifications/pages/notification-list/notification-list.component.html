@@ -1,0 +1,75 @@
+<div class="notification-list-container w-full">
+  <div class="header">
+    <div class="title-section">
+      <h1>Notificações</h1>
+      <p>Histórico de todas as suas notificações</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p-table
+      [value]="notifications()"
+      [loading]="loading()"
+      [lazy]="true"
+      (onLazyLoad)="loadData($event)"
+      styleClass="p-datatable-striped"
+      [paginator]="true"
+      [rows]="rows"
+      [totalRecords]="totalRecords()"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} notificações">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Notificação</th>
+          <th>Mensagem</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-notification>
+        <tr [class.unread-row]="!notification.isRead">
+          <td data-label="Notificação">
+            <i [class]="getNotificationIcon(notification)"></i>
+            {{ notification.title }}
+          </td>
+          <td data-label="Mensagem">{{ notification.message }}</td>
+          <td data-label="Data">{{ notification.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td data-label="Status">
+            <p-tag
+              [value]="notification.isRead ? 'Lida' : 'Não lida'"
+              [severity]="notification.isRead ? 'success' : 'info'">
+            </p-tag>
+          </td>
+          <td data-label="Ações">
+            <div class="action-buttons">
+              <button
+                pButton
+                icon="pi pi-check"
+                class="p-button-sm p-button-primary"
+                pTooltip="Marcar como lida"
+                tooltipPosition="top"
+                [disabled]="notification.isRead"
+                (click)="markAsRead(notification)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-5">
+            <div class="empty-state">
+              <i class="pi pi-bell" style="font-size: 3rem; color: #ccc"></i>
+              <h3>Nenhuma notificação</h3>
+              <p>Você não tem notificações no momento</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

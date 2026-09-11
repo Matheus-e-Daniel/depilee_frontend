@@ -173,8 +173,10 @@
 }
 
 .hint-text {
+  display: block;
   color: #94a3b8;
   font-size: 0.82rem;
+  margin-top: 0.5rem;
 }
 
 .loading-state {

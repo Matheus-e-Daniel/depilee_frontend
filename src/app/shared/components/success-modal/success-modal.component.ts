@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, style, transition, animate } from '@angular/animations';
 
@@ -30,32 +30,10 @@ import { trigger, style, transition, animate } from '@angular/animations';
   ]
 })
 export class SuccessModalComponent {
-  @Input() message: string = 'Operação realizada com sucesso!';
-  @Input() visible: boolean = false;
+  @Input() message = 'Operação realizada com sucesso!';
+  @Input() visible = false;
+  @Input() loading = false;
   @Output() visibleChange = new EventEmitter<boolean>();
-
-  showLoader = signal(true);
-  showSuccess = signal(false);
-
-  ngOnChanges(): void {
-    if (this.visible) {
-      this.showModal();
-    }
-  }
-
-  private showModal(): void {
-    this.showLoader.set(true);
-    this.showSuccess.set(false);
-
-    setTimeout(() => {
-      this.showLoader.set(false);
-      this.showSuccess.set(true);
-
-      setTimeout(() => {
-        this.close();
-      }, 1500);
-    }, 1000);
-  }
 
   close(): void {
     this.visible = false;

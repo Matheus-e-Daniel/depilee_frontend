@@ -20,6 +20,21 @@
             <span class="profile-value">{{ profile()?.email || '—' }}</span>
           </div>
 
+          <div class="profile-field">
+            <span class="profile-label">CPF</span>
+            <span class="profile-value">{{ profile()?.cpf || '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="profile-label">Data de nascimento</span>
+            <span class="profile-value">{{ profile()?.birth ? (profile()?.birth | date:'dd/MM/yyyy') : '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="profile-label">Endereço</span>
+            <span class="profile-value">{{ formattedAddress() }}</span>
+          </div>
+
           <div class="profile-actions">
             <button
               pButton
@@ -72,6 +87,95 @@
           </small>
         </div>
 
+        <div class="field">
+          <label for="cpf">CPF *</label>
+          <p-inputMask
+            id="cpf"
+            formControlName="cpf"
+            mask="999.999.999-99"
+            placeholder="000.000.000-00"
+            class="w-full">
+          </p-inputMask>
+          <small *ngIf="profileForm.get('cpf')?.invalid && profileForm.get('cpf')?.touched" class="p-error block mt-1">
+            CPF é obrigatório
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="birth">Data de nascimento *</label>
+          <p-inputMask
+            id="birth"
+            formControlName="birth"
+            mask="99/99/9999"
+            placeholder="dd/mm/aaaa"
+            class="w-full">
+          </p-inputMask>
+          <small *ngIf="profileForm.get('birth')?.invalid && profileForm.get('birth')?.touched" class="p-error block mt-1">
+            Data de nascimento é obrigatória
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="gender">Gênero *</label>
+          <p-dropdown
+            id="gender"
+            formControlName="gender"
+            [options]="genderOptions"
+            placeholder="Selecione"
+            class="w-full">
+          </p-dropdown>
+          <small *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched" class="p-error block mt-1">
+            Gênero é obrigatório
+          </small>
+        </div>
+
+        <fieldset formGroupName="address" class="address-fieldset">
+          <legend>Endereço</legend>
+          <div class="field">
+            <label for="cep">CEP *</label>
+            <p-inputMask
+              id="cep"
+              formControlName="cep"
+              mask="99999-999"
+              placeholder="00000-000"
+              class="w-full">
+              <ng-template pTemplate="suffix">
+                <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
+              </ng-template>
+            </p-inputMask>
+            <small *ngIf="profileForm.get('address.cep')?.invalid && profileForm.get('address.cep')?.touched" class="p-error block mt-1">
+              CEP é obrigatório
+            </small>
+            <small *ngIf="cepErrorMessage()" class="p-error block mt-1">
+              {{ cepErrorMessage() }}
+            </small>
+          </div>
+          <div class="field">
+            <label for="state">Estado *</label>
+            <input id="state" formControlName="state" type="text" pInputText class="w-full" placeholder="Digite o estado" />
+          </div>
+          <div class="field">
+            <label for="city">Cidade *</label>
+            <input id="city" formControlName="city" type="text" pInputText class="w-full" placeholder="Digite a cidade" />
+          </div>
+          <div class="field">
+            <label for="street">Rua *</label>
+            <input id="street" formControlName="street" type="text" pInputText class="w-full" placeholder="Digite a rua" />
+          </div>
+          <div class="field">
+            <label for="number">Número *</label>
+            <input id="number" formControlName="number" type="text" pInputText class="w-full" placeholder="Digite o número" />
+          </div>
+          <div class="field">
+            <label for="neighborhood">Bairro *</label>
+            <input id="neighborhood" formControlName="neighborhood" type="text" pInputText class="w-full" placeholder="Digite o bairro" />
+          </div>
+          <div class="field">
+            <label for="complement">Complemento</label>
+            <input id="complement" formControlName="complement" type="text" pInputText class="w-full" placeholder="Digite o complemento (opcional)" />
+          </div>
+        </fieldset>
+
         <div class="form-actions">
           <button
             pButton
@@ -102,6 +206,7 @@
 
 <app-success-modal
   [visible]="successModalService.visible()"
+  [loading]="successModalService.loading()"
   [message]="successModalService.message()"
   (visibleChange)="successModalService.hide()">
 </app-success-modal>

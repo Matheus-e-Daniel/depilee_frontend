@@ -25,8 +25,9 @@
     </div>
     <div class="filters-content">
       <div class="filter-group">
-        <label>Colaborador *</label>
+        <label for="commissionUser">Colaborador *</label>
         <p-dropdown
+          inputId="commissionUser"
           [options]="userOptions"
           [ngModel]="selectedUserId()"
           (ngModelChange)="selectedUserId.set($event); result.set(null)"
@@ -41,8 +42,9 @@
       </div>
 
       <div class="filter-group">
-        <label>Data Inicial</label>
+        <label for="commissionStartDate">Data Inicial</label>
         <p-calendar
+          inputId="commissionStartDate"
           [ngModel]="startDate()"
           (ngModelChange)="startDate.set($event)"
           dateFormat="dd/mm/yy"
@@ -53,8 +55,9 @@
       </div>
 
       <div class="filter-group">
-        <label>Data Final</label>
+        <label for="commissionEndDate">Data Final</label>
         <p-calendar
+          inputId="commissionEndDate"
           [ngModel]="endDate()"
           (ngModelChange)="endDate.set($event)"
           dateFormat="dd/mm/yy"
@@ -65,7 +68,7 @@
       </div>
 
       <div class="filter-group filter-action">
-        <label>&nbsp;</label>
+        <span class="filter-action-spacer">&nbsp;</span>
         <button
           pButton
           type="button"
