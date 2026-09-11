@@ -3,9 +3,10 @@
     <div class="header-left">
       <h1>Calendário de Eventos</h1>
       <div class="week-navigation">
-        <button pButton icon="pi pi-chevron-left" class="p-button-text p-button-sm" (click)="previousWeek()"></button>
-        <button pButton label="Hoje" class="p-button-text p-button-sm" (click)="goToToday()"></button>
-        <button pButton icon="pi pi-chevron-right" class="p-button-text p-button-sm" (click)="nextWeek()"></button>
+        <button pButton icon="pi pi-chevron-left" aria-label="Semana anterior" pTooltip="Semana anterior" tooltipPosition="bottom" class="p-button-text p-button-sm" (click)="previousWeek()"></button>
+        <button pButton label="Hoje" class="p-button-text p-button-sm" (click)="goToToday()">
+        </button>
+        <button pButton icon="pi pi-chevron-right" aria-label="Próxima semana" pTooltip="Próxima semana" tooltipPosition="bottom" class="p-button-text p-button-sm" (click)="nextWeek()"></button>
       </div>
     </div>
 
@@ -31,41 +32,89 @@
         </div>
       </div>
 
-      <div class="grid-body">
-        <div class="time-row" *ngFor="let slot of timeSlots">
-          <div class="time-cell">
+      <div class="all-day-row" *ngIf="weekDays().length">
+        <div class="time-column-header">Dia todo</div>
+        <div class="all-day-cell" *ngFor="let day of weekDays()" [class.today]="day.isToday">
+          <div
+            class="event-card all-day-event"
+            [class.status-done]="event.status === EEventStatus.Done"
+            [class.status-cancelled]="event.status === EEventStatus.Cancelled"
+            *ngFor="let event of getAllDayEvents(day)"
+            [ngStyle]="getEventStyle(event)"
+            draggable="true"
+            role="button"
+            tabindex="0"
+            (dragstart)="onDragStart(event)"
+            (dragover)="onEventDragOver(event, $event)"
+            (drop)="onEventDrop(event, $event)"
+            (click)="openEditEventDialog(event, $event)"
+            (keydown.enter)="openEditEventDialog(event, $event)"
+            (keydown.space)="openEditEventDialog(event, $event)"
+            [pTooltip]="getStatusLabel(event)"
+            tooltipPosition="top">
+
+            <i class="event-status-icon" [class]="getStatusIcon(event)"></i>
+            <span class="event-title">{{ event.subject }}</span>
+            <i class="pi pi-lock private-icon" *ngIf="event.targetUserId" [pTooltip]="'Só ' + getTargetUserName(event)" tooltipPosition="top"></i>
+
+            <button class="event-delete" (click)="deleteEvent(event, $event)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-body" [style.height.px]="timeSlots.length * ROW_HEIGHT">
+        <div class="time-column">
+          <div class="time-cell" *ngFor="let slot of timeSlots" [style.height.px]="ROW_HEIGHT">
             <span class="time-label">{{ slot.displayHour }}</span>
           </div>
+        </div>
 
+        <div class="day-column" *ngFor="let day of weekDays()" [class.today]="day.isToday">
           <div
-            class="day-cell"
-            *ngFor="let day of weekDays()"
-            [class.today]="day.isToday"
+            class="hour-cell"
+            *ngFor="let slot of timeSlots"
+            [style.height.px]="ROW_HEIGHT"
+            role="button"
+            tabindex="0"
             (click)="openEventDialog(day.date, slot.hour)"
+            (keydown.enter)="openEventDialog(day.date, slot.hour)"
+            (keydown.space)="openEventDialog(day.date, slot.hour)"
             (dragover)="onDragOver($event)"
             (drop)="onDrop($event, day.date, slot.hour)">
+          </div>
 
+          <div class="day-events-layer">
             <div
               class="event-card"
-              [class.all-day-event]="event.allDay"
-              [class.event-continuity-top]="event.allDay && isFirstSlot(day, slot.hour)"
-              [class.event-continuity-middle]="event.allDay && isMiddleSlot(day, slot.hour)"
-              [class.event-continuity-bottom]="event.allDay && isLastSlot(day, slot.hour)"
-              *ngFor="let event of getEventsForSlot(day, slot.hour)"
-              [ngStyle]="getEventStyle(event)"
+              [class.status-done]="item.event.status === EEventStatus.Done"
+              [class.status-cancelled]="item.event.status === EEventStatus.Cancelled"
+              *ngFor="let item of getLayoutedEvents(day)"
+              [ngStyle]="getPositionedEventStyle(item)"
               draggable="true"
-              (dragstart)="onDragStart(event)"
-              (click)="openEditEventDialog(event, $event)">
+              role="button"
+              tabindex="0"
+              (dragstart)="onDragStart(item.event)"
+              (dragover)="onEventDragOver(item.event, $event)"
+              (drop)="onEventDrop(item.event, $event)"
+              (click)="openEditEventDialog(item.event, $event)"
+              (keydown.enter)="openEditEventDialog(item.event, $event)"
+              (keydown.space)="openEditEventDialog(item.event, $event)">
 
               <div class="event-content">
-                <div class="event-title">{{ event.subject }}</div>
-                <div class="event-time">{{ getEventStartTime(event) }} - {{ getEventEndTime(event) }}</div>
-                <div class="event-description" *ngIf="event.description">{{ truncateDescription(event.description) }}</div>
+                <div class="event-title-row">
+                  <i class="event-status-icon" [class]="getStatusIcon(item.event)" [pTooltip]="getStatusLabel(item.event)" tooltipPosition="top"></i>
+                  <span class="event-title">{{ item.event.subject }}</span>
+                  <i class="pi pi-lock private-icon" *ngIf="item.event.targetUserId" [pTooltip]="'Só ' + getTargetUserName(item.event)" tooltipPosition="top"></i>
+                </div>
+                <div class="event-time">{{ getEventStartTime(item.event) }} - {{ getEventEndTime(item.event) }}</div>
+                <div class="event-description" *ngIf="item.event.description">{{ truncateDescription(item.event.description) }}</div>
               </div>
 
               <button
                 class="event-delete"
-                (click)="deleteEvent(event, $event)">
+                (click)="deleteEvent(item.event, $event)">
                 <i class="pi pi-times"></i>
               </button>
             </div>
@@ -157,18 +206,35 @@
     </div>
 
     <div class="form-field">
-      <label for="categoryColor">Prioridade do Evento</label>
-      <select
-        id="categoryColor"
-        [(ngModel)]="newEvent.categoryColor"
-        class="w-full">
-        <option
+      <span class="form-field-label">Cor do Evento</span>
+      <div class="color-swatches">
+        <button
+          type="button"
           *ngFor="let opt of categoryColorOptions"
-          [ngValue]="opt.value"
-          [style.color]="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+          class="color-swatch"
+          [class.selected]="newEvent.categoryColor === opt.value"
+          [style.background-color]="opt.value"
+          [pTooltip]="opt.label"
+          tooltipPosition="top"
+          (click)="newEvent.categoryColor = opt.value">
+          <i class="pi pi-check" *ngIf="newEvent.categoryColor === opt.value"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="targetUserId">Destinatário</label>
+      <p-dropdown
+        id="targetUserId"
+        [(ngModel)]="newEvent.targetUserId"
+        [options]="users()"
+        optionLabel="fullName"
+        optionValue="id"
+        [showClear]="true"
+        placeholder="Todos"
+        class="w-full">
+      </p-dropdown>
+      <small class="hint-text">Deixe em branco pra o evento aparecer pra todo mundo</small>
     </div>
   </div>
 

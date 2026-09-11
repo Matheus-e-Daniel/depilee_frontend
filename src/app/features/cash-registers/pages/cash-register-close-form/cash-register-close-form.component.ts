@@ -1,9 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormArray, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
+import { PaymentMethodDeclaration } from '../../models/cash-register.model';
 
 @Component({
   selector: 'app-cash-register-close-form',
@@ -12,37 +14,75 @@ import { TooltipModule } from 'primeng/tooltip';
   templateUrl: './cash-register-close-form.component.html',
   styleUrls: ['./cash-register-close-form.component.scss']
 })
-export class CashRegisterCloseFormComponent {
+export class CashRegisterCloseFormComponent implements OnChanges {
   @Input() visible = false;
   @Input() loading = false;
   @Input() cashRegisterId!: number;
-  @Output() confirm = new EventEmitter<{ finalBalance: number; notes?: string }>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() confirm = new EventEmitter<{ declaredAmounts: PaymentMethodDeclaration[]; notes?: string }>();
+  @Output() cancelled = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
-  form: FormGroup = this.fb.group({
-    finalBalance: [null, [Validators.required]],
+  private paymentMethodService = inject(PaymentMethodService);
+
+  loadingPaymentMethods = signal(false);
+
+  form = this.fb.group({
+    declarations: this.fb.array<ReturnType<typeof this.buildDeclarationGroup>>([]),
     notes: ['']
   });
 
-  ngOnChanges() {
+  get declarations(): FormArray {
+    return this.form.get('declarations') as FormArray;
+  }
+
+  private buildDeclarationGroup(paymentMethodId: number, paymentMethodName: string) {
+    return this.fb.group({
+      paymentMethodId: [paymentMethodId],
+      paymentMethodName: [paymentMethodName],
+      declaredAmount: [0, [Validators.required, Validators.min(0)]]
+    });
+  }
+
+  getTotal(): number {
+    return this.declarations.controls.reduce((sum, c) => sum + (Number(c.get('declaredAmount')?.value) || 0), 0);
+  }
+
+  ngOnChanges(): void {
     if (this.visible) {
-      this.form.reset();
+      this.form.get('notes')?.reset('');
+      this.loadPaymentMethods();
     }
   }
 
-  onConfirm() {
-    if (this.form.valid) {
+  private loadPaymentMethods(): void {
+    this.loadingPaymentMethods.set(true);
+    this.paymentMethodService.getAll().subscribe({
+      next: (response) => {
+        this.declarations.clear();
+        for (const method of response.data) {
+          this.declarations.push(this.buildDeclarationGroup(method.id, method.name));
+        }
+        this.loadingPaymentMethods.set(false);
+      },
+      error: () => this.loadingPaymentMethods.set(false)
+    });
+  }
+
+  onConfirm(): void {
+    if (this.form.valid && this.declarations.length > 0) {
       this.confirm.emit({
-        finalBalance: this.form.value.finalBalance,
-        notes: this.form.value.notes
+        declaredAmounts: this.declarations.value.map((d: { paymentMethodId: number; declaredAmount: number }) => ({
+          paymentMethodId: d.paymentMethodId,
+          declaredAmount: Number(d.declaredAmount) || 0
+        })),
+        notes: this.form.value.notes ?? undefined
       });
     } else {
       this.form.markAllAsTouched();
     }
   }
 
-  onCancel() {
-    this.cancel.emit();
+  onCancel(): void {
+    this.cancelled.emit();
   }
 }

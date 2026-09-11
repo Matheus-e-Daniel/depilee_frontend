@@ -9,7 +9,7 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { CashRegisterService } from '../../services/cash-register.service';
-import { CashRegister } from '../../models/cash-register.model';
+import { CashRegister, PaymentMethodDeclaration } from '../../models/cash-register.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -84,6 +84,10 @@ export class CashRegisterListComponent implements OnInit {
   closeLoading = signal(false);
   cashRegisterToClose: { id: number; notes: string } | null = null;
 
+  showDetailModal = signal(false);
+  detailLoading = signal(false);
+  cashRegisterDetail = signal<CashRegister | null>(null);
+
   ngOnInit(): void {
     this.loadCashRegisters();
   }
@@ -115,18 +119,19 @@ export class CashRegisterListComponent implements OnInit {
     this.showCloseModal.set(true);
   }
 
-  confirmCloseCashRegister(data: { finalBalance: number; notes?: string }): void {
+  confirmCloseCashRegister(data: { declaredAmounts: PaymentMethodDeclaration[]; notes?: string }): void {
     if (!this.cashRegisterToClose) return;
     this.closeLoading.set(true);
     this.cashRegisterService.closeCashRegister({
       cashRegisterId: this.cashRegisterToClose.id,
-      finalBalance: data.finalBalance,
+      declaredAmounts: data.declaredAmounts,
       notes: data.notes
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.closeLoading.set(false);
         this.showCloseModal.set(false);
         this.successModalService.show('Caixa fechado com sucesso!');
+        setTimeout(() => this.successModalService.hide(), 1500);
         this.loadCashRegisters();
         this.cashRegisterToClose = null;
       },
@@ -144,6 +149,27 @@ export class CashRegisterListComponent implements OnInit {
 
   getCloseMessage(): string {
     return `Tem certeza que deseja fechar o caixa "${this.cashRegisterToClose?.notes || ''}"? Informe o saldo final e observações.`;
+  }
+
+  openDetailModal(id: number): void {
+    this.detailLoading.set(true);
+    this.showDetailModal.set(true);
+    this.cashRegisterService.getById(String(id)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data }) => {
+        this.cashRegisterDetail.set(data);
+        this.detailLoading.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.detailLoading.set(false);
+        this.showDetailModal.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao carregar detalhamento do fechamento');
+      }
+    });
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal.set(false);
+    this.cashRegisterDetail.set(null);
   }
 
   newCashRegister(): void {

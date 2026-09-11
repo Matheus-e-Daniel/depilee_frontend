@@ -2,7 +2,7 @@ import { environment } from '../../../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Client, ClientFormData } from '../models/client.model';
+import { Client, ClientFormData, ClientQuickCreateData } from '../models/client.model';
 import { ApiResponse, PagedApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
@@ -24,8 +24,16 @@ export class ClientService {
     return this.http.post<ApiResponse<Client>>(this.apiUrl, client);
   }
 
+  quickCreate(client: ClientQuickCreateData): Observable<ApiResponse<Client>> {
+    return this.http.post<ApiResponse<Client>>(this.apiUrl, client);
+  }
+
   update(client: ClientFormData & { id: number }): Observable<ApiResponse<Client>> {
     return this.http.put<ApiResponse<Client>>(this.apiUrl, client);
+  }
+
+  adjustCredit(id: number, amount: number, reason?: string): Observable<ApiResponse<Client>> {
+    return this.http.post<ApiResponse<Client>>(`${this.apiUrl}/${id}/credit`, { amount, reason });
   }
 
   delete(id: number): Observable<ApiResponse<void>> {
