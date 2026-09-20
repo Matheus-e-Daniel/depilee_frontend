@@ -549,55 +549,6 @@
       }
     }
 
-    .card {
-      ::ng-deep .p-datatable {
-        .p-datatable-thead {
-          display: none;
-        }
-
-        .p-datatable-tbody {
-          tr {
-            display: flex;
-            flex-direction: column;
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 1rem;
-            border-radius: 12px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-            td {
-              padding: 0.75rem 0;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              border-bottom: 1px solid #f1f5f9;
-
-              &:last-child {
-                border-bottom: none;
-                padding-top: 1rem;
-              }
-
-              &::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: #64748b;
-                font-size: 0.85rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                margin-right: 1rem;
-              }
-
-              .action-buttons {
-                opacity: 1;
-                justify-content: center;
-                width: 100%;
-              }
-            }
-          }
-        }
-      }
-    }
   }
 }
 

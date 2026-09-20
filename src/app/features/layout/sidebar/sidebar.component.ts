@@ -21,6 +21,7 @@ export class SidebarComponent {
   private authService = inject(AuthService);
 
   isCollapsed = input(false);
+  mobileOpen = input(false);
 
   private allMenuItems: SidebarMenuItem[] = [
     { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },

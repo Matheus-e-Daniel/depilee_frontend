@@ -153,15 +153,9 @@
 }
 
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 2rem;
   margin-bottom: 2rem;
 
   .field {
-    &.col-12 { grid-column: span 12; }
-    &.md\:col-6 { grid-column: span 6; }
-
     label {
       color: #334155;
       font-weight: 600;
@@ -214,12 +208,6 @@
   .commission-settings-container { padding: 1.25rem; }
 
   .header h1 { font-size: 1.5rem; }
-
-  .form-grid {
-    gap: 1.5rem;
-
-    .field.md\:col-6 { grid-column: span 12; }
-  }
 
   .card ::ng-deep .p-card-body { padding: 1.5rem !important; }
 }

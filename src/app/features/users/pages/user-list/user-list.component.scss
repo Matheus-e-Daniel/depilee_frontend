@@ -332,26 +332,10 @@
     }
 
     .card {
-      ::ng-deep .p-datatable {
-        .p-datatable-thead {
-          tr th {
-            padding: 1rem;
-            font-size: 0.85rem;
-          }
-        }
-
-        .p-datatable-tbody {
-          tr td {
-            padding: 1rem;
-            font-size: 0.9rem;
-          }
-        }
-
-        .p-paginator {
-          padding: 1rem;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
+      ::ng-deep .p-datatable .p-paginator {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
     }
 

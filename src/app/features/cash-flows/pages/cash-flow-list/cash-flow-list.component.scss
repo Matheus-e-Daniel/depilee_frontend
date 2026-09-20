@@ -202,17 +202,7 @@
 
 .entry-form {
   .form-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
     gap: 1.25rem;
-  }
-
-  .col-12 { grid-column: span 12; }
-  .col-3 { grid-column: span 3; }
-  .col-6 { grid-column: span 6; }
-
-  @media (max-width: 768px) {
-    .form-grid > div { grid-column: span 12 !important; }
   }
 
   .field {
@@ -302,39 +292,4 @@
     padding: 1.25rem;
   }
 
-  .card {
-    ::ng-deep .p-datatable {
-      .p-datatable-thead {
-        display: none;
-      }
-
-      .p-datatable-tbody tr {
-        display: flex;
-        flex-direction: column;
-        padding: 1.25rem;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-        td {
-          padding: 0.6rem 0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid #f1f5f9;
-
-          &::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #64748b;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-right: 1rem;
-          }
-        }
-      }
-    }
-  }
 }

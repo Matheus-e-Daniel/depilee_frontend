@@ -4,15 +4,8 @@
   animation: slideIn 0.4s ease-out;
 
   .form-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 2rem;
-
     .field {
       position: relative;
-
-      &.col-12 { grid-column: span 12; }
-      &.col-6 { grid-column: span 6; }
 
       label {
         color: #334155;

@@ -93,3 +93,103 @@ body {
     }
   }
 }
+
+// ==========================================================================
+// Grid de formulário (padrão único, mobile-first, usado por todos os *-form)
+// Substitui as definições locais duplicadas de .form-grid / .field.col-* /
+// .field.md\:col-* que existiam em cada componente de formulário.
+// Uso: <div class="form-grid"><div class="field col-12 md:col-6">...</div></div>
+// - "col-N" define o span padrão (mobile e acima, salvo override).
+// - "md:col-N" sobrescreve o span a partir de 768px.
+// ==========================================================================
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+
+  .field {
+    position: relative;
+
+    @for $i from 1 through 12 {
+      &.col-#{$i} {
+        grid-column: span #{$i};
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .form-grid .field {
+    @for $i from 1 through 12 {
+      &.md\:col-#{$i} {
+        grid-column: span #{$i};
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-grid {
+    gap: 1.25rem;
+  }
+
+  // Rede de segurança: empilha todos os campos em telas muito pequenas,
+  // independente do col-N/md:col-N definido no HTML.
+  .form-grid .field {
+    grid-column: span 12 !important;
+  }
+}
+
+// ==========================================================================
+// Tabela responsiva (padrão único para p-table)
+// Aplicar styleClass="responsive-table" no <p-table>. Abaixo de 768px,
+// esconde o thead e reflow cada linha em card, usando o atributo
+// data-label="Rótulo" em cada <td> para exibir o rótulo via ::before.
+// ==========================================================================
+.responsive-table {
+  @media (max-width: 768px) {
+    ::ng-deep {
+      .p-datatable-thead {
+        display: none;
+      }
+
+      .p-datatable-tbody > tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        background: #fff;
+      }
+
+      .p-datatable-tbody > tr > td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        text-align: right;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 0.6rem 0;
+
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: #64748b;
+          text-align: left;
+          margin-right: auto;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}

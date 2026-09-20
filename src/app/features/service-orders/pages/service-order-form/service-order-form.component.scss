@@ -287,21 +287,8 @@
     }
 
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 2rem;
-
       .field {
         position: relative;
-
-        &.col-12 { grid-column: span 12; }
-        &.col-6 { grid-column: span 6; }
-        &.col-4 { grid-column: span 4; }
-
-        @media (min-width: 768px) {
-          &.md\:col-6 { grid-column: span 6; }
-          &.md\:col-4 { grid-column: span 4; }
-        }
 
         label {
           color: #334155;
@@ -966,24 +953,6 @@
     }
 
     .service-order-form {
-      .form-grid {
-        gap: 1.5rem;
-
-        .field {
-          &.col-6,
-          &.col-4 {
-            grid-column: span 12;
-          }
-
-          @media (min-width: 768px) {
-            &.md\:col-6,
-            &.md\:col-4 {
-              grid-column: span 12;
-            }
-          }
-        }
-      }
-
       .items-section {
         .items-header {
           flex-direction: column;
@@ -1178,10 +1147,6 @@
     }
 
     .service-order-form {
-      .form-grid {
-        gap: 1.25rem;
-      }
-
       .items-section {
         .items-header {
           .items-title-wrapper {

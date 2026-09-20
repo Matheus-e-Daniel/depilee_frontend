@@ -93,14 +93,8 @@
 
   .category-form {
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 2rem;
-
       .field {
         position: relative;
-
-        &.col-12 { grid-column: span 12; }
 
         label {
           color: #334155;
@@ -303,10 +297,6 @@
     }
 
     .category-form {
-      .form-grid {
-        gap: 1.5rem;
-      }
-
       .form-actions {
         flex-direction: row;
         justify-content: flex-end;
@@ -343,10 +333,6 @@
     }
 
     .category-form {
-      .form-grid {
-        gap: 1.25rem;
-      }
-
       .form-actions {
         flex-direction: column;
         gap: 0.75rem;

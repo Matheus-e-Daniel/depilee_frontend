@@ -120,17 +120,8 @@
     }
 
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 2rem;
-
       .field {
         position: relative;
-
-        &.col-12 { grid-column: span 12; }
-        &.col-6 { grid-column: span 6; }
-        &.col-4 { grid-column: span 4; }
-        &.col-3 { grid-column: span 3; }
 
         label {
           color: #334155;
@@ -485,18 +476,6 @@
     }
 
     .client-form {
-      .form-grid {
-        gap: 1.5rem;
-
-        .field {
-          &.col-6,
-          &.col-4,
-          &.col-3 {
-            grid-column: span 12;
-          }
-        }
-      }
-
       .form-actions {
         flex-direction: row;
         justify-content: flex-end;
@@ -533,10 +512,6 @@
     }
 
     .client-form {
-      .form-grid {
-        gap: 1.25rem;
-      }
-
       .form-actions {
         flex-direction: column;
         gap: 0.75rem;

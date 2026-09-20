@@ -116,16 +116,25 @@
     left: -250px;
     width: 250px;
     height: calc(100vh - 60px);
-    z-index: 1000;
+    z-index: 999;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     transition: left 0.3s ease;
 
     &.collapsed {
-      left: -250px;
       width: 250px;
+
+      .sidebar-logo span,
+      .menu-items a span {
+        display: block;
+      }
+
+      .menu-items a {
+        justify-content: flex-start;
+        padding: 12px 20px;
+      }
     }
 
-    &:not(.collapsed) {
+    &.mobile-open {
       left: 0;
     }
 

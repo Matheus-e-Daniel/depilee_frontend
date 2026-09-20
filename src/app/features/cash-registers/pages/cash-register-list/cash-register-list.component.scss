@@ -633,36 +633,6 @@
       }
     }
 
-    .card {
-      ::ng-deep .p-datatable {
-        .p-datatable-thead {
-          display: none;
-        }
-
-        .p-datatable-tbody {
-          tr {
-            display: flex;
-            flex-direction: column;
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 1rem;
-            border-radius: 12px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-            td {
-              border: none;
-              padding: 1rem 0.5rem;
-              color: #334155;
-              font-size: 0.95rem;
-              width: 100%;
-              display: block;
-              text-align: left;
-            }
-          }
-        }
-      }
-    }
   }
 }
 
