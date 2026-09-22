@@ -504,8 +504,8 @@ export class CalendarEventsComponent implements OnInit {
 
   getEventStyle(event: CalendarEvent): Record<string, string> {
     return {
-      'background-color': event.categoryColor || '#3b82f6',
-      'border-left': `4px solid ${this.darkenColor(event.categoryColor || '#3b82f6')}`
+      'background-color': event.categoryColor || '#f59e0b',
+      'border-left': `4px solid ${this.darkenColor(event.categoryColor || '#f59e0b')}`
     };
   }
 

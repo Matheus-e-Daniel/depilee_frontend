@@ -1,0 +1,80 @@
+[1m[33m[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`[39m[22m
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m224.51 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m90.20 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m [36m22.55 kB[39m[2m | [22m
+[32mchunk-F7XQECEX.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m3.68 kB[39m[2m | [22m
+[32mchunk-DO6WA2S2.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.07 kB[39m[2m | [22m
+[32mchunk-KPPAZBJQ.js[39m  [2m | [22m[2m-[22m                            [2m | [22m[36m875 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m[1m342.89 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-XS5EM7UD.js[39m  [2m | [22m[2mservice-order-form-component[22m [2m | [22m[36m136.51 kB[39m[2m | [22m
+[32mchunk-DEN2Q66X.js[39m  [2m | [22m[2mcommissions-component[22m        [2m | [22m [36m99.51 kB[39m[2m | [22m
+[32mchunk-UJL26KUP.js[39m  [2m | [22m[2mcalendar-events-component[22m    [2m | [22m [36m73.81 kB[39m[2m | [22m
+[32mchunk-ZAGBD27L.js[39m  [2m | [22m[2mclient-form-component[22m        [2m | [22m [36m68.92 kB[39m[2m | [22m
+[32mchunk-MTIGSTI4.js[39m  [2m | [22m[2mcash-register-list-component[22m [2m | [22m [36m65.27 kB[39m[2m | [22m
+[32mchunk-FNZTJTEU.js[39m  [2m | [22m[2mproduct-form-component[22m       [2m | [22m [36m58.18 kB[39m[2m | [22m
+[32mchunk-OD3MYXPV.js[39m  [2m | [22m[2mprofile-component[22m            [2m | [22m [36m54.97 kB[39m[2m | [22m
+[32mchunk-QLIC2ELC.js[39m  [2m | [22m[2muser-form-component[22m          [2m | [22m [36m51.78 kB[39m[2m | [22m
+[32mchunk-I2H7SIB2.js[39m  [2m | [22m[2mdashboard-component[22m          [2m | [22m [36m50.52 kB[39m[2m | [22m
+[32mchunk-LXHNH5KV.js[39m  [2m | [22m[2mservice-order-list-component[22m [2m | [22m [36m43.69 kB[39m[2m | [22m
+[32mchunk-T3B6N5CT.js[39m  [2m | [22m[2mproduct-list-component[22m       [2m | [22m [36m43.59 kB[39m[2m | [22m
+[32mchunk-VZTYTAW3.js[39m  [2m | [22m[2mpayment-method-list-component[22m[2m | [22m [36m40.58 kB[39m[2m | [22m
+[32mchunk-XHLTC7RK.js[39m  [2m | [22m[2mclient-list-component[22m        [2m | [22m [36m39.34 kB[39m[2m | [22m
+[32mchunk-AT3IW2PM.js[39m  [2m | [22m[2mservice-form-component[22m       [2m | [22m [36m37.91 kB[39m[2m | [22m
+[32mchunk-GFQT3ARK.js[39m  [2m | [22m[2mpayment-method-form-component[22m[2m | [22m [36m37.88 kB[39m[2m | [22m
+[2m...and 30 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [13.796 seconds]
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m[36m22.55 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mchunk-YXUNA5D5.js[39m  [2m | [22m[2mlogin-component[22m[2m | [22m[36m25.12 kB[39m[2m | [22m
+
+Application bundle generation complete. [12.451 seconds]
+
+Page reload sent to client(s).
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m[36m22.55 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mchunk-YPZMC2RY.js[39m  [2m | [22m[2mlogin-component[22m[2m | [22m[36m25.05 kB[39m[2m | [22m
+
+Application bundle generation complete. [2.944 seconds]
+
+Page reload sent to client(s).
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m[36m22.55 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mchunk-W22PYZS4.js[39m  [2m | [22m[2mlogin-component[22m[2m | [22m[36m25.64 kB[39m[2m | [22m
+
+Application bundle generation complete. [2.876 seconds]
+
+Page reload sent to client(s).
+[33m❯[39m Changes detected. Rebuilding...
+[32m✔[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m[36m22.55 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m[1mRaw size[22m
+[32mchunk-HHNIAWHM.js[39m  [2m | [22m[2mlogin-component[22m[2m | [22m[36m25.64 kB[39m[2m | [22m
+
+Application bundle generation complete. [4.012 seconds]
+
+Page reload sent to client(s).

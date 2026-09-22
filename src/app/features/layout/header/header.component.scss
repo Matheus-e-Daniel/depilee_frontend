@@ -28,7 +28,7 @@
   color: #43a047;
 }
 .header {
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -128,7 +128,7 @@
             background-color: #ff4757;
             color: white;
             border-radius: 50%;
-            border: 2px solid #1565c0;
+            border: 2px solid #d97706;
             z-index: 10;
             padding: 0 2px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -247,7 +247,7 @@
         }
 
         .notification-icon {
-          color: #1976d2;
+          color: #f59e0b;
           margin-right: 0.75rem;
           font-size: 1.1rem;
         }
@@ -301,14 +301,14 @@
         }
 
         &.p-menuitem-active > .p-menuitem-link {
-          background: #e3f2fd;
+          background: #fef3e2;
 
           .p-menuitem-text {
-            color: #1976d2;
+            color: #f59e0b;
           }
 
           .p-menuitem-icon {
-            color: #1976d2;
+            color: #f59e0b;
           }
         }
       }

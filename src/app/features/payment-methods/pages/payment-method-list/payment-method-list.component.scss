@@ -26,11 +26,11 @@
 
       i {
         font-size: 1.25rem;
-        color: #3b82f6;
+        color: #f59e0b;
         background: white;
         padding: 0.5rem;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
       }
 
       h3 {
@@ -99,7 +99,7 @@
         color: #334155 !important;
         transition: all 0.3s ease !important;
         min-height: 48px !important;
-        box-shadow: 0 2px 8px rgba(59,130,246,0.04) !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11,0.04) !important;
 
         &::placeholder {
           color: #94a3b8 !important;
@@ -107,14 +107,14 @@
         }
 
         &:hover {
-          border-color: #3b82f6 !important;
+          border-color: #f59e0b !important;
           background: #f1f5f9 !important;
         }
 
         &:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
-          background: #e0e7ff !important;
+          border-color: #f59e0b !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12) !important;
+          background: #fef3e2 !important;
         }
       }
 
@@ -126,17 +126,17 @@
         background: #f8fafc;
         min-height: 48px;
         font-size: 1.08rem;
-        box-shadow: 0 2px 8px rgba(59,130,246,0.04);
+        box-shadow: 0 2px 8px rgba(245, 158, 11,0.04);
 
         &:hover {
-          border-color: #3b82f6;
+          border-color: #f59e0b;
           background: #f1f5f9;
         }
 
         &.p-focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-          background: #e0e7ff;
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+          background: #fef3e2;
         }
 
         .p-dropdown-label {
@@ -154,7 +154,7 @@
       ::ng-deep .p-dropdown-panel {
         z-index: 1200 !important;
         border-radius: 12px !important;
-        box-shadow: 0 8px 32px rgba(59,130,246,0.10);
+        box-shadow: 0 8px 32px rgba(245, 158, 11,0.10);
         padding: 0.5rem 0;
       }
 
@@ -172,8 +172,8 @@
 
         &:hover,
         &.p-highlight {
-          background: #e0e7ff !important;
-          color: #3b82f6 !important;
+          background: #fef3e2 !important;
+          color: #f59e0b !important;
         }
       }
 
@@ -205,7 +205,7 @@
       left: 0;
       width: 120px;
       height: 3px;
-      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      background: linear-gradient(90deg, #f59e0b 0%, #1a1a1a 100%);
       border-radius: 0 0 3px 3px;
     }
 
@@ -231,7 +231,7 @@
     }
 
     ::ng-deep .p-button {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       border: none;
       border-radius: 12px;
       padding: 0.875rem 2rem;
@@ -240,7 +240,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 
       &::before {
         content: '';
@@ -255,7 +255,7 @@
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 
         &::before {
           left: 100%;
@@ -292,11 +292,11 @@
 
         i {
           font-size: 1.25rem;
-          color: #3b82f6;
+          color: #f59e0b;
           background: white;
           padding: 0.5rem;
           border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
 
         h3 {
@@ -343,16 +343,16 @@
           color: #334155;
           transition: all 0.3s ease;
           min-height: 48px;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.04);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.04);
 
           &:hover {
-            border-color: #3b82f6;
+            border-color: #f59e0b;
             background: #f1f5f9;
           }
 
           &:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
             background: white;
           }
         }
@@ -363,10 +363,10 @@
           border-radius: 12px;
           background: #f8fafc;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.04);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.04);
 
           &:hover {
-            border-color: #3b82f6;
+            border-color: #f59e0b;
             background: #f1f5f9;
           }
 
@@ -481,9 +481,9 @@
             transition: all 0.2s ease;
 
             &.p-highlight {
-              background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
               color: white;
-              box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+              box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
             }
 
             &:not(.p-highlight):hover {
@@ -518,16 +518,16 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
         &.p-button-primary {
-          background: rgba(59, 130, 246, 0.1);
-          border: 1px solid rgba(59, 130, 246, 0.2);
-          color: #3b82f6;
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
 
           &:hover {
-            background: #3b82f6;
-            border-color: #3b82f6;
+            background: #f59e0b;
+            border-color: #f59e0b;
             color: white;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
           }
         }
 
@@ -607,9 +607,9 @@
       transition: all 0.3s ease;
 
       &:hover {
-        border-color: #3b82f6;
-        color: #3b82f6;
-        background: rgba(59, 130, 246, 0.05);
+        border-color: #f59e0b;
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.05);
         transform: translateY(-1px);
       }
 

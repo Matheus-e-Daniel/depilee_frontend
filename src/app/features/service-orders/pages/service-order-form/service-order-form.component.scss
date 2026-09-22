@@ -20,7 +20,7 @@
       left: 0;
       width: 120px;
       height: 3px;
-      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      background: linear-gradient(90deg, #f59e0b 0%, #1a1a1a 100%);
       border-radius: 0 0 3px 3px;
     }
 
@@ -46,10 +46,10 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
       &:hover {
-        background: #3b82f6;
-        border-color: #3b82f6;
+        background: #f59e0b;
+        border-color: #f59e0b;
         transform: translateX(-3px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 
         .pi {
           color: white !important;
@@ -132,9 +132,9 @@
         }
 
         &.p-highlight .p-tabview-nav-link {
-          border-bottom-color: #3b82f6;
-          color: #3b82f6;
-          background: #eff6ff;
+          border-bottom-color: #f59e0b;
+          color: #f59e0b;
+          background: #fdf6ec;
         }
 
         &.p-disabled .p-tabview-nav-link {
@@ -183,7 +183,7 @@
                             border-bottom: none;
                           }
                           &:hover {
-                            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                            background: linear-gradient(135deg, #fdf6ec 0%, #fdf6ec 100%);
                           }
                           &.paid {
                             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -199,9 +199,9 @@
                           }
                           .installment-number {
                             font-weight: 600;
-                            color: #3b82f6;
+                            color: #f59e0b;
                             font-size: 1rem;
-                            background: #eff6ff;
+                            background: #fdf6ec;
                             padding: 0.25rem 0.75rem;
                             border-radius: 6px;
                             display: inline-block;
@@ -219,12 +219,12 @@
                               border-radius: 6px;
                               transition: all 0.2s ease;
                               &:hover {
-                                border-color: #3b82f6;
-                                background: #eff6ff;
+                                border-color: #f59e0b;
+                                background: #fdf6ec;
                               }
                               &.p-highlight {
-                                background: #3b82f6;
-                                border-color: #3b82f6;
+                                background: #f59e0b;
+                                border-color: #f59e0b;
                               }
                               .p-checkbox-icon {
                                 font-size: 14px;
@@ -270,11 +270,11 @@
 
         i {
           font-size: 1.5rem;
-          color: #3b82f6;
+          color: #f59e0b;
           background: white;
           padding: 0.5rem;
           border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
 
         h2 {
@@ -320,8 +320,8 @@
           }
 
           &:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
             outline: none;
           }
 
@@ -356,8 +356,8 @@
           }
 
           &:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
             outline: none;
           }
         }
@@ -374,8 +374,8 @@
           }
 
           &:not(.p-disabled).p-focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
           }
 
           &.ng-invalid.ng-touched {
@@ -415,7 +415,7 @@
                 }
 
                 &.p-highlight {
-                  background: #3b82f6;
+                  background: #f59e0b;
                   color: white;
                 }
               }
@@ -442,8 +442,8 @@
             }
 
             &:focus {
-              border-color: #3b82f6;
-              box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+              border-color: #f59e0b;
+              box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
               outline: none;
             }
 
@@ -511,7 +511,7 @@
       }
 
       ::ng-deep .p-button-primary {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         border: none;
         position: relative;
         overflow: hidden;
@@ -529,7 +529,7 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 
           &::before {
             left: 100%;
@@ -551,8 +551,8 @@
       padding: 1.75rem 2rem;
       margin-bottom: 2.5rem;
       border-radius: 16px;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
 
       .order-total-icon {
         display: flex;
@@ -622,7 +622,7 @@
         border-radius: 12px;
         font-weight: 600;
         min-width: 200px;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         border: none;
         position: relative;
         overflow: hidden;
@@ -640,7 +640,7 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 
           &::before {
             left: 100%;
@@ -746,11 +746,11 @@
 
           i {
             font-size: 1.5rem;
-            color: #3b82f6;
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #f59e0b;
+            background: linear-gradient(135deg, #fdf6ec 0%, #fef3e2 100%);
             padding: 0.75rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
           }
 
           h2 {
@@ -823,12 +823,12 @@
               justify-content: center;
               width: 40px;
               height: 40px;
-              background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
               color: white;
               border-radius: 12px;
               font-weight: 700;
               font-size: 1.1rem;
-              box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+              box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
             }
 
             h3 {
@@ -1041,7 +1041,7 @@
         }
 
         &:hover {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          background: linear-gradient(135deg, #fdf6ec 0%, #fdf6ec 100%);
         }
 
         &.paid {
@@ -1061,9 +1061,9 @@
 
         .installment-number {
           font-weight: 600;
-          color: #3b82f6;
+          color: #f59e0b;
           font-size: 1rem;
-          background: #eff6ff;
+          background: #fdf6ec;
           padding: 0.25rem 0.75rem;
           border-radius: 6px;
           display: inline-block;
@@ -1084,13 +1084,13 @@
             transition: all 0.2s ease;
 
             &:hover {
-              border-color: #3b82f6;
-              background: #eff6ff;
+              border-color: #f59e0b;
+              background: #fdf6ec;
             }
 
             &.p-highlight {
-              background: #3b82f6;
-              border-color: #3b82f6;
+              background: #f59e0b;
+              border-color: #f59e0b;
             }
 
             .p-checkbox-icon {

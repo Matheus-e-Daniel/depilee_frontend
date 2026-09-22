@@ -40,7 +40,7 @@
 
     i {
       font-size: 2rem;
-      color: #1976d2;
+      color: #f59e0b;
     }
 
     span {
@@ -77,15 +77,15 @@
 
       &:hover {
         background: #e0e0e0;
-        color: #1976d2;
+        color: #f59e0b;
       }
 
       &.active {
-        background: #1976d2;
-        color: white;
+        background: #1a1a1a;
+        color: #f59e0b;
 
         i {
-          color: white;
+          color: #f59e0b;
         }
       }
     }

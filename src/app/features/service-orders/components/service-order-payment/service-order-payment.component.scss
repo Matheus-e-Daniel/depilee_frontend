@@ -37,8 +37,8 @@
         }
 
         &:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
           outline: none;
         }
 
@@ -73,8 +73,8 @@
         }
 
         &:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
           outline: none;
         }
       }
@@ -91,8 +91,8 @@
         }
 
         &:not(.p-disabled).p-focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
         }
 
         &.ng-invalid.ng-touched {
@@ -132,7 +132,7 @@
               }
 
               &.p-highlight {
-                background: #3b82f6;
+                background: #f59e0b;
                 color: white;
               }
             }
@@ -159,8 +159,8 @@
           }
 
           &:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
             outline: none;
           }
 

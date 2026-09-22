@@ -62,11 +62,13 @@
             type="submit"
             [disabled]="isLoading()">
             <span class="button-content">
-              Entrar no Sistema
+              <span class="button-label" [class.is-loading]="isLoading()">Entrar no Sistema</span>
               <p-progressSpinner
-                *ngIf="isLoading()"
-                styleClass="button-spinner"
-                strokeWidth="4">
+                class="button-spinner"
+                [class.is-visible]="isLoading()"
+                [style]="{width: '28px', height: '28px'}"
+                strokeWidth="4"
+                [attr.aria-hidden]="!isLoading()">
               </p-progressSpinner>
             </span>
           </button>
@@ -76,7 +78,7 @@
           *ngIf="errorMessage()"
           severity="error"
           [text]="errorMessage()"
-          class="mt-4 w-full error-message">
+          class="error-message">
         </p-message>
       </form>
     </div>
