@@ -201,7 +201,7 @@ export class DashboardComponent implements OnInit {
       duracao,
       statusLabel: statusInfo.label,
       statusClass: statusInfo.cssClass,
-      color: event.categoryColor || '#3b82f6'
+      color: event.categoryColor || '#f59e0b'
     };
   }
 
@@ -268,7 +268,7 @@ export class DashboardComponent implements OnInit {
         {
           label: 'Total de clientes',
           data: values,
-          borderColor: '#3B82F6',
+          borderColor: '#f59e0b',
           tension: 0.4,
           fill: false
         }

@@ -19,7 +19,7 @@
     <p-table
       [value]="orders()"
       [loading]="loading()"
-      styleClass="p-datatable-striped"
+      styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
       [showCurrentPageReport]="true"
@@ -40,7 +40,7 @@
 
       <ng-template pTemplate="body" let-order>
         <tr>
-          <td>
+          <td data-label="Expandir">
             <button
               type="button"
               pButton
@@ -49,18 +49,18 @@
               (click)="toggleRow(order.id)">
             </button>
           </td>
-          <td>{{ order.orderNumber }}</td>
-          <td>{{ order.clientName || 'N/A' }}</td>
-          <td>
+          <td data-label="Número da Ordem">{{ order.orderNumber }}</td>
+          <td data-label="Cliente">{{ order.clientName || 'N/A' }}</td>
+          <td data-label="Status">
             <p-tag
               [value]="getStatusLabel(order.orderStatus)"
               [severity]="getStatusSeverity(order.orderStatus)">
             </p-tag>
           </td>
-          <td>{{ order.discount ? order.discount + '%' : '0%' }}</td>
-          <td>{{ order.total | currency:'BRL' }}</td>
-          <td>{{ order.cashRegisterName || 'N/A' }}</td>
-          <td>
+          <td data-label="Desconto">{{ order.discount ? order.discount + '%' : '0%' }}</td>
+          <td data-label="Total">{{ order.total | currency:'BRL' }}</td>
+          <td data-label="Caixa">{{ order.cashRegisterName || 'N/A' }}</td>
+          <td data-label="Ações">
             <div class="action-buttons">
               <button
                 pButton
@@ -113,7 +113,7 @@
               <h3 class="mb-3">Itens da Ordem</h3>
               <p-table
                 [value]="orderItems[order.id] || []"
-                styleClass="p-datatable-sm">
+                styleClass="p-datatable-sm responsive-table">
                 <ng-template pTemplate="header">
                   <tr>
                     <th>Tipo</th>
@@ -125,16 +125,16 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                   <tr>
-                    <td>
+                    <td data-label="Tipo">
                       <p-tag
                         [value]="getItemType(item)"
                         [severity]="getItemType(item) === 'Produto' ? 'success' : 'info'">
                       </p-tag>
                     </td>
-                    <td>{{ getItemName(item) }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.unitPrice | currency:'BRL' }}</td>
-                    <td>{{ (item.quantity * item.unitPrice) | currency:'BRL' }}</td>
+                    <td data-label="Item">{{ getItemName(item) }}</td>
+                    <td data-label="Quantidade">{{ item.quantity }}</td>
+                    <td data-label="Preço Unitário">{{ item.unitPrice | currency:'BRL' }}</td>
+                    <td data-label="Total">{{ (item.quantity * item.unitPrice) | currency:'BRL' }}</td>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">

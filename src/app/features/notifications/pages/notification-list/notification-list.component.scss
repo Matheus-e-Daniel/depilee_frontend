@@ -21,7 +21,7 @@
       left: 0;
       width: 120px;
       height: 3px;
-      background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+      background: linear-gradient(90deg, #f59e0b 0%, #1a1a1a 100%);
       border-radius: 0 0 3px 3px;
     }
 
@@ -101,7 +101,7 @@
 
             .pi {
               margin-right: 0.5rem;
-              color: #3b82f6;
+              color: #f59e0b;
             }
 
             .action-buttons {
@@ -126,13 +126,13 @@
       border-radius: 10px;
 
       &.p-button-primary {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        color: #3b82f6;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
 
         &:hover:not(:disabled) {
-          background: #3b82f6;
-          border-color: #3b82f6;
+          background: #f59e0b;
+          border-color: #f59e0b;
           color: white;
         }
       }
@@ -188,39 +188,5 @@
 @media (max-width: 768px) {
   .notification-list-container {
     padding: 1.25rem;
-
-    .card ::ng-deep .p-datatable {
-      .p-datatable-thead {
-        display: none;
-      }
-
-      .p-datatable-tbody tr {
-        display: flex;
-        flex-direction: column;
-        padding: 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-        td {
-          padding: 0.75rem 0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid #f1f5f9;
-
-          &::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #64748b;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-right: 1rem;
-          }
-        }
-      }
-    }
   }
 }

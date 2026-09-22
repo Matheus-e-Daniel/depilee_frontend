@@ -127,7 +127,8 @@
 
 <p-dialog
   [(visible)]="showEventDialog"
-  [style]="{width: '450px'}"
+  [style]="{width: '560px'}"
+  [breakpoints]="{'768px': '92vw'}"
   [header]="getDialogTitle()"
   [modal]="true"
   [closable]="true"

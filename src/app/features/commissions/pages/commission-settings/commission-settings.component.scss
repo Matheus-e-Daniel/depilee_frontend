@@ -15,8 +15,8 @@
       &:not(.p-disabled):hover { border-color: #cbd5e1; }
 
       &:not(.p-disabled).p-focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
       }
 
       .p-dropdown-label {
@@ -44,15 +44,15 @@
 
         &:hover { border-color: #cbd5e1; }
         &:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          border-color: #f59e0b;
+          box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
           outline: none;
         }
       }
     }
 
     .p-button.p-button-primary {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       border: none;
       border-radius: 12px;
       padding: 0.875rem 2rem;
@@ -65,7 +65,7 @@
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
       }
 
       &:disabled {
@@ -103,7 +103,7 @@
     left: 0;
     width: 120px;
     height: 3px;
-    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    background: linear-gradient(90deg, #f59e0b 0%, #1a1a1a 100%);
     border-radius: 0 0 3px 3px;
   }
 
@@ -153,15 +153,9 @@
 }
 
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 2rem;
   margin-bottom: 2rem;
 
   .field {
-    &.col-12 { grid-column: span 12; }
-    &.md\:col-6 { grid-column: span 6; }
-
     label {
       color: #334155;
       font-weight: 600;
@@ -188,7 +182,7 @@
 
   .pi-spinner {
     font-size: 2.5rem;
-    color: #3b82f6;
+    color: #f59e0b;
   }
 
   p {
@@ -214,12 +208,6 @@
   .commission-settings-container { padding: 1.25rem; }
 
   .header h1 { font-size: 1.5rem; }
-
-  .form-grid {
-    gap: 1.5rem;
-
-    .field.md\:col-6 { grid-column: span 12; }
-  }
 
   .card ::ng-deep .p-card-body { padding: 1.5rem !important; }
 }

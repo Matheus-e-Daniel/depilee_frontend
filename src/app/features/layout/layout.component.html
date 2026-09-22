@@ -1,7 +1,9 @@
 <div class="layout-container">
   <app-header (toggleSidebar)="toggleSidebar()"></app-header>
 
-  <app-sidebar [isCollapsed]="sidebarCollapsed()"></app-sidebar>
+  <div class="sidebar-backdrop" [class.visible]="mobileMenuOpen()" (click)="closeMobileMenu()"></div>
+
+  <app-sidebar [isCollapsed]="sidebarCollapsed()" [mobileOpen]="mobileMenuOpen()"></app-sidebar>
 
   <main class="content" [class.collapsed]="sidebarCollapsed()">
     <div class="content-wrapper">

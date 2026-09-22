@@ -1,0 +1,89 @@
+
+Linting "depilee_frontend"...
+
+C:\Development\depilee_frontend\src\app\features\brands\pages\brand-list\brand-list.component.html
+  25:7  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\calendar-events\calendar-events.component.html
+    6:9   error  <button> should have content                                                            @angular-eslint/template/elements-content
+    7:9   error  <button> should have content                                                            @angular-eslint/template/elements-content
+    8:9   error  <button> should have content                                                            @angular-eslint/template/elements-content
+   37:11  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+   37:11  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+   70:11  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+   70:11  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+   80:13  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+   80:13  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+  196:7   error  A label component must be associated with a form element                                @angular-eslint/template/label-has-associated-control
+
+C:\Development\depilee_frontend\src\app\features\cash-registers\pages\cash-register-close-form\cash-register-close-form.component.html
+  15:9  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  57:9  error  <button> should have content                              @angular-eslint/template/elements-content
+  58:9  error  <button> should have content                              @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\cash-registers\pages\cash-register-list\cash-register-list.component.html
+  24:7  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\categories\pages\category-list\category-list.component.html
+  24:7  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\clients\pages\client-form\client-form.component.html
+   28:15  error  <button> should have content  @angular-eslint/template/elements-content
+  318:5   error  <button> should have content  @angular-eslint/template/elements-content
+  319:5   error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\commissions\pages\commission-apply\commission-apply.component.html
+  109:11  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  198:26  error  Expected `!==` but received `!=`                          @angular-eslint/template/eqeqeq
+
+C:\Development\depilee_frontend\src\app\features\commissions\pages\commission-history\commission-history.component.html
+  28:9  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  44:9  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  56:9  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  68:9  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+
+C:\Development\depilee_frontend\src\app\features\dashboard\dashboard.component.html
+   19:7   error  <button> should have content  @angular-eslint/template/elements-content
+  196:11  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\layout\header\header.component.html
+  68:7  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+  68:7  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+
+C:\Development\depilee_frontend\src\app\features\products\pages\product-form\product-form.component.html
+  229:5  error  <button> should have content  @angular-eslint/template/elements-content
+  230:5  error  <button> should have content  @angular-eslint/template/elements-content
+  260:5  error  <button> should have content  @angular-eslint/template/elements-content
+  261:5  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\roles\pages\role-form\role-form.component.html
+  38:13  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+
+C:\Development\depilee_frontend\src\app\features\roles\pages\role-list\role-list.component.html
+  25:7  error  <button> should have content  @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\features\service-orders\pages\service-order-form\service-order-form.component.html
+  499:17  error  A label component must be associated with a form element  @angular-eslint/template/label-has-associated-control
+  627:5   error  <button> should have content                              @angular-eslint/template/elements-content
+  628:5   error  <button> should have content                              @angular-eslint/template/elements-content
+  665:5   error  <button> should have content                              @angular-eslint/template/elements-content
+  666:5   error  <button> should have content                              @angular-eslint/template/elements-content
+  690:5   error  <button> should have content                              @angular-eslint/template/elements-content
+  691:5   error  <button> should have content                              @angular-eslint/template/elements-content
+
+C:\Development\depilee_frontend\src\app\shared\components\confirmation-modal\confirmation-modal.component.html
+  1:1  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+  1:1  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+
+C:\Development\depilee_frontend\src\app\shared\components\error-modal\error-modal.component.html
+  1:1  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+  1:1  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+
+C:\Development\depilee_frontend\src\app\shared\components\success-modal\success-modal.component.html
+  1:1  error  click must be accompanied by either keyup, keydown or keypress event for accessibility  @angular-eslint/template/click-events-have-key-events
+  1:1  error  Elements with interaction handlers must be focusable                                    @angular-eslint/template/interactive-supports-focus
+
+✖ 48 problems (48 errors, 0 warnings)
+
+[1m[31mLint errors found in the listed files.
+[39m[22m
