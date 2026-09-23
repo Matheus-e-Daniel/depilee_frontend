@@ -5,10 +5,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
 import { BrandService } from '../../services/brand.service';
 import { Brand } from '../../models/brand.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -28,6 +30,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TableModule,
     TooltipModule,
     DropdownModule,
+    TagModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -82,6 +85,10 @@ export class BrandListComponent implements OnInit {
   showConfirmation = signal(false);
   confirmationLoading = signal(false);
   brandToDelete: { id: number; name: string } | null = null;
+
+  selectedBrands = signal<Brand[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
 
   ngOnInit(): void {
     this.loadBrands();
@@ -138,6 +145,43 @@ export class BrandListComponent implements OnInit {
 
   getDeleteMessage(): string {
     return `Tem certeza que deseja excluir "${this.brandToDelete?.name || ''}"? Esta ação não pode ser desfeita.`;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedBrands().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedBrands().length} marca(s) selecionada(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const brands = this.selectedBrands();
+    if (brands.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(brands.map(brand => this.brandService.delete(brand.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedBrands.set([]);
+          this.successModalService.show('Marcas excluídas com sucesso!');
+          setTimeout(() => this.successModalService.hide(), 1500);
+          this.loadBrands();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir marcas selecionadas');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   newBrand(): void {

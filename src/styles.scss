@@ -1,3 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@285&display=swap');
+
+h1, h2, h3,
+.p-dialog .p-dialog-header .p-dialog-title,
+.p-card .p-card-title {
+  font-family: 'Josefin Sans', sans-serif !important;
+  font-weight: 285 !important;
+}
+
 .p-dropdown-panel {
   z-index: 9999 !important;
   border: 1px solid #e2e8f0;
@@ -94,6 +103,35 @@ body {
   &.p-button-lg {
     padding: 0.9375rem 1.5625rem;
   }
+}
+
+.p-button.p-button-icon-only {
+  width: 3rem;
+  padding: 0.75rem 0;
+
+  &.p-button-sm {
+    width: 2.72rem;
+    padding: 0.65625rem 0;
+  }
+
+  &.p-button-lg {
+    width: 3.4rem;
+    padding: 0.9375rem 0;
+  }
+}
+
+.p-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+// Mesmo bug de cascade layer: PrimeNG define margin-top: -0.5rem pra centralizar
+// o X de "limpar" verticalmente, mas o reset global (* { margin: 0 }) zera isso
+// por estar fora de layer.
+.p-dropdown-clear-icon {
+  margin-top: -0.5rem;
 }
 
 .p-button .p-button-icon-left {

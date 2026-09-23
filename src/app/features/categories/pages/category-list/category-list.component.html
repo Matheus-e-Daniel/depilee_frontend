@@ -29,6 +29,16 @@
         (click)="searchValue = ''; sortOrderValue = 'desc';">
       </button>
     </div>
+
+    @if (selectedCategories().length > 0 && hasPermission('Category.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedCategories().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="categorySearch">Buscar por nome</label>
@@ -64,6 +74,9 @@
     <p-table
       [value]="filteredCategories()"
       [loading]="loading()"
+      [(selection)]="selectedCategories"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -72,16 +85,26 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
           <th>Descrição</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-category>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="category"></p-tableCheckbox></td>
           <td data-label="Nome">{{ category.name }}</td>
           <td data-label="Descrição">{{ category.description || '-' }}</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="category.status === 1 ? 'Ativo' : 'Inativo'"
+              [severity]="category.status === 1 ? 'success' : 'danger'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações">
             <div class="action-buttons">
               <button
@@ -111,7 +134,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" class="text-center py-5">
+          <td colspan="5" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-list" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhuma categoria encontrada</h3>
@@ -140,6 +163,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

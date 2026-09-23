@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -96,6 +97,10 @@ export class ServiceListComponent implements OnInit {
   serviceToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
 
+  selectedServices = signal<Service[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
+
   ngOnInit(): void {
     this.loadServices();
   }
@@ -157,6 +162,47 @@ export class ServiceListComponent implements OnInit {
 
   cancelDelete(): void {
     this.serviceToDelete = null;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedServices().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedServices().length} serviço(s) selecionado(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const services = this.selectedServices();
+    if (services.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(services.map(service => this.serviceService.delete(service.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedServices.set([]);
+          this.successModalService.show('Serviços excluídos com sucesso!');
+
+          setTimeout(() => {
+            this.successModalService.hide();
+          }, 1500);
+
+          this.loadServices();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir serviços selecionados');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   newService(): void {

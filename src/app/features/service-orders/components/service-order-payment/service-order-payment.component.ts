@@ -78,7 +78,7 @@ export class ServiceOrderPaymentComponent implements OnInit {
     this.paymentMethodsLoading.set(true);
     this.paymentService.getPaymentMethods().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        this.paymentMethods.set(response.data);
+        this.paymentMethods.set(response.data.filter(m => m.status === 1));
         this.paymentMethodsLoading.set(false);
       },
       error: () => {

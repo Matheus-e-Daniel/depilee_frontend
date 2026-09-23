@@ -45,7 +45,7 @@
 
       <ng-template pTemplate="body" let-movement>
         <tr>
-          <td data-label="Data">{{ movement.occurredAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td data-label="Data">{{ movement.occurredAt | utc | date:'dd/MM/yyyy HH:mm' }}</td>
           <td data-label="Produto">{{ getProductName(movement) }}</td>
           <td data-label="Tipo">
             <p-tag

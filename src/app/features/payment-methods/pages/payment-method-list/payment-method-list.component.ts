@@ -4,10 +4,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
 import { PaymentMethodService } from '../../services/payment-method.service';
 import { PaymentMethod } from '../../models/payment-method.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -27,6 +29,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TableModule,
     TooltipModule,
     DropdownModule,
+    TagModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -84,6 +87,10 @@ export class PaymentMethodListComponent implements OnInit {
   confirmationLoading = signal(false);
   paymentMethodToDelete: number | null = null;
 
+  selectedPaymentMethods = signal<PaymentMethod[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
+
   ngOnInit(): void {
     this.loadPaymentMethods();
   }
@@ -138,6 +145,43 @@ export class PaymentMethodListComponent implements OnInit {
   cancelDelete(): void {
     this.showConfirmation.set(false);
     this.paymentMethodToDelete = null;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedPaymentMethods().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedPaymentMethods().length} método(s) de pagamento selecionado(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const paymentMethods = this.selectedPaymentMethods();
+    if (paymentMethods.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(paymentMethods.map(pm => this.paymentMethodService.delete(pm.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedPaymentMethods.set([]);
+          this.successModalService.show('Métodos de pagamento excluídos com sucesso!');
+          setTimeout(() => this.successModalService.hide(), 1500);
+          this.loadPaymentMethods();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir métodos de pagamento selecionados');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   clearFilters(): void {

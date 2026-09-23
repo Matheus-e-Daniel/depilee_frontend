@@ -24,4 +24,5 @@ export interface CashFlowFormData {
   type: ECashFlowType;
   description?: string;
   value: number;
+  paymentMethodId: number;
 }

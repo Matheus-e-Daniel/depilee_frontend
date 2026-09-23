@@ -30,6 +30,16 @@
       </button>
     </div>
 
+    @if (selectedClients().length > 0 && hasPermission('Client.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedClients().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
+
     <div class="filters-content">
       <div class="filter-group">
         <label for="searchTerm">Buscar por nome ou CPF</label>
@@ -65,6 +75,9 @@
     <p-table
       [value]="clients()"
       [loading]="loading()"
+      [(selection)]="selectedClients"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -73,6 +86,7 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
           <th>CPF</th>
           <th>Telefone</th>
@@ -83,6 +97,7 @@
 
       <ng-template pTemplate="body" let-client>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="client"></p-tableCheckbox></td>
           <td data-label="Nome">{{ client.name }}</td>
           <td data-label="CPF">{{ formatCPF(client.cpf) }}</td>
           <td data-label="Telefone">{{ formatPhone(client.phone) }}</td>
@@ -122,7 +137,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="5" class="text-center py-5">
+          <td colspan="6" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-users" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum cliente encontrado</h3>
@@ -151,6 +166,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

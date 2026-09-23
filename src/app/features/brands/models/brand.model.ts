@@ -4,4 +4,5 @@ export interface BrandFormData {
 
 export interface Brand extends BrandFormData {
   id: number;
+  status: number;
 }

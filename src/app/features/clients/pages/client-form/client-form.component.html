@@ -47,7 +47,7 @@
               <ng-template pTemplate="body" let-order>
                 <tr>
                   <td data-label="Número">{{ order.orderNumber }}</td>
-                  <td data-label="Data">{{ order.registrationDate | date:'dd/MM/yyyy' }}</td>
+                  <td data-label="Data">{{ order.registrationDate | utc | date:'dd/MM/yyyy' }}</td>
                   <td data-label="Status">
                     <p-tag [value]="getOrderStatusLabel(order.orderStatus)" [severity]="getOrderStatusSeverity(order.orderStatus)"></p-tag>
                   </td>

@@ -6,8 +6,8 @@
         <i class="pi pi-chart-line"></i>
       </div>
       <div>
-        <h1 class="title">Dashboard</h1>
-        <p class="subtitle">Visão geral do seu negócio</p>
+        <h1 class="title">Início</h1>
+        <p class="subtitle">{{ (canViewClients || canViewOrders) ? 'Visão geral do seu negócio' : 'Preços e agenda do dia' }}</p>
       </div>
     </div>
 
@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <section class="cards">
+  <section class="cards" *ngIf="canViewDashboard && (loading() || hasAnyContent)">
 
     <p-card class="card card-clientes" *ngIf="canViewClients">
       <div class="card-decoration"></div>
@@ -115,9 +115,9 @@
 
   </section>
 
-  <section class="lower">
+  <section class="lower" *ngIf="loading() || hasAnyContent">
 
-    <p-card class="chart-card" *ngIf="canViewClients">
+    <p-card class="chart-card" *ngIf="canViewDashboard && canViewClients">
       <ng-container *ngIf="!loading(); else chartSkeleton">
         <div class="chart-content">
           <div class="chart-header">
@@ -145,7 +145,7 @@
       </ng-container>
     </p-card>
 
-    <p-card class="list-card" *ngIf="canViewEvents">
+    <p-card class="list-card" *ngIf="showEventsWidget">
       <div class="list-header">
         <div>
           <h2><i class="pi pi-clock"></i> Próximos Agendamentos</h2>
@@ -200,7 +200,98 @@
       </ng-container>
     </p-card>
 
+    <p-card class="list-card price-widget-card" *ngIf="showServicesWidget">
+      <div class="list-header">
+        <div>
+          <h2><i class="pi pi-tag"></i> Preços de Serviços</h2>
+          <p class="list-subtitle">Serviços cadastrados</p>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading(); else listSkeleton">
+        <div class="price-search-field">
+          <input
+            type="text"
+            pInputText
+            class="price-search-input"
+            placeholder="Buscar por nome..."
+            [ngModel]="serviceWidgetSearch()"
+            (ngModelChange)="serviceWidgetSearch.set($event)" />
+        </div>
+
+        <div class="agendamentos-list price-list" *ngIf="filteredServiceWidgetItems().length > 0; else emptyServiceWidget">
+          <div *ngFor="let item of filteredServiceWidgetItems()" class="agendamento-item">
+            <div class="agendamento-content">
+              <div class="agendamento-client">
+                <div class="client-info">
+                  <div class="client-name">{{ item.name }}</div>
+                </div>
+              </div>
+              <div class="agendamento-footer">
+                <span class="value" style="font-size: 1rem;">{{ item.price | currency:'BRL' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptyServiceWidget>
+          <div class="empty-agendamentos">
+            <i class="pi pi-search"></i>
+            <p>Nenhum item encontrado</p>
+          </div>
+        </ng-template>
+      </ng-container>
+    </p-card>
+
+    <p-card class="list-card price-widget-card" *ngIf="showProductsWidget">
+      <div class="list-header">
+        <div>
+          <h2><i class="pi pi-tag"></i> Preços de Produtos</h2>
+          <p class="list-subtitle">Produtos cadastrados</p>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading(); else listSkeleton">
+        <div class="price-search-field">
+          <input
+            type="text"
+            pInputText
+            class="price-search-input"
+            placeholder="Buscar por nome..."
+            [ngModel]="productWidgetSearch()"
+            (ngModelChange)="productWidgetSearch.set($event)" />
+        </div>
+
+        <div class="agendamentos-list price-list" *ngIf="filteredProductWidgetItems().length > 0; else emptyProductWidget">
+          <div *ngFor="let item of filteredProductWidgetItems()" class="agendamento-item">
+            <div class="agendamento-content">
+              <div class="agendamento-client">
+                <div class="client-info">
+                  <div class="client-name">{{ item.name }}</div>
+                </div>
+              </div>
+              <div class="agendamento-footer">
+                <span class="value" style="font-size: 1rem;">{{ item.price | currency:'BRL' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptyProductWidget>
+          <div class="empty-agendamentos">
+            <i class="pi pi-search"></i>
+            <p>Nenhum item encontrado</p>
+          </div>
+        </ng-template>
+      </ng-container>
+    </p-card>
+
   </section>
+
+  <div class="empty-dashboard" *ngIf="!loading() && !hasAnyContent">
+    <i class="pi pi-info-circle"></i>
+    <p>Nenhuma informação disponível pra exibir no momento.</p>
+  </div>
 
   <ng-template #cardSkeleton>
     <div class="skeleton-card">

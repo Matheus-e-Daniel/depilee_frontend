@@ -29,6 +29,16 @@
         (click)="clearFilters()">
       </button>
     </div>
+
+    @if (selectedServices().length > 0 && hasPermission('Service.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedServices().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="searchTerm">Buscar por nome ou categoria</label>
@@ -63,6 +73,9 @@
     <p-table
       [value]="services()"
       [loading]="loading()"
+      [(selection)]="selectedServices"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -71,6 +84,7 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
           <th>Descrição</th>
           <th>Preço</th>
@@ -81,6 +95,7 @@
 
       <ng-template pTemplate="body" let-service>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="service"></p-tableCheckbox></td>
           <td data-label="Nome">{{ service.name }}</td>
           <td data-label="Descrição">{{ service.description || '-' }}</td>
           <td data-label="Preço">{{ service.price | currency:'BRL' }}</td>
@@ -119,7 +134,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="5" class="text-center py-5">
+          <td colspan="6" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-briefcase" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum serviço encontrado</h3>
@@ -148,6 +163,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

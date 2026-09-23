@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -44,6 +45,10 @@ export class UserListComponent implements OnInit {
 
   userToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
+
+  selectedUsers = signal<User[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -105,6 +110,47 @@ export class UserListComponent implements OnInit {
 
   cancelDelete(): void {
     this.userToDelete = null;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedUsers().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedUsers().length} usuário(s) selecionado(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const users = this.selectedUsers();
+    if (users.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(users.map(user => this.userService.delete(user.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedUsers.set([]);
+          this.successModalService.show('Usuários excluídos com sucesso!');
+
+          setTimeout(() => {
+            this.successModalService.hide();
+          }, 1500);
+
+          this.loadUsers();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir usuários selecionados');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   hasPermission(permission: string): boolean {

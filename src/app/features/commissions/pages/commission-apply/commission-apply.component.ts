@@ -1,3 +1,4 @@
+import { UtcDatePipe } from '../../../../shared/pipes/utc-date.pipe';
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -25,7 +26,7 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
 @Component({
   selector: 'app-commission-apply',
   standalone: true,
-  imports: [
+  imports: [UtcDatePipe, 
     CommonModule,
     FormsModule,
     DropdownModule,

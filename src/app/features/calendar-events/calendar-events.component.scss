@@ -3,6 +3,51 @@
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   min-height: 100vh;
 
+  .event-actions-bar {
+    position: absolute;
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.35rem;
+    border-radius: 999px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+
+      i {
+        color: white;
+        font-size: 1rem;
+      }
+
+      &:hover {
+        opacity: 0.85;
+        transform: scale(1.08);
+      }
+
+      &.done {
+        background: #10b981;
+      }
+
+      &.cancel {
+        background: #ef4444;
+      }
+
+      &.edit {
+        background: #64748b;
+      }
+    }
+  }
+
   .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -174,7 +219,7 @@
         }
 
         .event-card.all-day-event {
-          position: static;
+          position: relative;
           display: flex;
           align-items: center;
           gap: 0.4rem;
@@ -182,6 +227,13 @@
           border-radius: 8px;
           cursor: pointer;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+          .event-actions-bar {
+            top: 100%;
+            bottom: auto;
+            left: 0;
+            margin-top: 0.4rem;
+          }
 
           .event-title {
             color: white;
@@ -206,6 +258,26 @@
             margin-left: auto;
             position: static;
             opacity: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.3);
+            }
+
+            i {
+              color: white;
+              font-size: 0.65rem;
+            }
           }
 
           &:hover .event-delete {
@@ -303,6 +375,17 @@
 
         &.status-done {
           box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5), 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        &.actions-open {
+          overflow: visible;
+          z-index: 30;
+        }
+
+        .event-actions-bar {
+          bottom: 100%;
+          left: 0;
+          margin-bottom: 0.4rem;
         }
 
         .event-content {
@@ -445,6 +528,46 @@
     ::ng-deep .p-button.p-button-primary:hover {
       transform: translateY(-1px);
       box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+    }
+  }
+}
+
+.event-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  .view-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .view-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    .view-label {
+      color: #334155;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .view-value {
+      color: #1e293b;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px solid #f1f5f9;
+    }
+
+    .view-color-swatch {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 8px;
+      border: 2px solid #f1f5f9;
     }
   }
 }

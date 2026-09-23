@@ -1,13 +1,14 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { debounceTime, Observable } from 'rxjs';
+import { debounceTime, forkJoin, Observable } from 'rxjs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputMaskModule } from 'primeng/inputmask';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -51,6 +52,7 @@ import { CashRegister } from '../../../cash-registers/models/cash-register.model
     InputNumberModule,
     InputTextareaModule,
     InputTextModule,
+    InputMaskModule,
     DropdownModule,
     DialogModule,
     ButtonModule,
@@ -80,6 +82,7 @@ export class ServiceOrderFormComponent implements OnInit {
   private clientService = inject(ClientService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
 
@@ -139,13 +142,18 @@ export class ServiceOrderFormComponent implements OnInit {
   quickClientForm!: FormGroup;
 
   orderItems = signal<ServiceOrderItem[]>([]);
+  draftItems = signal<ServiceOrderItem[]>([]);
+  private draftIdCounter = -1;
+
+  effectiveItems = computed(() => this.orderId() ? this.orderItems() : this.draftItems());
+
   serviceLineItems = computed(() => {
     const serviceIds = new Set(this.services().map(s => s.id));
-    return this.orderItems().filter(item => serviceIds.has(item.itemId));
+    return this.effectiveItems().filter(item => serviceIds.has(item.itemId));
   });
   productLineItems = computed(() => {
     const productIds = new Set(this.products().map(p => p.id));
-    return this.orderItems().filter(item => productIds.has(item.itemId));
+    return this.effectiveItems().filter(item => productIds.has(item.itemId));
   });
 
   selectedClientCredit = signal<number | null>(null);
@@ -154,7 +162,7 @@ export class ServiceOrderFormComponent implements OnInit {
   creditAmountToApply = signal<number | null>(null);
 
   private discountValue = signal<number | null>(null);
-  subtotal = computed(() => this.orderItems().reduce((sum, item) => sum + item.quantity * item.unitPrice, 0));
+  subtotal = computed(() => this.effectiveItems().reduce((sum, item) => sum + item.quantity * item.unitPrice, 0));
   total = computed(() => {
     const discountPercent = this.discountValue() || 0;
     const sub = this.subtotal();
@@ -254,6 +262,7 @@ export class ServiceOrderFormComponent implements OnInit {
 
     this.quickClientForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
+      birth: [''],
       phone: ['']
     });
 
@@ -455,7 +464,7 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   openQuickCreateClient(): void {
-    this.quickClientForm.reset({ name: '', phone: '' });
+    this.quickClientForm.reset({ name: '', birth: '', phone: '' });
     this.showQuickCreateClient.set(true);
   }
 
@@ -471,7 +480,11 @@ export class ServiceOrderFormComponent implements OnInit {
 
     this.creatingQuickClient.set(true);
     const value = this.quickClientForm.value;
-    const payload: ClientQuickCreateData = { name: value.name, phone: value.phone || undefined };
+    const payload: ClientQuickCreateData = {
+      name: value.name,
+      phone: value.phone || undefined,
+      birth: this.formatBirthToISO(value.birth) || undefined
+    };
     this.clientService.quickCreate(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: created }) => {
         this.creatingQuickClient.set(false);
@@ -488,11 +501,18 @@ export class ServiceOrderFormComponent implements OnInit {
     });
   }
 
+  private formatBirthToISO(value: string): string {
+    const match = value?.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return '';
+    const [, day, month, year] = match;
+    return `${year}-${month}-${day}T00:00:00`;
+  }
+
   private loadPaymentMethods(): void {
     this.paymentMethodsLoading.set(true);
     this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
-        this.paymentMethods.set(response.data);
+        this.paymentMethods.set(response.data.filter(m => m.status === 1));
         this.paymentMethodsLoading.set(false);
       },
       error: () => {
@@ -690,15 +710,43 @@ export class ServiceOrderFormComponent implements OnInit {
     this.serviceOrderService.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ data: order }) => {
         this.orderId.set(order.id);
+        this.location.replaceState(`/service-orders/edit/${order.id}`);
         this.orderStatus.set(order.orderStatus);
         this.creatingOrder.set(false);
         this.activeTabIndex.set(1);
-        this.successModalService.show('Ordem criada! Agora adicione serviços e produtos.');
-        setTimeout(() => this.successModalService.hide(), 1500);
+
+        const drafts = this.draftItems();
+        if (drafts.length === 0) {
+          this.successModalService.show('Ordem criada! Agora adicione serviços e produtos.');
+          setTimeout(() => this.successModalService.hide(), 1500);
+          return;
+        }
+
+        this.createDraftItems(order.id, drafts);
       },
       error: (err: HttpErrorResponse) => {
         this.creatingOrder.set(false);
         this.errorModalService.show(err.error?.message || 'Falha ao criar a ordem de serviço');
+      }
+    });
+  }
+
+  private createDraftItems(orderId: number, drafts: ServiceOrderItem[]): void {
+    forkJoin(drafts.map(draft => this.serviceOrderItemService.create({
+      serviceOrderId: orderId,
+      catalogItemId: draft.itemId,
+      quantity: draft.quantity,
+      responsibleUserId: draft.responsibleUserId
+    }))).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (responses) => {
+        this.orderItems.set(responses.map(r => r.data));
+        this.draftItems.set([]);
+        this.syncOrderTotals();
+        this.successModalService.show('Ordem criada com os itens adicionados!');
+        setTimeout(() => this.successModalService.hide(), 1500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errorModalService.show(err.error?.message || 'Ordem criada, mas falha ao adicionar os itens. Adicione-os novamente na aba correspondente.');
       }
     });
   }
@@ -747,14 +795,31 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   addServiceItem(): void {
-    const orderId = this.orderId();
-    if (this.serviceItemForm.invalid || !orderId) {
+    if (this.serviceItemForm.invalid) {
       this.serviceItemForm.markAllAsTouched();
       return;
     }
 
-    this.addingServiceItem.set(true);
+    const orderId = this.orderId();
     const value = this.serviceItemForm.value;
+
+    if (!orderId) {
+      const service = this.services().find(s => s.id === value.serviceId);
+      const draft: ServiceOrderItem = {
+        id: this.draftIdCounter--,
+        serviceOrderId: 0,
+        itemId: value.serviceId,
+        item: { id: value.serviceId, name: service?.name || '', price: value.unitPrice, status: 1 },
+        quantity: value.quantity,
+        unitPrice: value.unitPrice,
+        responsibleUserId: value.responsibleUserId
+      };
+      this.draftItems.update(items => [...items, draft]);
+      this.serviceItemForm.reset({ serviceId: null, responsibleUserId: null, quantity: 1, unitPrice: 0 });
+      return;
+    }
+
+    this.addingServiceItem.set(true);
     const payload = {
       serviceOrderId: orderId,
       catalogItemId: value.serviceId,
@@ -777,14 +842,30 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   addProductItem(): void {
-    const orderId = this.orderId();
-    if (this.productItemForm.invalid || !orderId) {
+    if (this.productItemForm.invalid) {
       this.productItemForm.markAllAsTouched();
       return;
     }
 
-    this.addingProductItem.set(true);
+    const orderId = this.orderId();
     const value = this.productItemForm.value;
+
+    if (!orderId) {
+      const product = this.products().find(p => p.id === value.productId);
+      const draft: ServiceOrderItem = {
+        id: this.draftIdCounter--,
+        serviceOrderId: 0,
+        itemId: value.productId,
+        item: { id: value.productId, name: product?.name || '', price: value.unitPrice, status: 1 },
+        quantity: value.quantity,
+        unitPrice: value.unitPrice
+      };
+      this.draftItems.update(items => [...items, draft]);
+      this.productItemForm.reset({ productId: null, quantity: 1, unitPrice: 0 });
+      return;
+    }
+
+    this.addingProductItem.set(true);
     const payload = {
       serviceOrderId: orderId,
       catalogItemId: value.productId,
@@ -806,6 +887,11 @@ export class ServiceOrderFormComponent implements OnInit {
   }
 
   removeLineItem(item: ServiceOrderItem): void {
+    if (!this.orderId()) {
+      this.draftItems.update(items => items.filter(i => i.id !== item.id));
+      return;
+    }
+
     this.removingItemId.set(item.id);
     this.serviceOrderItemService.delete(item.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {

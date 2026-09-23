@@ -15,6 +15,29 @@
   }
 }
 
+.empty-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  color: #9ca3af;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  i {
+    font-size: 32px;
+    color: #d1d5db;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
 .dashboard-header {
   display: flex;
   align-items: center;
@@ -559,6 +582,46 @@
         background: #e5e7eb !important;
       }
     }
+  }
+}
+
+.price-widget-card {
+  align-self: start;
+
+  .price-search-field {
+    padding: 16px 24px 0;
+  }
+
+  .price-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    color: #334155;
+    transition: all 0.3s ease;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:hover {
+      border-color: #f59e0b;
+      background: #f1f5f9;
+    }
+
+    &:focus {
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+      background: white;
+      outline: none;
+    }
+  }
+
+  .price-list {
+    max-height: 360px;
+    overflow-y: auto;
   }
 }
 

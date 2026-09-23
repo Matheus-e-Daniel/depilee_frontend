@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CardModule } from 'primeng/card';
@@ -12,6 +13,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ListboxModule } from 'primeng/listbox';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextModule } from 'primeng/inputtext';
 import { ClientService } from '../clients/services/client.service';
 import { Client } from '../clients/models/client.model';
 import { CalendarEventService } from '../calendar-events/services/calendar-event.service';
@@ -19,6 +21,10 @@ import { CalendarEvent, EEventStatus } from '../calendar-events/models/calendar-
 import { ServiceOrderService } from '../service-orders/services/service-order.service';
 import { OrderStatus } from '../service-orders/models/service-order.model';
 import { AuthService } from '../../core/services/auth.service';
+import { ServiceService } from '../services/services/service.service';
+import { ProductService } from '../products/services/product.service';
+import { HomeWidgetPreferenceService } from '../../core/services/home-widget-preference.service';
+import { HomeWidget } from '../../core/models/home-widget.model';
 
 interface UpcomingEvent {
   subject: string;
@@ -27,6 +33,11 @@ interface UpcomingEvent {
   statusLabel: string;
   statusClass: string;
   color: string;
+}
+
+interface PriceWidgetItem {
+  name: string;
+  price: number;
 }
 
 @Component({
@@ -40,7 +51,9 @@ interface UpcomingEvent {
     SkeletonModule,
     ListboxModule,
     TagModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    InputTextModule,
+    FormsModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -53,6 +66,9 @@ export class DashboardComponent implements OnInit {
   private serviceOrderService = inject(ServiceOrderService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private serviceService = inject(ServiceService);
+  private productService = inject(ProductService);
+  private homeWidgetPreferenceService = inject(HomeWidgetPreferenceService);
 
   loading = signal(true);
   lastUpdated: Date | null = null;
@@ -60,6 +76,26 @@ export class DashboardComponent implements OnInit {
   canViewClients = false;
   canViewEvents = false;
   canViewOrders = false;
+  canViewDashboard = false;
+
+  showServicesWidget = false;
+  showProductsWidget = false;
+  showEventsWidget = false;
+  hasAnyContent = false;
+  serviceWidgetSearch = signal('');
+  productWidgetSearch = signal('');
+  serviceWidgetItems = signal<PriceWidgetItem[]>([]);
+  productWidgetItems = signal<PriceWidgetItem[]>([]);
+  filteredServiceWidgetItems = computed(() => {
+    const term = this.serviceWidgetSearch().toLowerCase().trim();
+    const items = this.serviceWidgetItems();
+    return term ? items.filter(i => i.name.toLowerCase().includes(term)) : items;
+  });
+  filteredProductWidgetItems = computed(() => {
+    const term = this.productWidgetSearch().toLowerCase().trim();
+    const items = this.productWidgetItems();
+    return term ? items.filter(i => i.name.toLowerCase().includes(term)) : items;
+  });
 
   totalClientes = 0;
   crescimentoClientes = '0%';
@@ -94,6 +130,9 @@ export class DashboardComponent implements OnInit {
     this.canViewClients = this.authService.hasAnyPermission(['Client.Get']);
     this.canViewEvents = this.authService.hasAnyPermission(['Event.Get']);
     this.canViewOrders = this.authService.hasAnyPermission(['ServiceOrder.Get']);
+    this.canViewDashboard = this.authService.hasAnyPermission(['Dashboard.View']);
+    const canViewServicesPerm = this.authService.hasAnyPermission(['Service.Get']);
+    const canViewProductsPerm = this.authService.hasAnyPermission(['Product.Get']);
 
     const clients$ = this.canViewClients
       ? this.clientService.getAll().pipe(catchError(() => of(null)))
@@ -107,21 +146,53 @@ export class DashboardComponent implements OnInit {
       ? this.serviceOrderService.getAll().pipe(catchError(() => of(null)))
       : of(null);
 
-    forkJoin([clients$, events$, orders$]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([clientsRes, events, ordersRes]) => {
-      if (clientsRes) {
-        this.processClients(clientsRes.data, clientsRes.totalCount);
-      }
-      if (events) {
-        this.processEvents(events.data);
-      }
-      if (ordersRes) {
-        this.processOrders(ordersRes.data);
-      }
+    const homeWidgets$ = (canViewServicesPerm || canViewProductsPerm || this.canViewEvents)
+      ? this.homeWidgetPreferenceService.getPreferences().pipe(catchError(() => of(null)))
+      : of(null);
 
-      this.buildChart();
-      this.lastUpdated = new Date();
-      this.loading.set(false);
-    });
+    const services$ = canViewServicesPerm
+      ? this.serviceService.getAll().pipe(catchError(() => of(null)))
+      : of(null);
+
+    const products$ = canViewProductsPerm
+      ? this.productService.getAll().pipe(catchError(() => of(null)))
+      : of(null);
+
+    forkJoin([clients$, events$, orders$, homeWidgets$, services$, products$]).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([clientsRes, events, ordersRes, homeWidgetsRes, servicesRes, productsRes]) => {
+        if (clientsRes) {
+          this.processClients(clientsRes.data, clientsRes.totalCount);
+        }
+        if (events) {
+          this.processEvents(events.data);
+        }
+        if (ordersRes) {
+          this.processOrders(ordersRes.data);
+        }
+
+        const activeWidgets = homeWidgetsRes?.configured
+          ? homeWidgetsRes.widgets
+          : [HomeWidget.Services, HomeWidget.Products, HomeWidget.Events];
+
+        const serviceItems: PriceWidgetItem[] = canViewServicesPerm && activeWidgets.includes(HomeWidget.Services) && servicesRes
+          ? servicesRes.data.map(s => ({ name: s.name, price: s.price })).sort((a, b) => a.name.localeCompare(b.name))
+          : [];
+        const productItems: PriceWidgetItem[] = canViewProductsPerm && activeWidgets.includes(HomeWidget.Products) && productsRes
+          ? productsRes.data.map(p => ({ name: p.name, price: p.price })).sort((a, b) => a.name.localeCompare(b.name))
+          : [];
+        this.serviceWidgetItems.set(serviceItems);
+        this.productWidgetItems.set(productItems);
+        this.showServicesWidget = serviceItems.length > 0;
+        this.showProductsWidget = productItems.length > 0;
+        this.showEventsWidget = this.canViewEvents && activeWidgets.includes(HomeWidget.Events);
+
+        const hasAnalyticsContent = this.canViewDashboard && (this.canViewClients || this.canViewEvents || this.canViewOrders);
+        this.hasAnyContent = hasAnalyticsContent || this.showServicesWidget || this.showProductsWidget || this.showEventsWidget;
+
+        this.buildChart();
+        this.lastUpdated = new Date();
+        this.loading.set(false);
+      });
   }
 
   refreshData(): void {

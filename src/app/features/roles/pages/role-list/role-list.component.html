@@ -30,6 +30,16 @@
         (click)="searchValue = ''; sortOrderValue = 'desc';">
       </button>
     </div>
+
+    @if (selectedRoles().length > 0 && hasPermission('Identity.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedRoles().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="roleSearch">Buscar por nome</label>
@@ -65,6 +75,9 @@
     <p-table
       [value]="filteredRoles()"
       [loading]="loading()"
+      [(selection)]="selectedRoles"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -73,14 +86,24 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Cargo</th>
+          <th>Situação</th>
           <th style="text-align: right;">Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-role>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="role"></p-tableCheckbox></td>
           <td data-label="Cargo">{{ role.name }}</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="role.isDeleted ? 'Inativo' : 'Ativo'"
+              [severity]="role.isDeleted ? 'danger' : 'success'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações" style="text-align: right;">
             <div class="action-buttons">
               <button
@@ -110,7 +133,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="2" class="text-center py-5">
+          <td colspan="4" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-id-card" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum cargo encontrado</h3>
@@ -141,6 +164,17 @@
   [loading]="confirmationLoading()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  type="delete"
+  [message]="getBulkDeleteMessage()"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  [loading]="bulkDeleteLoading()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

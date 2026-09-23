@@ -1,3 +1,4 @@
+import { UtcDatePipe } from '../../../../shared/pipes/utc-date.pipe';
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -15,7 +16,7 @@ import { User } from '../../../users/models/user.model';
 @Component({
   selector: 'app-commission-history',
   standalone: true,
-  imports: [
+  imports: [UtcDatePipe, 
     CommonModule,
     FormsModule,
     DropdownModule,

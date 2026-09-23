@@ -52,8 +52,53 @@
     overflow: hidden;
     border: 1px solid #f1f5f9;
 
-    ::ng-deep .p-card-body {
+    ::ng-deep .p-tabview-nav {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-bottom: 2px solid #e2e8f0;
+
+      li .p-tabview-nav-link {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-weight: 600;
+        padding: 1.25rem 1.5rem;
+
+        &:hover {
+          background: rgba(245, 158, 11, 0.08);
+          color: #f59e0b;
+        }
+      }
+
+      li.p-highlight .p-tabview-nav-link {
+        color: #f59e0b;
+        box-shadow: inset 0 -3px 0 0 #f59e0b;
+      }
+    }
+
+    ::ng-deep .p-tabview-panels {
       padding: 2rem;
+    }
+  }
+}
+
+.widgets-hint {
+  margin: 0 0 1.25rem 0;
+  color: #64748b;
+}
+
+.widget-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+
+  .widget-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    label {
+      color: #334155;
+      font-size: 0.95rem;
     }
   }
 }

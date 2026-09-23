@@ -24,6 +24,7 @@ export interface Client {
 export interface ClientQuickCreateData {
   name: string;
   phone?: string;
+  birth?: string;
 }
 
 export interface ClientFormData {

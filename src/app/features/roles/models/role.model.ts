@@ -5,6 +5,7 @@ export interface RoleFormData {
 export interface Role {
   id: number;
   name: string;
+  isDeleted: boolean;
 }
 
 export interface Permission {

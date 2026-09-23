@@ -29,6 +29,16 @@
         (click)="searchValue = ''; sortOrderValue = 'desc';">
       </button>
     </div>
+
+    @if (selectedCashRegisters().length > 0 && hasPermission('CashRegister.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedCashRegisters().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="cashRegisterSearch">Buscar por observação</label>
@@ -63,6 +73,9 @@
   <div class="card">
     <p-table
       [value]="filteredCashRegisters()"
+      [(selection)]="selectedCashRegisters"
+      dataKey="id"
+      selectionMode="multiple"
       [loading]="loading()"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
@@ -72,16 +85,26 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Saldo Inicial</th>
           <th>Observações</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-cashRegister>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="cashRegister"></p-tableCheckbox></td>
           <td data-label="Saldo Inicial">{{ cashRegister.initialBalance | currency:'BRL' }}</td>
           <td data-label="Observações">{{ cashRegister.notes }}</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="cashRegister.status === 1 ? 'Ativo' : 'Inativo'"
+              [severity]="cashRegister.status === 1 ? 'success' : 'danger'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações">
             <div class="action-buttons">
               <button
@@ -129,7 +152,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" class="text-center py-5">
+          <td colspan="5" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-wallet" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum caixa encontrado</h3>
@@ -206,6 +229,15 @@
     </ng-container>
   </div>
 </div>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
+</app-confirmation-modal>
 
 <app-success-modal
   [visible]="successModalService.visible()"
