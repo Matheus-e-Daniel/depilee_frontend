@@ -15,10 +15,23 @@
     </button>
   </div>
 
+  @if (selectedUsers().length > 0 && hasPermission('Identity.Delete')) {
+    <button
+      pButton
+      icon="pi pi-trash"
+      [label]="'Excluir selecionados (' + selectedUsers().length + ')'"
+      class="p-button-danger p-button-sm bulk-delete-btn"
+      (click)="deleteSelected()">
+    </button>
+  }
+
   <div class="card">
     <p-table
       [value]="users()"
       [loading]="loading()"
+      [(selection)]="selectedUsers"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -27,16 +40,26 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Email</th>
           <th>Nome completo</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-user>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="user"></p-tableCheckbox></td>
           <td data-label="Email">{{ user.email }}</td>
           <td data-label="Nome completo">{{ user.fullName }}</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="user.isDeleted ? 'Inativo' : 'Ativo'"
+              [severity]="user.isDeleted ? 'danger' : 'success'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações">
             <div class="action-buttons">
               <button
@@ -66,7 +89,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" class="text-center py-5">
+          <td colspan="5" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-users" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum usuário encontrado</h3>
@@ -95,6 +118,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

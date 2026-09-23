@@ -30,6 +30,16 @@
         (click)="searchValue = ''; sortOrderValue = 'desc';">
       </button>
     </div>
+
+    @if (selectedBrands().length > 0 && hasPermission('Brand.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedBrands().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="brandSearch">Buscar por nome</label>
@@ -64,6 +74,9 @@
   <div class="card">
     <p-table
       [value]="filteredBrands()"
+      [(selection)]="selectedBrands"
+      dataKey="id"
+      selectionMode="multiple"
       [loading]="loading()"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
@@ -73,14 +86,24 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-brand>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="brand"></p-tableCheckbox></td>
           <td data-label="Nome">{{ brand.name }}</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="brand.status === 1 ? 'Ativo' : 'Inativo'"
+              [severity]="brand.status === 1 ? 'success' : 'danger'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações">
             <div class="action-buttons">
               <button
@@ -110,7 +133,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="2" class="text-center py-5">
+          <td colspan="4" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-tag" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhuma marca encontrada</h3>
@@ -141,6 +164,17 @@
   [loading]="confirmationLoading()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  type="delete"
+  [message]="getBulkDeleteMessage()"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  [loading]="bulkDeleteLoading()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

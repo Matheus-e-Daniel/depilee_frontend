@@ -3,6 +3,11 @@
   opacity: 0.5;
 }
 
+.bulk-delete-btn {
+  display: inline-flex;
+  margin: 1rem 1.5rem 0;
+}
+
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -384,6 +389,10 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     }
 
+    ::ng-deep .p-datatable-table {
+      table-layout: fixed;
+    }
+
     ::ng-deep .p-datatable {
       border-radius: 16px;
       overflow: hidden;
@@ -409,6 +418,19 @@
 
             &:first-child {
               border-top-left-radius: 16px;
+              width: 3rem;
+            }
+
+            &:nth-child(2) {
+              width: 16%;
+            }
+
+            &:nth-child(4) {
+              width: 12%;
+            }
+
+            &:nth-child(5) {
+              width: 16%;
             }
 
             &:last-child {
@@ -438,6 +460,8 @@
             padding: 1.25rem 1.5rem;
             color: #334155;
             font-size: 0.95rem;
+            overflow-wrap: break-word;
+            word-break: break-word;
 
             &:first-child {
               font-weight: 600;

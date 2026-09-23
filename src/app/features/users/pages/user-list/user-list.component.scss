@@ -305,6 +305,11 @@
   animation: fadeIn 0.4s ease-out;
 }
 
+.bulk-delete-btn {
+  display: inline-flex;
+  margin-bottom: 1.5rem;
+}
+
 @media (max-width: 768px) {
   .user-list-container {
     padding: 1.25rem;

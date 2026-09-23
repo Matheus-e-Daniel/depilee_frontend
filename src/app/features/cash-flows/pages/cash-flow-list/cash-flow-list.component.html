@@ -64,7 +64,25 @@
             </small>
           </div>
 
-          <div class="field col-12 md:col-6">
+          <div class="field col-12 md:col-3">
+            <label for="paymentMethodId" class="block font-medium mb-2">Forma de Pagamento *</label>
+            <p-dropdown
+              id="paymentMethodId"
+              formControlName="paymentMethodId"
+              [options]="paymentMethods()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Selecione"
+              class="w-full">
+            </p-dropdown>
+            <small
+              *ngIf="entryForm.get('paymentMethodId')?.invalid && formSubmitted()"
+              class="p-error block mt-1">
+              Selecione uma forma de pagamento
+            </small>
+          </div>
+
+          <div class="field col-12 md:col-3">
             <label for="description" class="block font-medium mb-2">Descrição</label>
             <input
               id="description"
@@ -113,7 +131,7 @@
 
       <ng-template pTemplate="body" let-flow>
         <tr>
-          <td data-label="Data">{{ flow.registrationDate | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td data-label="Data">{{ flow.registrationDate | utc | date:'dd/MM/yyyy HH:mm' }}</td>
           <td data-label="Tipo">
             <p-tag
               [value]="getTypeLabel(flow.type)"

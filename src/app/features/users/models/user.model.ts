@@ -19,6 +19,7 @@ export interface User {
   roles?: string[];
   address: Address;
   commissionPercentage?: number | null;
+  isDeleted: boolean;
 }
 
 export interface UserFormData {

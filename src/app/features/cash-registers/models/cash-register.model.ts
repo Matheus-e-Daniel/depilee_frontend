@@ -22,6 +22,7 @@ export interface CashRegisterClosingDetail {
 
 export interface CashRegister extends CashRegisterFormData {
   cashRegisterStatus: number;
+  status: number;
   id: number;
   finalBalance: number;
   difference?: number;

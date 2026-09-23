@@ -3,11 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
@@ -27,6 +29,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     TableModule,
     TooltipModule,
     DropdownModule,
+    TagModule,
     ConfirmationModalComponent,
     SuccessModalComponent
   ],
@@ -80,6 +83,10 @@ export class CategoryListComponent implements OnInit {
 
   categoryToDelete: { id: number; name: string } | null = null;
   confirmationLoading = signal(false);
+
+  selectedCategories = signal<Category[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
 
   ngOnInit(): void {
     this.loadCategories();
@@ -138,6 +145,47 @@ export class CategoryListComponent implements OnInit {
 
   cancelDelete(): void {
     this.categoryToDelete = null;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedCategories().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedCategories().length} categoria(s) selecionada(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const categories = this.selectedCategories();
+    if (categories.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(categories.map(category => this.categoryService.delete(category.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedCategories.set([]);
+          this.successModalService.show('Categorias excluídas com sucesso!');
+
+          setTimeout(() => {
+            this.successModalService.hide();
+          }, 1500);
+
+          this.loadCategories();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir categorias selecionadas');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   newCategory(): void {

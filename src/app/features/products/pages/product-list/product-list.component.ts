@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -101,6 +102,10 @@ export class ProductListComponent implements OnInit {
   });
 
   productToDelete: { id: number; name: string } | null = null;
+
+  selectedProducts = signal<Product[]>([]);
+  bulkDeleteVisible = signal(false);
+  bulkDeleteLoading = signal(false);
   confirmationLoading = signal(false);
 
   ngOnInit(): void {
@@ -165,6 +170,47 @@ export class ProductListComponent implements OnInit {
 
   cancelDelete(): void {
     this.productToDelete = null;
+  }
+
+  deleteSelected(): void {
+    if (this.selectedProducts().length === 0) return;
+    this.bulkDeleteVisible.set(true);
+  }
+
+  getBulkDeleteMessage(): string {
+    return `Tem certeza que deseja excluir ${this.selectedProducts().length} produto(s) selecionado(s)?`;
+  }
+
+  confirmBulkDelete(): void {
+    const products = this.selectedProducts();
+    if (products.length === 0) return;
+
+    this.bulkDeleteLoading.set(true);
+    forkJoin(products.map(product => this.productService.delete(product.id)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.selectedProducts.set([]);
+          this.successModalService.show('Produtos excluídos com sucesso!');
+
+          setTimeout(() => {
+            this.successModalService.hide();
+          }, 1500);
+
+          this.loadProducts();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.bulkDeleteVisible.set(false);
+          this.bulkDeleteLoading.set(false);
+          this.errorModalService.show(err.error?.message || 'Falha ao excluir produtos selecionados');
+        }
+      });
+  }
+
+  cancelBulkDelete(): void {
+    this.bulkDeleteVisible.set(false);
   }
 
   newProduct(): void {

@@ -61,6 +61,10 @@
         font-weight: 600;
         padding: 1.25rem 1.5rem;
 
+        .p-tabview-left-icon {
+          margin-right: 0.5rem;
+        }
+
         &:hover {
           background: rgba(245, 158, 11, 0.05);
           color: #f59e0b;

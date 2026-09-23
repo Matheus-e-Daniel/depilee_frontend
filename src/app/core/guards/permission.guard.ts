@@ -26,7 +26,7 @@ export const permissionGuard = (route: ActivatedRouteSnapshot) => {
 
       if (!hasPermission) {
         errorModalService.show('Você não tem permissão para acessar esta página.');
-        router.navigate(['/dashboard']);
+        router.navigate([route.routeConfig?.path === 'dashboard' ? '/profile' : '/dashboard']);
         return false;
       }
 

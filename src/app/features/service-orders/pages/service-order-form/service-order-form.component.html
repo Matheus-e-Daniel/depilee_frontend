@@ -119,7 +119,7 @@
             </div>
           </p-tabPanel>
 
-          <p-tabPanel [header]="'Serviços (' + serviceLineItems().length + ')'" leftIcon="pi pi-briefcase" [disabled]="!orderId()">
+          <p-tabPanel [header]="'Serviços (' + serviceLineItems().length + ')'" leftIcon="pi pi-briefcase">
             <div class="items-section">
               <div class="items-header">
                 <div class="items-title-wrapper">
@@ -256,7 +256,7 @@
             </div>
           </p-tabPanel>
 
-          <p-tabPanel [header]="'Produtos (' + productLineItems().length + ')'" leftIcon="pi pi-box" [disabled]="!orderId()">
+          <p-tabPanel [header]="'Produtos (' + productLineItems().length + ')'" leftIcon="pi pi-box">
             <div class="items-section">
               <div class="items-header">
                 <div class="items-title-wrapper">
@@ -369,7 +369,7 @@
             </div>
           </p-tabPanel>
 
-          <p-tabPanel header="Resumo e Pagamento" leftIcon="pi pi-calculator" [disabled]="!orderId()">
+          <p-tabPanel header="Resumo e Pagamento" leftIcon="pi pi-calculator">
             <div class="order-total-card">
               <div class="order-total-icon">
                 <i class="pi pi-wallet"></i>
@@ -383,7 +383,15 @@
             <div
               class="p-message p-message-warn"
               style="margin-bottom: 1rem; padding: 0.75rem 1rem;"
-              *ngIf="!cashRegisterLoading() && !openCashRegister()">
+              *ngIf="!orderId()">
+              <i class="pi pi-exclamation-triangle mr-2"></i>
+              Crie a ordem na aba "Informações Básicas" para poder registrar o pagamento.
+            </div>
+
+            <div
+              class="p-message p-message-warn"
+              style="margin-bottom: 1rem; padding: 0.75rem 1rem;"
+              *ngIf="orderId() && !cashRegisterLoading() && !openCashRegister()">
               <i class="pi pi-exclamation-triangle mr-2"></i>
               Nenhum caixa aberto. Abra um caixa em "Caixas" antes de registrar ou pagar um pagamento.
             </div>
@@ -430,7 +438,7 @@
                     label="Registrar Pagamento"
                     class="add-item-btn"
                     [loading]="creatingPayment()"
-                    [disabled]="!!payment() || !orderForm.get('paymentMethodId')?.value || orderItems().length === 0 || !openCashRegister()"
+                    [disabled]="!orderId() || !!payment() || !orderForm.get('paymentMethodId')?.value || orderItems().length === 0 || !openCashRegister()"
                     (click)="createPayment()">
                   </button>
                 </div>
@@ -687,6 +695,11 @@
       <small *ngIf="quickClientForm.get('name')?.invalid && quickClientForm.get('name')?.touched" class="p-error block mt-1">
         Mínimo 3 caracteres
       </small>
+    </div>
+    <div class="field">
+      <label for="quickClientBirth" class="block font-medium mb-2">Data de Nascimento</label>
+      <p-inputMask id="quickClientBirth" formControlName="birth" mask="99/99/9999" placeholder="dd/mm/aaaa" class="w-full">
+      </p-inputMask>
     </div>
     <div class="field">
       <label for="quickClientPhone" class="block font-medium mb-2">Telefone</label>

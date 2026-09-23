@@ -1,20 +1,24 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputMaskModule } from 'primeng/inputmask';
 import { DropdownModule } from 'primeng/dropdown';
 import { CardModule } from 'primeng/card';
+import { TabViewModule } from 'primeng/tabview';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ProfileService, ProfileData } from './services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SuccessModalComponent } from '../../shared/components/success-modal/success-modal.component';
 import { ErrorModalService } from '../../shared/components/error-modal/error-modal.service';
 import { SuccessModalService } from '../../shared/components/success-modal/success-modal.service';
 import { ChangePasswordModalComponent } from './components/change-password-modal/change-password-modal.component';
+import { HomeWidgetPreferenceService } from '../../core/services/home-widget-preference.service';
+import { HomeWidget } from '../../core/models/home-widget.model';
 
 const CEP_DEBOUNCE_TIME = 800;
 
@@ -33,11 +37,14 @@ interface ViaCepResponse {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     ButtonModule,
     InputTextModule,
     InputMaskModule,
     DropdownModule,
     CardModule,
+    TabViewModule,
+    CheckboxModule,
     SuccessModalComponent,
     ChangePasswordModalComponent
   ],
@@ -50,8 +57,16 @@ export class ProfileComponent implements OnInit {
   private http = inject(HttpClient);
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
+  private homeWidgetPreferenceService = inject(HomeWidgetPreferenceService);
   errorModalService = inject(ErrorModalService);
   successModalService = inject(SuccessModalService);
+
+  readonly HomeWidget = HomeWidget;
+  canViewServices = this.authService.hasAnyPermission(['Service.Get']);
+  canViewProducts = this.authService.hasAnyPermission(['Product.Get']);
+  canViewEvents = this.authService.hasAnyPermission(['Event.Get']);
+  homeWidgets = signal<HomeWidget[]>([]);
+  savingWidgets = signal(false);
 
   profile = signal<ProfileData | null>(null);
   loading = signal(false);
@@ -97,6 +112,7 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadHomeWidgets();
 
     this.profileForm.get('address.cep')?.valueChanges.pipe(
       debounceTime(CEP_DEBOUNCE_TIME),
@@ -122,6 +138,38 @@ export class ProfileComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.errorModalService.show(err.error?.message || 'Falha ao carregar perfil');
         this.loading.set(false);
+      }
+    });
+  }
+
+  private loadHomeWidgets(): void {
+    this.homeWidgetPreferenceService.getPreferences().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ configured, widgets }) => this.homeWidgets.set(
+        configured ? widgets : [HomeWidget.Services, HomeWidget.Products, HomeWidget.Events]
+      ),
+      error: () => this.homeWidgets.set([])
+    });
+  }
+
+  isWidgetSelected(widget: HomeWidget): boolean {
+    return this.homeWidgets().includes(widget);
+  }
+
+  toggleHomeWidget(widget: HomeWidget): void {
+    const current = this.homeWidgets();
+    const updated = current.includes(widget)
+      ? current.filter(w => w !== widget)
+      : [...current, widget];
+
+    this.savingWidgets.set(true);
+    this.homeWidgetPreferenceService.update(updated).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ data }) => {
+        this.homeWidgets.set(data);
+        this.savingWidgets.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.savingWidgets.set(false);
+        this.errorModalService.show(err.error?.message || 'Falha ao salvar preferências da tela inicial');
       }
     });
   }

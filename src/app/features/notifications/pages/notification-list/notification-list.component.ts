@@ -1,3 +1,4 @@
+import { UtcDatePipe } from '../../../../shared/pipes/utc-date.pipe';
 import { Component, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,7 +13,7 @@ import { ErrorModalService } from '../../../../shared/components/error-modal/err
 @Component({
   selector: 'app-notification-list',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TableModule, TagModule, TooltipModule],
+  imports: [UtcDatePipe, CommonModule, ButtonModule, TableModule, TagModule, TooltipModule],
   templateUrl: './notification-list.component.html',
   styleUrls: ['./notification-list.component.scss']
 })

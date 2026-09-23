@@ -7,194 +7,237 @@
   </div>
 
   <div class="card">
-    <p-card>
-      <ng-container *ngIf="!editing()">
-        <div class="profile-view">
-          <div class="profile-field">
-            <span class="profile-label">Nome completo</span>
-            <span class="profile-value">{{ profile()?.fullName || '—' }}</span>
+    <p-tabView>
+      <p-tabPanel header="Preferências">
+        <ng-container *ngIf="canViewServices || canViewProducts || canViewEvents; else noWidgets">
+          <p class="widgets-hint">Escolha quais widgets deseja ver no Dashboard.</p>
+          <div class="widget-options">
+            <div class="widget-option" *ngIf="canViewServices">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="isWidgetSelected(HomeWidget.Services)"
+                [disabled]="savingWidgets()"
+                (ngModelChange)="toggleHomeWidget(HomeWidget.Services)"
+                inputId="widget-services">
+              </p-checkbox>
+              <label for="widget-services">Consulta de preços de Serviços</label>
+            </div>
+            <div class="widget-option" *ngIf="canViewProducts">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="isWidgetSelected(HomeWidget.Products)"
+                [disabled]="savingWidgets()"
+                (ngModelChange)="toggleHomeWidget(HomeWidget.Products)"
+                inputId="widget-products">
+              </p-checkbox>
+              <label for="widget-products">Consulta de preços de Produtos</label>
+            </div>
+            <div class="widget-option" *ngIf="canViewEvents">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="isWidgetSelected(HomeWidget.Events)"
+                [disabled]="savingWidgets()"
+                (ngModelChange)="toggleHomeWidget(HomeWidget.Events)"
+                inputId="widget-events">
+              </p-checkbox>
+              <label for="widget-events">Próximos Eventos</label>
+            </div>
           </div>
+        </ng-container>
+        <ng-template #noWidgets>
+          <p class="widgets-hint">Nenhuma preferência disponível para o seu perfil.</p>
+        </ng-template>
+      </p-tabPanel>
 
-          <div class="profile-field">
-            <span class="profile-label">Email (login)</span>
-            <span class="profile-value">{{ profile()?.email || '—' }}</span>
+      <p-tabPanel header="Dados do usuário">
+        <ng-container *ngIf="!editing()">
+          <div class="profile-view">
+            <div class="profile-field">
+              <span class="profile-label">Nome completo</span>
+              <span class="profile-value">{{ profile()?.fullName || '—' }}</span>
+            </div>
+
+            <div class="profile-field">
+              <span class="profile-label">Email (login)</span>
+              <span class="profile-value">{{ profile()?.email || '—' }}</span>
+            </div>
+
+            <div class="profile-field">
+              <span class="profile-label">CPF</span>
+              <span class="profile-value">{{ profile()?.cpf || '—' }}</span>
+            </div>
+
+            <div class="profile-field">
+              <span class="profile-label">Data de nascimento</span>
+              <span class="profile-value">{{ profile()?.birth ? (profile()?.birth | date:'dd/MM/yyyy') : '—' }}</span>
+            </div>
+
+            <div class="profile-field">
+              <span class="profile-label">Endereço</span>
+              <span class="profile-value">{{ formattedAddress() }}</span>
+            </div>
+
+            <div class="profile-actions">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-key"
+                label="Alterar Senha"
+                class="p-button-outlined"
+                [disabled]="loading()"
+                (click)="openChangePassword()">
+              </button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                label="Editar"
+                [disabled]="loading()"
+                (click)="startEditing()">
+              </button>
+            </div>
           </div>
+        </ng-container>
 
-          <div class="profile-field">
-            <span class="profile-label">CPF</span>
-            <span class="profile-value">{{ profile()?.cpf || '—' }}</span>
-          </div>
-
-          <div class="profile-field">
-            <span class="profile-label">Data de nascimento</span>
-            <span class="profile-value">{{ profile()?.birth ? (profile()?.birth | date:'dd/MM/yyyy') : '—' }}</span>
-          </div>
-
-          <div class="profile-field">
-            <span class="profile-label">Endereço</span>
-            <span class="profile-value">{{ formattedAddress() }}</span>
-          </div>
-
-          <div class="profile-actions">
-            <button
-              pButton
-              type="button"
-              icon="pi pi-key"
-              label="Alterar Senha"
-              class="p-button-outlined"
-              [disabled]="loading()"
-              (click)="openChangePassword()">
-            </button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-pencil"
-              label="Editar"
-              [disabled]="loading()"
-              (click)="startEditing()">
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
-      <form *ngIf="editing()" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
-        <div class="field">
-          <label for="fullName">Nome completo *</label>
-          <input
-            id="fullName"
-            formControlName="fullName"
-            type="text"
-            pInputText
-            class="w-full"
-            placeholder="Digite o nome completo" />
-          <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error block mt-1">
-            Nome completo é obrigatório
-          </small>
-        </div>
-
-        <div class="field">
-          <label for="email">Email (login) *</label>
-          <input
-            id="email"
-            formControlName="email"
-            type="email"
-            pInputText
-            class="w-full"
-            placeholder="Digite o email" />
-          <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="p-error block mt-1">
-            <span *ngIf="profileForm.get('email')?.errors?.['required']">Email é obrigatório</span>
-            <span *ngIf="profileForm.get('email')?.errors?.['email']">Email inválido</span>
-          </small>
-        </div>
-
-        <div class="field">
-          <label for="cpf">CPF *</label>
-          <p-inputMask
-            id="cpf"
-            formControlName="cpf"
-            mask="999.999.999-99"
-            placeholder="000.000.000-00"
-            class="w-full">
-          </p-inputMask>
-          <small *ngIf="profileForm.get('cpf')?.invalid && profileForm.get('cpf')?.touched" class="p-error block mt-1">
-            CPF é obrigatório
-          </small>
-        </div>
-
-        <div class="field">
-          <label for="birth">Data de nascimento *</label>
-          <p-inputMask
-            id="birth"
-            formControlName="birth"
-            mask="99/99/9999"
-            placeholder="dd/mm/aaaa"
-            class="w-full">
-          </p-inputMask>
-          <small *ngIf="profileForm.get('birth')?.invalid && profileForm.get('birth')?.touched" class="p-error block mt-1">
-            Data de nascimento é obrigatória
-          </small>
-        </div>
-
-        <div class="field">
-          <label for="gender">Gênero *</label>
-          <p-dropdown
-            id="gender"
-            formControlName="gender"
-            [options]="genderOptions"
-            placeholder="Selecione"
-            class="w-full">
-          </p-dropdown>
-          <small *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched" class="p-error block mt-1">
-            Gênero é obrigatório
-          </small>
-        </div>
-
-        <fieldset formGroupName="address" class="address-fieldset">
-          <legend>Endereço</legend>
+        <form *ngIf="editing()" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
           <div class="field">
-            <label for="cep">CEP *</label>
+            <label for="fullName">Nome completo *</label>
+            <input
+              id="fullName"
+              formControlName="fullName"
+              type="text"
+              pInputText
+              class="w-full"
+              placeholder="Digite o nome completo" />
+            <small *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched" class="p-error block mt-1">
+              Nome completo é obrigatório
+            </small>
+          </div>
+
+          <div class="field">
+            <label for="email">Email (login) *</label>
+            <input
+              id="email"
+              formControlName="email"
+              type="email"
+              pInputText
+              class="w-full"
+              placeholder="Digite o email" />
+            <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="p-error block mt-1">
+              <span *ngIf="profileForm.get('email')?.errors?.['required']">Email é obrigatório</span>
+              <span *ngIf="profileForm.get('email')?.errors?.['email']">Email inválido</span>
+            </small>
+          </div>
+
+          <div class="field">
+            <label for="cpf">CPF *</label>
             <p-inputMask
-              id="cep"
-              formControlName="cep"
-              mask="99999-999"
-              placeholder="00000-000"
+              id="cpf"
+              formControlName="cpf"
+              mask="999.999.999-99"
+              placeholder="000.000.000-00"
               class="w-full">
-              <ng-template pTemplate="suffix">
-                <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
-              </ng-template>
             </p-inputMask>
-            <small *ngIf="profileForm.get('address.cep')?.invalid && profileForm.get('address.cep')?.touched" class="p-error block mt-1">
-              CEP é obrigatório
-            </small>
-            <small *ngIf="cepErrorMessage()" class="p-error block mt-1">
-              {{ cepErrorMessage() }}
+            <small *ngIf="profileForm.get('cpf')?.invalid && profileForm.get('cpf')?.touched" class="p-error block mt-1">
+              CPF é obrigatório
             </small>
           </div>
-          <div class="field">
-            <label for="state">Estado *</label>
-            <input id="state" formControlName="state" type="text" pInputText class="w-full" placeholder="Digite o estado" />
-          </div>
-          <div class="field">
-            <label for="city">Cidade *</label>
-            <input id="city" formControlName="city" type="text" pInputText class="w-full" placeholder="Digite a cidade" />
-          </div>
-          <div class="field">
-            <label for="street">Rua *</label>
-            <input id="street" formControlName="street" type="text" pInputText class="w-full" placeholder="Digite a rua" />
-          </div>
-          <div class="field">
-            <label for="number">Número *</label>
-            <input id="number" formControlName="number" type="text" pInputText class="w-full" placeholder="Digite o número" />
-          </div>
-          <div class="field">
-            <label for="neighborhood">Bairro *</label>
-            <input id="neighborhood" formControlName="neighborhood" type="text" pInputText class="w-full" placeholder="Digite o bairro" />
-          </div>
-          <div class="field">
-            <label for="complement">Complemento</label>
-            <input id="complement" formControlName="complement" type="text" pInputText class="w-full" placeholder="Digite o complemento (opcional)" />
-          </div>
-        </fieldset>
 
-        <div class="form-actions">
-          <button
-            pButton
-            type="button"
-            label="Cancelar"
-            class="p-button-text"
-            [disabled]="saving()"
-            (click)="cancelEditing()">
-          </button>
-          <button
-            pButton
-            type="submit"
-            label="Salvar"
-            [loading]="saving()"
-            [disabled]="saving()">
-          </button>
-        </div>
-      </form>
-    </p-card>
+          <div class="field">
+            <label for="birth">Data de nascimento *</label>
+            <p-inputMask
+              id="birth"
+              formControlName="birth"
+              mask="99/99/9999"
+              placeholder="dd/mm/aaaa"
+              class="w-full">
+            </p-inputMask>
+            <small *ngIf="profileForm.get('birth')?.invalid && profileForm.get('birth')?.touched" class="p-error block mt-1">
+              Data de nascimento é obrigatória
+            </small>
+          </div>
+
+          <div class="field">
+            <label for="gender">Gênero *</label>
+            <p-dropdown
+              id="gender"
+              formControlName="gender"
+              [options]="genderOptions"
+              placeholder="Selecione"
+              class="w-full">
+            </p-dropdown>
+            <small *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched" class="p-error block mt-1">
+              Gênero é obrigatório
+            </small>
+          </div>
+
+          <fieldset formGroupName="address" class="address-fieldset">
+            <legend>Endereço</legend>
+            <div class="field">
+              <label for="cep">CEP *</label>
+              <p-inputMask
+                id="cep"
+                formControlName="cep"
+                mask="99999-999"
+                placeholder="00000-000"
+                class="w-full">
+                <ng-template pTemplate="suffix">
+                  <i *ngIf="loadingCep()" class="pi pi-spin pi-spinner"></i>
+                </ng-template>
+              </p-inputMask>
+              <small *ngIf="profileForm.get('address.cep')?.invalid && profileForm.get('address.cep')?.touched" class="p-error block mt-1">
+                CEP é obrigatório
+              </small>
+              <small *ngIf="cepErrorMessage()" class="p-error block mt-1">
+                {{ cepErrorMessage() }}
+              </small>
+            </div>
+            <div class="field">
+              <label for="state">Estado *</label>
+              <input id="state" formControlName="state" type="text" pInputText class="w-full" placeholder="Digite o estado" />
+            </div>
+            <div class="field">
+              <label for="city">Cidade *</label>
+              <input id="city" formControlName="city" type="text" pInputText class="w-full" placeholder="Digite a cidade" />
+            </div>
+            <div class="field">
+              <label for="street">Rua *</label>
+              <input id="street" formControlName="street" type="text" pInputText class="w-full" placeholder="Digite a rua" />
+            </div>
+            <div class="field">
+              <label for="number">Número *</label>
+              <input id="number" formControlName="number" type="text" pInputText class="w-full" placeholder="Digite o número" />
+            </div>
+            <div class="field">
+              <label for="neighborhood">Bairro *</label>
+              <input id="neighborhood" formControlName="neighborhood" type="text" pInputText class="w-full" placeholder="Digite o bairro" />
+            </div>
+            <div class="field">
+              <label for="complement">Complemento</label>
+              <input id="complement" formControlName="complement" type="text" pInputText class="w-full" placeholder="Digite o complemento (opcional)" />
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button
+              pButton
+              type="button"
+              label="Cancelar"
+              class="p-button-text"
+              [disabled]="saving()"
+              (click)="cancelEditing()">
+            </button>
+            <button
+              pButton
+              type="submit"
+              label="Salvar"
+              [loading]="saving()"
+              [disabled]="saving()">
+            </button>
+          </div>
+        </form>
+      </p-tabPanel>
+    </p-tabView>
   </div>
 </div>
 

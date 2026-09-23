@@ -1,3 +1,4 @@
+import { UtcDatePipe } from '../../../../shared/pipes/utc-date.pipe';
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -16,6 +17,8 @@ import { CashFlowService } from '../../services/cash-flow.service';
 import { CashFlow, ECashFlowType } from '../../models/cash-flow.model';
 import { CashRegisterService } from '../../../cash-registers/services/cash-register.service';
 import { CashRegister } from '../../../cash-registers/models/cash-register.model';
+import { PaymentMethodService } from '../../../payment-methods/services/payment-method.service';
+import { PaymentMethod } from '../../../payment-methods/models/payment-method.model';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal';
 import { SuccessModalComponent } from '../../../../shared/components/success-modal/success-modal.component';
 import { SuccessModalService } from '../../../../shared/components/success-modal/success-modal.service';
@@ -25,7 +28,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-cash-flow-list',
   standalone: true,
-  imports: [
+  imports: [UtcDatePipe, 
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -47,6 +50,7 @@ export class CashFlowListComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private cashFlowService = inject(CashFlowService);
   private cashRegisterService = inject(CashRegisterService);
+  private paymentMethodService = inject(PaymentMethodService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -60,10 +64,12 @@ export class CashFlowListComponent implements OnInit {
   cashRegister = signal<CashRegister | null>(null);
   cashFlows = signal<CashFlow[]>([]);
   loading = signal(true);
+  paymentMethods = signal<PaymentMethod[]>([]);
 
   entryForm: FormGroup = this.fb.group({
     type: [ECashFlowType.In, Validators.required],
     value: [null, [Validators.required, Validators.min(0.01)]],
+    paymentMethodId: [null, Validators.required],
     description: ['']
   });
   formSubmitted = signal(false);
@@ -87,6 +93,14 @@ export class CashFlowListComponent implements OnInit {
     this.cashRegisterId = Number(id);
     this.loadCashRegister();
     this.loadCashFlows();
+    this.loadPaymentMethods();
+  }
+
+  private loadPaymentMethods(): void {
+    this.paymentMethodService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => this.paymentMethods.set(response.data.filter(m => m.status === 1)),
+      error: (err: HttpErrorResponse) => this.errorModalService.show(err.error?.message || 'Falha ao carregar formas de pagamento')
+    });
   }
 
   private loadCashRegister(): void {
@@ -136,12 +150,13 @@ export class CashFlowListComponent implements OnInit {
       cashRegisterId: this.cashRegisterId,
       type: value.type,
       value: value.value,
+      paymentMethodId: value.paymentMethodId,
       description: value.description || undefined
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.formSubmitted.set(false);
-        this.entryForm.reset({ type: ECashFlowType.In, value: null, description: '' });
+        this.entryForm.reset({ type: ECashFlowType.In, value: null, paymentMethodId: null, description: '' });
         this.successModalService.show('Lançamento registrado com sucesso!');
         setTimeout(() => this.successModalService.hide(), 1500);
         this.loadCashFlows();

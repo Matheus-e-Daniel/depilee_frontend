@@ -24,7 +24,7 @@ export class SidebarComponent {
   mobileOpen = input(false);
 
   private allMenuItems: SidebarMenuItem[] = [
-    { label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' },
+    { label: 'Início', icon: 'pi pi-home', route: '/dashboard' },
     { label: 'Calendário', icon: 'pi pi-calendar', route: '/calendar-events', permissions: ['Event.Get'] },
     { label: 'Clientes', icon: 'pi pi-users', route: '/clients', permissions: ['Client.Get'] },
     { label: 'Usuários', icon: 'pi pi-users', route: '/users', permissions: ['Identity.Get'] },

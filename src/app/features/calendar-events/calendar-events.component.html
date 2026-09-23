@@ -39,6 +39,7 @@
             class="event-card all-day-event"
             [class.status-done]="event.status === EEventStatus.Done"
             [class.status-cancelled]="event.status === EEventStatus.Cancelled"
+            [class.actions-open]="activeActionsEventId() === event.id"
             *ngFor="let event of getAllDayEvents(day)"
             [ngStyle]="getEventStyle(event)"
             draggable="true"
@@ -47,9 +48,9 @@
             (dragstart)="onDragStart(event)"
             (dragover)="onEventDragOver(event, $event)"
             (drop)="onEventDrop(event, $event)"
-            (click)="openEditEventDialog(event, $event)"
-            (keydown.enter)="openEditEventDialog(event, $event)"
-            (keydown.space)="openEditEventDialog(event, $event)"
+            (click)="onEventCardClick(event, $event)"
+            (keydown.enter)="onEventCardClick(event, $event)"
+            (keydown.space)="onEventCardClick(event, $event)"
             [pTooltip]="getStatusLabel(event)"
             tooltipPosition="top">
 
@@ -60,6 +61,18 @@
             <button class="event-delete" (click)="deleteEvent(event, $event)">
               <i class="pi pi-times"></i>
             </button>
+
+            <div class="event-actions-bar" *ngIf="activeActionsEventId() === event.id" (click)="$event.stopPropagation()">
+              <button class="action-btn done" pTooltip="Concluir" tooltipPosition="top" (click)="setEventStatus(event, EEventStatus.Done, $event)">
+                <i class="pi pi-check"></i>
+              </button>
+              <button class="action-btn cancel" pTooltip="Cancelar" tooltipPosition="top" (click)="setEventStatus(event, EEventStatus.Cancelled, $event)">
+                <i class="pi pi-ban"></i>
+              </button>
+              <button class="action-btn edit" pTooltip="Editar" tooltipPosition="top" (click)="onEditFromActions(event, $event)">
+                <i class="pi pi-pencil"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -90,6 +103,7 @@
               class="event-card"
               [class.status-done]="item.event.status === EEventStatus.Done"
               [class.status-cancelled]="item.event.status === EEventStatus.Cancelled"
+              [class.actions-open]="activeActionsEventId() === item.event.id"
               *ngFor="let item of getLayoutedEvents(day)"
               [ngStyle]="getPositionedEventStyle(item)"
               draggable="true"
@@ -98,9 +112,9 @@
               (dragstart)="onDragStart(item.event)"
               (dragover)="onEventDragOver(item.event, $event)"
               (drop)="onEventDrop(item.event, $event)"
-              (click)="openEditEventDialog(item.event, $event)"
-              (keydown.enter)="openEditEventDialog(item.event, $event)"
-              (keydown.space)="openEditEventDialog(item.event, $event)">
+              (click)="onEventCardClick(item.event, $event)"
+              (keydown.enter)="onEventCardClick(item.event, $event)"
+              (keydown.space)="onEventCardClick(item.event, $event)">
 
               <div class="event-content">
                 <div class="event-title-row">
@@ -117,6 +131,18 @@
                 (click)="deleteEvent(item.event, $event)">
                 <i class="pi pi-times"></i>
               </button>
+
+              <div class="event-actions-bar" *ngIf="activeActionsEventId() === item.event.id" (click)="$event.stopPropagation()">
+                <button class="action-btn done" pTooltip="Concluir" tooltipPosition="top" (click)="setEventStatus(item.event, EEventStatus.Done, $event)">
+                  <i class="pi pi-check"></i>
+                </button>
+                <button class="action-btn cancel" pTooltip="Cancelar" tooltipPosition="top" (click)="setEventStatus(item.event, EEventStatus.Cancelled, $event)">
+                  <i class="pi pi-ban"></i>
+                </button>
+                <button class="action-btn edit" pTooltip="Editar" tooltipPosition="top" (click)="onEditFromActions(item.event, $event)">
+                  <i class="pi pi-pencil"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -135,7 +161,41 @@
   [draggable]="false"
   styleClass="event-dialog">
 
-  <div class="event-form">
+  <div class="event-view" *ngIf="isViewMode()">
+    <div class="view-field">
+      <span class="view-label">Assunto</span>
+      <span class="view-value">{{ newEvent.subject }}</span>
+    </div>
+
+    <div class="view-field">
+      <span class="view-label">Descrição</span>
+      <span class="view-value">{{ newEvent.description || 'Sem descrição' }}</span>
+    </div>
+
+    <div class="view-row">
+      <div class="view-field">
+        <span class="view-label">Status</span>
+        <span class="view-value">{{ getStatusLabelByValue(newEvent.status) }}</span>
+      </div>
+
+      <div class="view-field">
+        <span class="view-label">Horário</span>
+        <span class="view-value">{{ newEvent.allDay ? 'Dia inteiro' : (eventStartTime + ' - ' + eventEndTime) }}</span>
+      </div>
+    </div>
+
+    <div class="view-field">
+      <span class="view-label">Cor do Evento</span>
+      <div class="view-color-swatch" [style.background-color]="newEvent.categoryColor"></div>
+    </div>
+
+    <div class="view-field">
+      <span class="view-label">Destinatário</span>
+      <span class="view-value">{{ getTargetUserNameById(newEvent.targetUserId) || 'Todos' }}</span>
+    </div>
+  </div>
+
+  <div class="event-form" *ngIf="!isViewMode()">
     <div class="form-field">
       <label for="subject">Assunto *</label>
       <input
@@ -240,17 +300,33 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <button
-      pButton
-      label="Cancelar"
-      class="p-button-text"
-      (click)="showEventDialog.set(false)">
-    </button>
-    <button
-      pButton
-      label="Salvar"
-      class="p-button-primary"
-      (click)="saveEvent()">
-    </button>
+    <ng-container *ngIf="isViewMode(); else editFooter">
+      <button
+        pButton
+        label="Fechar"
+        class="p-button-text"
+        (click)="showEventDialog.set(false)">
+      </button>
+      <button
+        pButton
+        label="Editar"
+        class="p-button-primary"
+        (click)="enableEditing()">
+      </button>
+    </ng-container>
+    <ng-template #editFooter>
+      <button
+        pButton
+        label="Cancelar"
+        class="p-button-text"
+        (click)="showEventDialog.set(false)">
+      </button>
+      <button
+        pButton
+        label="Salvar"
+        class="p-button-primary"
+        (click)="saveEvent()">
+      </button>
+    </ng-template>
   </ng-template>
 </p-dialog>

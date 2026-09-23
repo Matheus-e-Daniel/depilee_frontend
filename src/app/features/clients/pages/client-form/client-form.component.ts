@@ -1,3 +1,4 @@
+import { UtcDatePipe } from '../../../../shared/pipes/utc-date.pipe';
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -45,7 +46,7 @@ interface ViaCepResponse {
 @Component({
   selector: 'app-client-form',
   standalone: true,
-  imports: [
+  imports: [UtcDatePipe, 
     CommonModule,
     ReactiveFormsModule,
     InputTextModule,

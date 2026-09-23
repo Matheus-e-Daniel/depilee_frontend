@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
@@ -77,6 +77,7 @@ export class CalendarEventsComponent implements OnInit {
  
   showEventDialog = signal(false);
   isEditingEvent = signal(false);
+  isViewMode = signal(false);
   editingEventId: string | null = null;
   newEvent = {
     subject: '',
@@ -98,6 +99,13 @@ export class CalendarEventsComponent implements OnInit {
 
   loading = signal(false);
 
+  activeActionsEventId = signal<string | null>(null);
+
+  @HostListener('document:click')
+  closeActions(): void {
+    this.activeActionsEventId.set(null);
+  }
+
   ngOnInit(): void {
     this.initTimeSlots();
     this.updateWeekView();
@@ -113,8 +121,12 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getTargetUserName(event: CalendarEvent): string {
-    if (!event.targetUserId) return '';
-    return this.users().find(u => u.id === event.targetUserId)?.fullName || '';
+    return this.getTargetUserNameById(event.targetUserId);
+  }
+
+  getTargetUserNameById(userId: number | null | undefined): string {
+    if (!userId) return '';
+    return this.users().find(u => u.id === userId)?.fullName || '';
   }
 
   private initTimeSlots(): void {
@@ -200,6 +212,7 @@ export class CalendarEventsComponent implements OnInit {
 
   openEventDialog(date: Date, time: string): void {
     this.isEditingEvent.set(false);
+    this.isViewMode.set(false);
     this.editingEventId = null;
     this.eventDate = new Date(date);
     this.eventStartTime = time;
@@ -225,6 +238,7 @@ export class CalendarEventsComponent implements OnInit {
   openEditEventDialog(event: CalendarEvent, $event: Event): void {
     $event.stopPropagation();
     this.isEditingEvent.set(true);
+    this.isViewMode.set(true);
     this.editingEventId = event.id;
 
     const startDate = this.parseLocalDate(event.startDate || new Date().toISOString());
@@ -247,6 +261,32 @@ export class CalendarEventsComponent implements OnInit {
     };
 
     this.showEventDialog.set(true);
+  }
+
+  onEventCardClick(event: CalendarEvent, $event: Event): void {
+    $event.stopPropagation();
+    this.activeActionsEventId.set(this.activeActionsEventId() === event.id ? null : event.id);
+  }
+
+  setEventStatus(event: CalendarEvent, status: EEventStatus, $event: Event): void {
+    $event.stopPropagation();
+    this.activeActionsEventId.set(null);
+
+    const updatedEvent: CalendarEvent = { ...event, status };
+
+    this.calendarEventService.update(updatedEvent).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.loadEvents(),
+      error: (err: HttpErrorResponse) => this.errorModalService.show(err.error?.message || 'Erro ao atualizar status do evento.')
+    });
+  }
+
+  onEditFromActions(event: CalendarEvent, $event: Event): void {
+    this.activeActionsEventId.set(null);
+    this.openEditEventDialog(event, $event);
+  }
+
+  enableEditing(): void {
+    this.isViewMode.set(false);
   }
 
   private calculateEndTime(startTime: string): string {
@@ -475,7 +515,11 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getStatusLabel(event: CalendarEvent): string {
-    return this.statusOptions.find(opt => opt.value === event.status)?.label || 'Pendente';
+    return this.getStatusLabelByValue(event.status);
+  }
+
+  getStatusLabelByValue(status?: EEventStatus): string {
+    return this.statusOptions.find(opt => opt.value === status)?.label || 'Pendente';
   }
 
   previousWeek(): void {
@@ -578,6 +622,7 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   getDialogTitle(): string {
+    if (this.isViewMode()) return 'Detalhes do Evento';
     return this.isEditingEvent() ? 'Editar Evento' : 'Novo Evento';
   }
 }

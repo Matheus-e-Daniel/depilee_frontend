@@ -7,6 +7,7 @@ export interface PaymentMethod {
   feePercentage: number;
   description: string;
   registrationDate?: string;
+  status: number;
 }
 
 export interface PaymentMethodFormData {

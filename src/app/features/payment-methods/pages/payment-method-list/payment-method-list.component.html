@@ -30,6 +30,16 @@
         (click)="clearFilters()">
       </button>
     </div>
+
+    @if (selectedPaymentMethods().length > 0 && hasPermission('PaymentMethod.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedPaymentMethods().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="searchTerm">Buscar por nome</label>
@@ -63,6 +73,9 @@
   <div class="card">
     <p-table
       [value]="paymentMethods()"
+      [(selection)]="selectedPaymentMethods"
+      dataKey="id"
+      selectionMode="multiple"
       [loading]="loading()"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
@@ -72,18 +85,28 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
           <th>Tipo</th>
           <th>Parcelas</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-paymentMethod>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="paymentMethod"></p-tableCheckbox></td>
           <td data-label="Nome">{{ paymentMethod.name }}</td>
           <td data-label="Tipo">{{ getPaymentTypeLabel(paymentMethod.type) }}</td>
           <td data-label="Parcelas">{{ paymentMethod.installments }}x</td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="paymentMethod.status === 1 ? 'Ativo' : 'Inativo'"
+              [severity]="paymentMethod.status === 1 ? 'success' : 'danger'"
+              class="mr-1">
+            </p-tag>
+          </td>
           <td data-label="Ações">
             <div class="action-buttons">
               <button
@@ -111,7 +134,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="text-center py-5">
+          <td colspan="6" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-credit-card" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum método de pagamento encontrado</h3>
@@ -140,6 +163,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

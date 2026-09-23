@@ -59,7 +59,7 @@ export class CashRegisterCloseFormComponent implements OnChanges {
     this.paymentMethodService.getAll().subscribe({
       next: (response) => {
         this.declarations.clear();
-        for (const method of response.data) {
+        for (const method of response.data.filter(m => m.status === 1)) {
           this.declarations.push(this.buildDeclarationGroup(method.id, method.name));
         }
         this.loadingPaymentMethods.set(false);

@@ -166,7 +166,7 @@
                 <td data-label="Total Serviço">{{ item.totalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
                 <td data-label="% Comissão"><span class="percentage-badge">{{ item.commissionPercentageApplied }}%</span></td>
                 <td data-label="Valor Comissão" class="commission-value">{{ item.commissionAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
-                <td data-label="Conclusão">{{ item.completedAt | date:'dd/MM/yyyy HH:mm':'':'' }}</td>
+                <td data-label="Conclusão">{{ item.completedAt | utc | date:'dd/MM/yyyy HH:mm':'':'' }}</td>
               </tr>
             </ng-template>
           </p-table>

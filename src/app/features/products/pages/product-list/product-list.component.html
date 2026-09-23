@@ -29,6 +29,16 @@
         (click)="clearFilters()">
       </button>
     </div>
+
+    @if (selectedProducts().length > 0 && hasPermission('Product.Delete')) {
+      <button
+        pButton
+        icon="pi pi-trash"
+        [label]="'Excluir selecionados (' + selectedProducts().length + ')'"
+        class="p-button-danger p-button-sm bulk-delete-btn"
+        (click)="deleteSelected()">
+      </button>
+    }
     <div class="filters-content">
       <div class="filter-group">
         <label for="searchTerm">Buscar por nome ou marca</label>
@@ -63,6 +73,9 @@
     <p-table
       [value]="products()"
       [loading]="loading()"
+      [(selection)]="selectedProducts"
+      dataKey="id"
+      selectionMode="multiple"
       styleClass="p-datatable-striped responsive-table"
       [paginator]="true"
       [rows]="10"
@@ -71,16 +84,19 @@
 
       <ng-template pTemplate="header">
         <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
           <th>Nome</th>
           <th>Preço</th>
           <th>Estoque</th>
           <th>Status</th>
+          <th>Situação</th>
           <th>Ações</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-product>
         <tr>
+          <td style="width: 3rem"><p-tableCheckbox [value]="product"></p-tableCheckbox></td>
           <td data-label="Nome">{{ product.name }}</td>
           <td data-label="Preço">{{ product.price | currency:'BRL' }}</td>
           <td data-label="Estoque">
@@ -92,6 +108,13 @@
             <p-tag
               [value]="product.stock > 0 ? 'Disponível' : 'Esgotado'"
               [severity]="product.stock > 0 ? 'success' : 'danger'">
+            </p-tag>
+          </td>
+          <td data-label="Situação">
+            <p-tag
+              [value]="product.status === 1 ? 'Ativo' : 'Inativo'"
+              [severity]="product.status === 1 ? 'success' : 'danger'"
+              class="mr-1">
             </p-tag>
           </td>
           <td data-label="Ações">
@@ -123,7 +146,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center py-5">
+          <td colspan="8" class="text-center py-5">
             <div class="empty-state">
               <i class="pi pi-box" style="font-size: 3rem; color: #ccc"></i>
               <h3>Nenhum produto encontrado</h3>
@@ -152,6 +175,15 @@
   [message]="getDeleteMessage()"
   (confirm)="confirmDelete()"
   (cancelled)="cancelDelete()">
+</app-confirmation-modal>
+
+<app-confirmation-modal
+  [visible]="bulkDeleteVisible()"
+  [type]="'delete'"
+  [loading]="bulkDeleteLoading()"
+  [message]="getBulkDeleteMessage()"
+  (confirm)="confirmBulkDelete()"
+  (cancelled)="cancelBulkDelete()">
 </app-confirmation-modal>
 
 <app-success-modal

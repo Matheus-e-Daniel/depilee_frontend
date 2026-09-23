@@ -16,8 +16,8 @@ export interface ServiceOrder {
   cancelledAt?: string | null;
   createdByUser?: string;
   updatedByUser?: string;
-  clientName?: string;
-  cashRegisterName?: string;
+  client?: { name: string } | null;
+  payments?: { cashRegisterId: number }[];
 }
 
 export interface ServiceOrderFormData {
