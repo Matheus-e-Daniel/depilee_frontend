@@ -44,7 +44,7 @@ export class CommissionHistoryComponent implements OnInit {
   userOptions: { label: string; value: number }[] = [];
 
   ngOnInit(): void {
-    this.userService.getAll()
+    this.userService.getLookup()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
