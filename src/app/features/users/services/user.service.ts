@@ -19,6 +19,12 @@ export class UserService {
     );
   }
 
+  getLookup(): Observable<ApiResponse<User[]>> {
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/users/lookup`).pipe(
+      catchError((err: HttpErrorResponse) => err.status === 404 ? of(EMPTY_USERS_RESPONSE) : throwError(() => err))
+    );
+  }
+
   getById(id: string): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.apiUrl}/users/${id}`);
   }

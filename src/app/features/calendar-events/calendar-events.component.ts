@@ -114,7 +114,7 @@ export class CalendarEventsComponent implements OnInit {
   }
 
   private loadUsers(): void {
-    this.userService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.userService.getLookup().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => this.users.set(response.data),
       error: (err) => this.errorModalService.show(err.error?.message || 'Erro ao carregar usuários.')
     });
