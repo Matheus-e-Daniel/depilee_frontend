@@ -77,11 +77,13 @@
 }
 // src/app/features/auth/login/login.component.scss
 // Expandido para tela toda
+// Altura mínima (não fixa) para a página poder rolar quando o conteúdo não cabe;
+// 100dvh acompanha a área visível real em navegadores mobile (barras do Safari/Chrome).
 .login-container {
   display: flex;
   min-height: 100vh;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100dvh;
+  width: 100%;
   background: linear-gradient(135deg, #f59e0b 0%, #1a1a1a 100%);
   position: relative;
   overflow: hidden;
@@ -129,9 +131,8 @@
 
   .login-split-wrapper {
     display: flex;
-    min-height: 100vh;
-    height: 100vh;
-    width: 100vw;
+    flex: 1 1 auto;
+    width: 100%;
     max-width: none;
     margin: 0;
     position: relative;
@@ -139,7 +140,6 @@
     background: transparent;
     box-shadow: none;
     border-radius: 0;
-    overflow: hidden;
   }
 
   .login-left {
@@ -185,7 +185,6 @@
     background: rgba(255,255,255,0.95);
     padding: 2rem 1rem;
     min-width: 0;
-    height: 100vh;
   }
 
   form.login-form {
@@ -206,17 +205,46 @@
     padding: 0 !important;
   }
 
+  // Mobile/tablet: empilha logo + formulário. A logo fica compacta e o formulário
+  // ocupa o restante; se não couber, a página rola em vez de cortar o botão.
   @media (max-width: 900px) {
     .login-split-wrapper {
       flex-direction: column;
-      max-width: 98vw;
-      min-height: 90vh;
     }
-    .login-left, .login-right {
-      padding: 2rem 0.5rem;
+    .login-left {
+      flex: 0 0 auto;
+      padding: calc(1.25rem + env(safe-area-inset-top)) 1rem 1.25rem;
+    }
+    .login-right {
+      flex: 1 0 auto;
+      justify-content: flex-start;
+      padding: 1.5rem 1.25rem calc(2rem + env(safe-area-inset-bottom));
     }
     .brand-img {
-      max-width: 180px;
+      max-width: 150px;
+    }
+    .login-title {
+      margin-bottom: 1rem;
+    }
+    .login-subtitle {
+      margin-bottom: 1.75rem;
+    }
+  }
+
+  // Telas baixas (celular pequeno, paisagem): reduz espaçamentos verticais.
+  @media (max-width: 900px) and (max-height: 700px), (max-height: 500px) {
+    .brand-img {
+      max-width: 110px;
+    }
+    .login-icon-wrapper {
+      display: none;
+    }
+    .login-title {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+    }
+    .login-subtitle {
+      margin-bottom: 1.25rem;
     }
   }
 }
